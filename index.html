@@ -1,0 +1,1120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Creative Studio</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Josefin+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="index.css">
+    <script type="importmap">
+      {
+        "imports": {
+          "@google/genai": "https://esm.sh/@google/genai@^1.4.0"
+        }
+      }
+    </script>
+    <!-- Fabric.js for interactive canvas -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
+    <script type="module" src="index.tsx"></script>
+</head>
+<body>
+    <nav class="sidebar">
+        <div class="sidebar-header">
+            <h3>AI Studio</h3>
+        </div>
+        <ul class="sidebar-menu">
+            <li>
+                <a href="#" class="sidebar-link" data-view="storyboard-view">
+                    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M4 8H8V4H4V8ZM10 20H14V16H10V20ZM4 20H8V16H4V20ZM4 14H8V10H4V14ZM10 14H14V10H10V14ZM16 8H20V4H16V8ZM10 8H14V4H10V8ZM16 14H20V10H16V14ZM16 20H20V16H16V20Z"/></svg>
+                    <span>Affiliate Pro</span>
+                </a>
+            </li>
+            <li>
+                <a href="#" class="sidebar-link" data-view="affiliate-pro-view">
+                    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><circle cx="12" cy="12" r="3.2"/><path d="M9 2L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9zm3 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/></svg>
+                    <span>Creative Studio</span>
+                </a>
+            </li>
+            <li>
+                <a href="#" class="sidebar-link" data-view="food-stylist-view">
+                    <svg xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><g><rect fill="none" height="24" width="24"/></g><g><g><path d="M16.29,11.29l-2.58,2.58c-0.39,0.39-1.02,0.39-1.41,0l-2.59-2.59c-0.39-0.39-0.39-1.02,0-1.41l2.59-2.59 c0.39-0.39,1.02-0.39,1.41,0l2.58,2.58C16.68,10.27,16.68,10.9,16.29,11.29z M12,2C6.5,2,2,6.5,2,12s4.5,10,10,10s10-4.5,10-10 S17.5,2,12,2z M18,12c0,0.83-0.25,1.6-0.68,2.26L12,18.6l-5.32-5.32C6.25,12.8,6,12.03,6,11.2V11c0-3.31,2.69-6,6-6s6,2.69,6,6V12z"/></g></g></svg>
+                    <span>Food Lens</span>
+                </a>
+            </li>
+             <li>
+                <a href="#" class="sidebar-link" data-view="logo-lab-view">
+                    <svg xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><g><rect fill="none" height="24" width="24"/></g><g><g><path d="M12,2C6.47,2,2,6.47,2,12s4.47,10,10,10s10-4.47,10-10S17.53,2,12,2z M12,20c-4.42,0-8-3.58-8-8s3.58-8,8-8 s8,3.58,8,8S16.42,20,12,20z"/><path d="M12.09,17.22c2.81-1.17,4.29-3.47,4.03-5.31c-0.23-1.67-1.63-3.2-4.11-3.65c-2.15-0.38-4.14,0.21-5.3,1.33 c-1.2,1.15-1.71,2.83-1.2,4.32c0.5,1.47,2,2.87,4.42,3.45c-0.31,0.52-0.58,1.06-0.79,1.64c-3.23-0.76-5.63-3.15-5.99-5.96 C3.01,9.89,4.86,7.11,8.3,6.2c3.08-0.81,6.08,0.34,7.78,2.62c2.08,2.78,1.3,6.23-1.74,7.88 c-0.2-0.53-0.36-1.07-0.46-1.61C13.51,15.06,12.92,16.27,12.09,17.22z"/></g></g></svg>
+                    <span>Logo Lab</span>
+                </a>
+            </li>
+            <li>
+                <a href="#" class="sidebar-link" data-view="model-creative-view">
+                    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                    <span>Model Creative</span>
+                </a>
+            </li>
+            <li>
+                <a href="#" class="sidebar-link" data-view="outfit-pro-view">
+                    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><g><rect fill="none" height="24" width="24"/></g><g><g><path d="M21.6,18.2l-2.78-3.9c-0.12-0.17-0.33-0.26-0.54-0.24l-2.19,0.22c-0.23,0.02-0.44-0.07-0.58-0.24l-2.5-3 c-0.21-0.25-0.58-0.25-0.79,0l-2.5,3C9.56,14.23,9.35,14.32,9.12,14.29L6.93,14.07c-0.21-0.02-0.42,0.07-0.54,0.24l-2.78,3.9 C3.3,18.7,3.6,19.2,4,19.2h16C20.4,19.2,20.7,18.7,21.6,18.2z"/><path d="M12,11.5c1.1,0,2-0.9,2-2s-0.9-2-2-2s-2,0.9-2,2S10.9,11.5,12,11.5z"/><path d="M14,4c0-1.1-0.9-2-2-2S10,2.9,10,4s0.9,2,2,2S14,5.1,14,4z"/></g></g></svg>
+                    <span>Outfit Pro</span>
+                </a>
+            </li>
+            <li>
+                <a href="#" class="sidebar-link" data-view="retouch-view">
+                    <svg xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><g><rect fill="none" height="24" width="24"/></g><g><path d="M19,9l1.25-2.75L23,5l-2.75-1.25L19,1l-1.25,2.75L15,5l2.75,1.25L19,9z M11.5,9.5L9,4L6.5,9.5L1,12l5.5,2.5L9,20l2.5-5.5 L17,12L11.5,9.5z M19,15l-1.25,2.75L15,19l2.75,1.25L19,23l1.25-2.75L23,19l-2.75-1.25L19,15z"/></g></svg>
+                    <span>Retouch & Warnai</span>
+                </a>
+            </li>
+            <li>
+                <a href="#" class="sidebar-link active" data-view="photo-studio-view">
+                    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M14.12 4H9.88L8.05 6H4v12h16V6h-4.05l-1.83-2zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z" opacity=".3"/><path d="M4 4h5.88l1.83-2h4.58l1.83-2H22v16H2V4h2zm0 2v12h16V6h-4.05l-1.83-2H9.88L8.05 6H4zm8 11c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.65 0-3 1.35-3 3s1.35 3 3 3 3-1.35 3-3-1.35-3-3-3z"/></svg>
+                    <span>Studio Foto</span>
+                </a>
+            </li>
+            <li>
+                <a href="#" class="sidebar-link" data-view="stickerrr-view">
+                    <svg xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><g><rect fill="none" height="24" width="24"/></g><g><path d="M21.41,11.58l-9-9C12.05,2.22,11.55,2,11,2H4C2.9,2,2,2.9,2,4v7c0,0.55,0.22,1.05,0.59,1.42l9,9c0.36,0.36,0.86,0.58,1.41,0.58 s1.05-0.22,1.41-0.59l7-7C22.22,13.68,22.22,12.37,21.41,11.58z M12.83,20.41L4.41,12L4.41,4H11v0.01l9,9L12.83,20.41z"/><circle cx="6.5" cy="6.5" r="1.5"/></g></svg>
+                    <span>Stickerrr</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+    <div class="main-wrapper">
+        <div class="app-container">
+            <header class="app-header">
+                <h1>Creative Studio</h1>
+                <p>Studio Fotografi Produk AI Anda</p>
+                <div class="header-actions">
+                    <button id="premium-key-button" class="premium-key-button">
+                        <span>Kunci Premium</span>
+                        <span id="api-key-status-indicator"></span>
+                    </button>
+                    <div class="theme-switcher">
+                        <input type="checkbox" id="theme-toggle" aria-label="Toggle theme">
+                        <label for="theme-toggle" class="slider-label">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="sun-icon"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="moon-icon"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+                        </label>
+                    </div>
+                </div>
+            </header>
+
+            <main class="main-content">
+                <div id="affiliate-pro-view" class="view">
+                    <div id="affiliate-pro-card">
+                        <div class="card-container">
+                            <div class="content-container">
+                                <h2>Creative Studio</h2>
+                                <p id="affiliate-subtitle" class="modal-subtitle" style="margin-top: 0.5rem; margin-bottom: 1rem; text-align: center;"></p>
+
+                                <div class="button-group" style="justify-content: center; margin-bottom: 1rem;">
+                                    <button id="affiliate-mode-productstyle" class="toggle-button active">Konsep Visual</button>
+                                    <button id="affiliate-mode-lookbook" class="toggle-button">Peraga Virtual</button>
+                                    <button id="affiliate-mode-mixstyle" class="toggle-button">Gaya Campuran</button>
+                                </div>
+
+                                <!-- Common Upload State -->
+                                <div id="affiliate-idle-state">
+                                    <label class="affiliate-uploader" for="affiliate-file-input" role="button" aria-label="Unggah foto produk">
+                                        <span>Unggah foto produk untuk memulai</span>
+                                    </label>
+                                    <input id="affiliate-file-input" type="file" accept="image/*" style="display: none;" />
+                                </div>
+
+                                <!-- Common Control State (after upload) -->
+                                <div id="affiliate-uploaded-state" style="display: none;">
+                                    <div class="affiliate-preview-container" style="margin-bottom: 1.5rem;">
+                                        <img id="affiliate-preview-image" src="#" alt="Pratinjau produk" style="width: 100%; max-width: 200px; margin: 0 auto; display: block; border-radius: 8px;">
+                                    </div>
+
+                                    <!-- == START: LookBook Mode Specific Settings == -->
+                                    <div id="affiliate-lookbook-settings" style="display: none;">
+                                        <div class="input-group">
+                                            <label for="affiliate-model-image-input">1. Unggah Model Sendiri (Opsional)</label>
+                                            <div class="file-input-wrapper">
+                                                <label class="file-drop-zone" for="affiliate-model-image-input" role="button">
+                                                    <span>Klik atau seret & jatuhkan foto model referensi</span>
+                                                    <img id="affiliate-model-preview-image" src="#" alt="Pratinjau model" class="image-preview-hidden">
+                                                </label>
+                                                <input id="affiliate-model-image-input" type="file" accept="image/*">
+                                            </div>
+                                            <p class="help-text">AI akan mencoba mempertahankan fitur wajah & tubuh model Anda.</p>
+                                        </div>
+
+                                        <div class="input-group" id="affiliate-diversity-pack-group">
+                                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                                <label for="affiliate-diversity-pack-toggle">Diversity Pack</label>
+                                                <div class="theme-switcher">
+                                                    <input type="checkbox" id="affiliate-diversity-pack-toggle" aria-label="Toggle Diversity Pack">
+                                                    <label for="affiliate-diversity-pack-toggle" class="slider-label" style="width: 40px; height: 22px;"></label>
+                                                </div>
+                                            </div>
+                                            <p class="help-text">Aktifkan untuk menghasilkan model dari berbagai etnis & tipe tubuh.</p>
+                                        </div>
+                                        
+                                        <div class="input-group">
+                                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                                <label for="affiliate-consistency-toggle">Mode Sesi</label>
+                                                <div class="theme-switcher">
+                                                    <input type="checkbox" id="affiliate-consistency-toggle" checked aria-label="Toggle Session Mode">
+                                                    <label for="affiliate-consistency-toggle" class="slider-label" style="width: 40px; height: 22px;"></label>
+                                                </div>
+                                            </div>
+                                            <p class="help-text">Mengunci wajah, pencahayaan, dan tone untuk memastikan konsistensi maksimal di semua foto.</p>
+                                        </div>
+
+                                        <div class="input-group">
+                                            <label>2. Pilih Suasana</label>
+                                            <div id="affiliate-scene-selector-group" class="button-group" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.5rem;">
+                                                <button class="toggle-button active" data-scene="studio">Studio</button>
+                                                <button class="toggle-button" data-scene="street">Street Style</button>
+                                                <button class="toggle-button" data-scene="office">Office Look</button>
+                                                <button class="toggle-button" data-scene="home">Casual Home</button>
+                                                <button class="toggle-button" data-scene="party">Party/Event</button>
+                                                <button class="toggle-button" data-scene="catwalk">Catwalk</button>
+                                            </div>
+                                        </div>
+
+                                        <div class="input-group">
+                                            <label>3. Pilih Pose (Pilih satu atau lebih)</label>
+                                            <div id="affiliate-pose-control-group" class="button-group" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.5rem;">
+                                                <button class="toggle-button active" data-pose="neutral">Berdiri Netral</button>
+                                                <button class="toggle-button active" data-pose="walk">Jalan Dinamis</button>
+                                                <button class="toggle-button active" data-pose="lean">Bersandar</button>
+                                                <button class="toggle-button active" data-pose="sit">Duduk</button>
+                                                <button class="toggle-button active" data-pose="closeup">Close-Up</button>
+                                                <button class="toggle-button active" data-pose="spin">Putaran</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- == END: LookBook Mode Specific Settings == -->
+                                    
+                                    <div id="affiliate-category-settings" style="display: none;">
+                                        <div class="input-group">
+                                            <label>Pilih Kategori Produk</label>
+                                            <div class="button-group" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 0.5rem;">
+                                                <button class="toggle-button active" data-category="skincare">Skincare</button>
+                                                <button class="toggle-button" data-category="food">Makanan</button>
+                                                <button class="toggle-button" data-category="gadget">Gadget</button>
+                                                <button class="toggle-button" data-category="fashion">Fashion</button>
+                                                <button class="toggle-button" data-category="lifestyle">Lifestyle</button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- == START: MixStyle Mode Specific Settings == -->
+                                    <div id="affiliate-mixstyle-settings" style="display: none;">
+                                        <div class="input-group">
+                                            <label>Pilih Rasio Aspek</label>
+                                            <div id="affiliate-mixstyle-aspect-ratio-group" class="button-group" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.5rem;">
+                                                <button class="toggle-button active" data-ratio="4:5">4:5 (Marketplace)</button>
+                                                <button class="toggle-button" data-ratio="9:16">9:16 (Story)</button>
+                                                <button class="toggle-button" data-ratio="1:1">1:1 (Persegi)</button>
+                                            </div>
+                                            <p class="help-text">AI akan menghasilkan 3 gambar "Lifestyle" dan 3 gambar "Hands-On".</p>
+                                        </div>
+                                    </div>
+                                    <!-- == END: MixStyle Mode Specific Settings == -->
+
+                                    <div id="affiliate-fashion-info" class="status-container" style="display: none; background-color: var(--affiliate-surface); margin-bottom: 1rem;">
+                                        <p style="text-align: center; font-size: 0.9rem;">Untuk hasil terbaik pada produk fashion, gunakan mode <b>Peraga Virtual</b>.</p>
+                                    </div>
+                                    
+                                    <div class="input-group">
+                                        <label for="affiliate-custom-prompt-input">Prompt Tambahan (Opsional)</label>
+                                        <textarea id="affiliate-custom-prompt-input" rows="2" placeholder="contoh: pencahayaan sinematik, fokus tajam"></textarea>
+                                    </div>
+                                    
+                                    <div class="button-group">
+                                        <button id="affiliate-generate-button" class="affiliate-generate-button">Buat</button>
+                                        <button id="affiliate-change-photo-button" class="secondary-button">Ganti Foto</button>
+                                    </div>
+                                </div>
+
+                                <!-- Common Results View -->
+                                <div id="affiliate-results-state" style="display: none;">
+                                    <div id="affiliate-results-grid" class="affiliate-results-grid">
+                                        <!-- Grid items will be populated by JS -->
+                                    </div>
+                                    <div id="affiliate-album-actions" class="button-group" style="display: none;">
+                                        <button id="affiliate-regenerate-all-button">Buat Ulang Semua</button>
+                                        <button id="affiliate-start-over-button" class="secondary-button">Mulai Lagi</button>
+                                    </div>
+                                </div>
+
+                                <div id="affiliate-status-container" class="status-container" style="display:none;">
+                                    <div class="status-content">
+                                        <p id="affiliate-status"></p>
+                                        <div id="affiliate-progress-wrapper" class="progress-wrapper" style="display: none;">
+                                            <div class="progress-bar">
+                                                <div id="affiliate-progress-bar" class="progress-bar-fill"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="storyboard-view" class="view">
+                    <div class="card-container">
+                        <div class="content-container">
+                            <!-- Input State -->
+                            <div id="storyboard-input-state">
+                                <h2>Affiliate Pro</h2>
+                                <p class="modal-subtitle" style="margin-top: 0.5rem; margin-bottom: 1rem;">Buat storyboard iklan dari deskripsi produk Anda.</p>
+
+                                <div class="input-group">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                                        <label for="storyboard-product-image" class="storyboard-section-header">1. Unggah Produk (Opsional)</label>
+                                        <div id="storyboard-character-lock-container" class="theme-switcher" style="display: none; align-items: center; gap: 0.5rem; font-size: 0.9rem;">
+                                            <span>Kunci Karakter</span>
+                                            <input type="checkbox" id="storyboard-character-lock-toggle" aria-label="Toggle character lock">
+                                            <label for="storyboard-character-lock-toggle" class="slider-label" style="width: 40px; height: 22px;"></label>
+                                        </div>
+                                    </div>
+                                    <div class="file-input-wrapper">
+                                        <label class="file-drop-zone" for="storyboard-product-image" role="button">
+                                            <span id="storyboard-product-image-label">Klik atau seret & jatuhkan</span>
+                                            <img id="storyboard-product-image-preview" src="#" alt="Pratinjau produk" class="image-preview-hidden">
+                                        </label>
+                                        <input id="storyboard-product-image" type="file" accept="image/*">
+                                        <button id="storyboard-clear-product-image" class="icon-button clear-upload-button" style="display: none;" aria-label="Hapus gambar produk">
+                                            <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 0 24 24" width="20px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"></path><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"></path></svg>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="input-group">
+                                    <label for="storyboard-product-desc" class="storyboard-section-header">2. Deskripsi & Merek</label>
+                                    <textarea id="storyboard-product-desc" rows="3" placeholder="contoh: Jam tangan pintar tahan air..."></textarea>
+                                    <div class="storyboard-inline-inputs">
+                                        <input type="text" id="storyboard-brand-name" placeholder="Nama Merek (Opsional)">
+                                        <input type="text" id="storyboard-target-audience" placeholder="Target Audiens (pisahkan dengan koma)">
+                                    </div>
+                                </div>
+
+                                <div class="input-group">
+                                    <label for="storyboard-cta-input" class="storyboard-section-header">3. Call to Action</label>
+                                     <p class="help-text">Tambahkan CTA otomatis di adegan terakhir.</p>
+                                    <input type="text" id="storyboard-cta-input" placeholder="mis. “Beli Sekarang di Flixe.co”">
+                                </div>
+
+                                <div class="input-group">
+                                    <label class="storyboard-section-header">4. Arahan Kreatif & Audio</label>
+                                    <p class="help-text">Atur gaya narasi dan suara untuk iklan Anda.</p>
+                                    <label style="margin-top: 1rem; margin-bottom: 0.5rem; font-weight: normal;">Gaya Narasi</label>
+                                    <div id="storyboard-narrative-style-group" class="creative-options-group">
+                                        <button class="creative-option-button toggle-button active" data-value="Dramatic">🎭 Dramatis</button>
+                                        <button class="creative-option-button toggle-button" data-value="Fun/Trendy">🎉 Seru/Trendi</button>
+                                        <button class="creative-option-button toggle-button" data-value="Educational">🎓 Edukatif</button>
+                                        <button class="creative-option-button toggle-button" data-value="Minimalist">✨ Minimalis</button>
+                                    </div>
+                                    <label style="margin-top: 1rem; margin-bottom: 0.5rem; font-weight: normal;">Gaya Suara</label>
+                                    <div id="storyboard-voice-style-group" class="creative-options-group">
+                                        <button class="creative-option-button toggle-button active" data-value="natural">Alami</button>
+                                        <button class="creative-option-button toggle-button" data-value="formal">Formal</button>
+                                        <button class="creative-option-button toggle-button" data-value="friendly">Ramah</button>
+                                        <button class="creative-option-button toggle-button" data-value="energetic">Energik</button>
+                                    </div>
+                                </div>
+                                
+                                <div class="input-group">
+                                    <label class="storyboard-section-header">5. Format & Panjang Video</label>
+                                    <p class="help-text">Pilih jumlah adegan dan rasio aspek untuk video Anda.</p>
+                                    <label style="margin-top: 1rem; margin-bottom: 0.5rem; font-weight: normal;">Jumlah Adegan</label>
+                                    <div id="storyboard-scene-count-group" class="creative-options-group">
+                                        <button class="creative-option-button toggle-button" data-value="3">3</button>
+                                        <button class="creative-option-button toggle-button active" data-value="6">6</button>
+                                        <button class="creative-option-button toggle-button" data-value="9">9</button>
+                                        <button class="creative-option-button toggle-button" data-value="12">12</button>
+                                    </div>
+                                    <label style="margin-top: 1rem; margin-bottom: 0.5rem; font-weight: normal;">Rasio Aspek</label>
+                                    <div id="storyboard-aspect-ratio-group" class="creative-options-group">
+                                        <button class="creative-option-button toggle-button" data-value="9:16">9:16 (Story/Reels)</button>
+                                        <button class="creative-option-button toggle-button" data-value="1:1">1:1 (Feed)</button>
+                                        <button class="creative-option-button toggle-button active" data-value="16:9">16:9 (YouTube)</button>
+                                    </div>
+                                </div>
+
+                                <div class="input-group">
+                                    <label class="storyboard-section-header">6. Model Video</label>
+                                    <p class="help-text">Pilih model AI untuk membuat video.</p>
+                                    <div id="storyboard-video-model-group" class="creative-options-group">
+                                        <button class="creative-option-button toggle-button" data-value="veo-3.0-fast-generate-001">Veo 3 (Cepat)</button>
+                                        <button class="creative-option-button toggle-button active" data-value="veo-2.0-generate-001">Veo 2 (Kualitas)</button>
+                                    </div>
+                                </div>
+
+                                <button id="storyboard-generate-button" style="margin-top: 1rem;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 0 24 24" width="20px" fill="currentColor"><path d="M0 0h24v24H0z" fill="none"/><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
+                                    <span>Buat Storyboard</span>
+                                </button>
+                            </div>
+
+                            <!-- Results State -->
+                            <div id="storyboard-results-state" style="display: none;">
+                                <div class="storyboard-results-header">
+                                    <h2>Hasil Affiliate Pro</h2>
+                                    <div id="storyboard-export-actions" class="button-group">
+                                        <button id="storyboard-download-all-videos" class="secondary-button" title="Unduh Semua Video" style="display: none;"><svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 0 24 24" width="18px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-5 5-5-5h3V9h4v4h3z"/></svg></button>
+                                        <button id="storyboard-export-srt" class="secondary-button" title="Unduh Subtitle (.srt)"><svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 0 24 24" width="18px" fill="currentColor"><g><rect fill="none" height="24" width="24"/></g><g><path d="M4,17h16v-2H4V17z M4,5v2h16V5H4z M4,11h16V9H4V11z"/></g></svg></svg></button>
+                                        <button id="storyboard-export-json" class="secondary-button" title="Unduh JSON"><svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 0 24 24" width="18px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/></svg></svg></button>
+                                        <button id="storyboard-export-txt" class="secondary-button" title="Unduh Naskah (.txt)"><svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 0 24 24" width="18px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zM6 20V4h7v5h5v11H6z"/></svg></svg></button>
+                                        <button id="storyboard-copy-prompts" class="secondary-button" title="Salin Prompt"><svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 0 24 24" width="18px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0 -1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg></svg></button>
+                                        <button id="storyboard-start-over-button" class="secondary-button" title="Mulai Lagi"><svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 0 24 24" width="18px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M12.5 8c-2.65 0-5.05.99-6.9 2.6L2 7v9h9l-3.62-3.62c1.39-1.16 3.16-1.88 5.12-1.88 3.54 0 6.55 2.31 7.6 5.5l2.37-.78C21.08 11.03 17.15 8 12.5 8z"/></svg></svg></button>
+                                    </div>
+                                </div>
+                                <div id="storyboard-campaign-tabs"></div>
+                                <div class="storyboard-results-content">
+                                    <div id="storyboard-results-placeholder" class="storyboard-results-placeholder">
+                                        <div class="loading-clock"></div>
+                                        <p style="margin-top: 1rem;">AI sedang meracik ide brilian...</p>
+                                    </div>
+                                    <div id="storyboard-hook-suggestions-container" style="display:none;"></div>
+                                    <div id="storyboard-scene-grid"></div>
+                                </div>
+                            </div>
+                            
+                            <!-- Shared Status Container -->
+                             <div id="storyboard-status-container" class="status-container">
+                                <p id="storyboard-status"></p>
+                             </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="food-stylist-view" class="view">
+                    <div class="card-container">
+                        <div class="content-container">
+                            <div class="food-lens-header">
+                                <h2>Food Lens</h2>
+                                <div class="button-group" style="margin-bottom: 2rem;">
+                                    <button id="food-lens-generator-tab" class="toggle-button active">Generator</button>
+                                    <button id="food-lens-collection-tab" class="toggle-button">Koleksi Saya</button>
+                                </div>
+                            </div>
+
+                            <div id="food-lens-generator-view">
+                                <!-- Input State -->
+                                <div id="food-stylist-input-state">
+                                    <div class="input-group" id="food-stylist-dish-desc-group">
+                                        <label for="food-stylist-dish-desc">1. Deskripsi Hidangan</label>
+                                        <textarea id="food-stylist-dish-desc" rows="3" placeholder="contoh: burger keju ganda dengan bacon renyah, atau sate ayam dengan saus kacang"></textarea>
+                                        <div style="display: flex; justify-content: flex-end; margin-top: 0.5rem;">
+                                            <button id="food-stylist-describe-button" class="secondary-button" style="font-size: 0.8rem; padding: 0.4rem 0.8rem;">
+                                                <svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 0 24 24" width="18px" fill="currentColor"><g><rect fill="none" height="24" width="24"/></g><g><path d="M19,9l1.25-2.75L23,5l-2.75-1.25L19,1l-1.25,2.75L15,5l2.75,1.25L19,9z M11.5,9.5L9,4L6.5,9.5L1,12l5.5,2.5L9,20l2.5-5.5 L17,12L11.5,9.5z M19,15l-1.25,2.75L15,19l2.75,1.25L19,23l1.25-2.75L23,19l-2.75-1.25L19,15z"/></g></svg>
+                                                <span>Bantu Saya Deskripsikan</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="input-group">
+                                        <label for="food-stylist-inspiration-image">ATAU Unggah Gambar Inspirasi</label>
+                                        <div class="file-input-wrapper">
+                                            <label class="file-drop-zone" for="food-stylist-inspiration-image" role="button">
+                                                <span id="food-stylist-inspiration-label">Klik atau seret & jatuhkan</span>
+                                                <img id="food-stylist-inspiration-preview" src="#" alt="Pratinjau inspirasi" class="image-preview-hidden" style="max-height: 120px; width: auto;">
+                                            </label>
+                                            <input id="food-stylist-inspiration-image" type="file" accept="image/*">
+                                            <button id="food-stylist-clear-inspiration" class="icon-button clear-upload-button" style="display: none;" aria-label="Hapus gambar inspirasi">
+                                                <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 0 24 24" width="20px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"></path><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"></path></svg>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="input-group">
+                                        <label>2. Pilih Mode</label>
+                                        <div id="food-stylist-shot-mode-group" class="button-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+                                            <button class="toggle-button" data-value="natural">Natural (Menu)</button>
+                                            <button class="toggle-button active" data-value="dramatic">Dramatis (Iklan)</button>
+                                        </div>
+                                    </div>
+                                
+                                    <div class="input-group">
+                                        <label>3. Kategori Makanan</label>
+                                        <div id="food-stylist-category-group" class="button-group" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 0.5rem;">
+                                            <button class="toggle-button active" data-value="main-course">Hidangan Utama</button>
+                                            <button class="toggle-button" data-value="dessert">Dessert</button>
+                                            <button class="toggle-button" data-value="drink">Minuman</button>
+                                            <button class="toggle-button" data-value="snack">Camilan</button>
+                                        </div>
+                                    </div>
+                                
+                                    <div class="input-group">
+                                        <label>4. Gaya Plating</label>
+                                        <div id="food-stylist-plating-group" class="button-group" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 0.5rem;">
+                                            <button class="toggle-button active" data-value="fine-dining">Fine Dining</button>
+                                            <button class="toggle-button" data-value="homestyle">Homestyle</button>
+                                            <button class="toggle-button" data-value="fast-food">Fast Food</button>
+                                            <button class="toggle-button" data-value="street-food">Street Food</button>
+                                            <button class="toggle-button" data-value="dessert-aesthetic">Dessert Estetik</button>
+                                        </div>
+                                    </div>
+                                
+                                    <div class="input-group">
+                                        <label>5. Sudut Pengambilan Gambar</label>
+                                        <div id="food-stylist-angle-group" class="button-group" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 0.5rem;">
+                                            <button class="toggle-button" data-value="top-down">Top-Down (Flat Lay)</button>
+                                            <button class="toggle-button active" data-value="45-degree">45° Hero Shot</button>
+                                            <button class="toggle-button" data-value="eye-level">Eye-Level Close-up</button>
+                                        </div>
+                                    </div>
+                                
+                                    <div class="input-group">
+                                        <label>6. Suasana / Nada Merek</label>
+                                        <div id="food-stylist-mood-group" class="button-group" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 0.5rem;">
+                                            <button class="toggle-button active" data-value="luxury">Luxury Gourmet</button>
+                                            <button class="toggle-button" data-value="cozy">Cozy Café</button>
+                                            <button class="toggle-button" data-value="fun-street">Fun Street Food</button>
+                                            <button class="toggle-button" data-value="healthy">Healthy Lifestyle</button>
+                                        </div>
+                                    </div>
+
+                                    <button id="food-stylist-generate-button" style="margin-top: 1rem;" disabled>
+                                        <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 0 24 24" width="20px" fill="currentColor"><g><rect fill="none" height="24" width="24"/></g><g><path d="M19,9l1.25-2.75L23,5l-2.75-1.25L19,1l-1.25,2.75L15,5l2.75,1.25L19,9z M11.5,9.5L9,4L6.5,9.5L1,12l5.5,2.5L9,20l2.5-5.5 L17,12L11.5,9.5z M19,15l-1.25,2.75L15,19l2.75,1.25L19,23l1.25-2.75L23,19l-2.75-1.25L19,15z"/></g></svg>
+                                        <span>Buat 6 Foto Makanan</span>
+                                    </button>
+                                </div>
+                                
+                                <!-- Results State -->
+                                <div id="food-stylist-results-state" style="display: none;">
+                                    <div id="food-stylist-results-grid" class="studio-results-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));"></div>
+                                    <div class="button-group" style="margin-top: 1.5rem;">
+                                        <button id="food-stylist-download-all-button">
+                                            <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 0 24 24" width="20px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-5 5-5-5h3V9h4v4h3z"/></svg>
+                                            <span>Unduh Semua</span>
+                                        </button>
+                                        <button id="food-stylist-start-over-button" class="secondary-button">
+                                            <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 0 24 24" width="20px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M12.5 8c-2.65 0-5.05.99-6.9 2.6L2 7v9h9l-3.62-3.62c1.39-1.16 3.16-1.88 5.12-1.88 3.54 0 6.55 2.31 7.6 5.5l2.37-.78C21.08 11.03 17.15 8 12.5 8z"/></svg>
+                                            <span>Mulai Lagi</span>
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <!-- Shared Status -->
+                                <div id="food-stylist-status-container" class="status-container" style="display: none;">
+                                    <div class="status-content">
+                                        <p id="food-stylist-status"></p>
+                                        <div id="food-stylist-progress-wrapper" class="progress-wrapper" style="display: none;">
+                                            <div class="progress-bar">
+                                                <div id="food-stylist-progress-bar" class="progress-bar-fill"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="food-lens-collection-view" style="display: none;">
+                                <div id="food-lens-collection-controls" style="display: none;">
+                                    <p class="modal-subtitle" style="text-align: left; margin-bottom: 1rem;">Pilih 2-4 gambar dari koleksi Anda untuk digabungkan menjadi satu adegan meja.</p>
+                                    <div class="input-group">
+                                        <label for="food-lens-scene-prompt">Deskripsi Adegan Meja</label>
+                                        <textarea id="food-lens-scene-prompt" rows="3" placeholder="contoh: di atas meja kayu pedesaan dengan taplak meja kotak-kotak, di kafe perkotaan yang ramai dengan latar belakang kabur"></textarea>
+                                    </div>
+                                    <button id="food-lens-generate-scene-button">
+                                        <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 0 24 24" width="20px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
+                                        <span>Buat Adegan Meja</span>
+                                    </button>
+                                </div>
+                                <div id="food-lens-scene-result-container" style="display: none; margin-top: 1.5rem; text-align: center;">
+                                    <div id="food-lens-scene-result-box" class="image-result-item" style="max-width: 500px; margin: 0 auto; aspect-ratio: 16/9; cursor: pointer;"></div>
+                                    <div class="button-group" style="justify-content: center; margin-top: 1rem;">
+                                        <button id="food-lens-scene-download-button">Unduh Adegan</button>
+                                        <button id="food-lens-scene-clear-button" class="secondary-button">Hapus Adegan</button>
+                                    </div>
+                                </div>
+                                <div id="food-lens-collection-grid" class="studio-results-grid" style="grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));"></div>
+                                <p id="food-lens-collection-placeholder" style="text-align: center; color: var(--color-text-muted); min-height: 200px; display: flex; align-items: center; justify-content: center;">Koleksi Anda kosong. Hasilkan beberapa gambar di tab Generator dan simpan di sini!</p>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+                <div id="logo-lab-view" class="view">
+                    <div class="card-container">
+                        <div class="content-container">
+                            <div id="logo-lab-form-container">
+                                <!-- Step 1: Business Info -->
+                                <div id="logo-lab-step-1">
+                                    <h2>Logo Lab: Langkah 1/2</h2>
+                                    <p class="modal-subtitle" style="margin-top: 0.5rem; margin-bottom: 2rem;">Beri tahu kami tentang bisnis Anda untuk memulai.</p>
+                                    <div class="input-group">
+                                        <label for="logo-lab-business-name">Nama Bisnis</label>
+                                        <input type="text" id="logo-lab-business-name" placeholder="contoh: Kopi Senja">
+                                    </div>
+                                    <div class="input-group">
+                                        <label for="logo-lab-slogan">Slogan (Opsional)</label>
+                                        <input type="text" id="logo-lab-slogan" placeholder="contoh: Secangkir Ketenangan di Setiap Tegukan">
+                                    </div>
+                                    <div class="input-group">
+                                        <label for="logo-lab-description">Deskripsi Bisnis</label>
+                                        <textarea id="logo-lab-description" rows="4" placeholder="contoh: Kedai kopi yang nyaman dan modern yang menyajikan biji kopi spesial dari seluruh Indonesia..."></textarea>
+                                    </div>
+                                    <div class="input-group">
+                                        <label for="logo-lab-keywords">Kata Kunci (Opsional)</label>
+                                        <input type="text" id="logo-lab-keywords" placeholder="contoh: kopi, modern, nyaman, santai, artisan">
+                                        <p class="help-text">Pisahkan kata kunci dengan koma.</p>
+                                    </div>
+                                    <div class="button-group" style="justify-content: flex-end;">
+                                        <button id="logo-lab-next-step-1">
+                                            <span>Berikutnya</span>
+                                            <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 0 24 24" width="20px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8-8-8z"/></svg>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Step 2: Design Direction -->
+                                <div id="logo-lab-step-2" style="display: none;">
+                                    <h2>Logo Lab: Langkah 2/2</h2>
+                                    <p class="modal-subtitle" style="margin-top: 0.5rem; margin-bottom: 2rem;">Pilih gaya dan warna untuk logo Anda.</p>
+                                    <div class="input-group">
+                                        <label for="logo-lab-brief">Ringkasan Merek (Dihasilkan oleh AI)</label>
+                                        <textarea id="logo-lab-brief" rows="4"></textarea>
+                                        <p class="help-text">Anda dapat mengedit ringkasan ini untuk menyempurnakan arahan kreatif.</p>
+                                    </div>
+                                     <div class="input-group">
+                                        <label>Jenis Logo</label>
+                                        <div id="logo-lab-type-group" class="button-group" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.5rem;">
+                                            <button class="toggle-button active" data-value="Icon">Ikon</button>
+                                            <button class="toggle-button" data-value="Emblem">Lambang</button>
+                                            <button class="toggle-button" data-value="Lettermark">Tanda Huruf</button>
+                                        </div>
+                                    </div>
+                                    <div class="input-group">
+                                        <label>Gaya Desain</label>
+                                        <div id="logo-lab-style-group" class="button-group" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.5rem;">
+                                            <button class="toggle-button active" data-value="Minimalist">Minimalis</button>
+                                            <button class="toggle-button" data-value="Modern">Modern</button>
+                                            <button class="toggle-button" data-value="Vintage">Vintage</button>
+                                            <button class="toggle-button" data-value="Geometric">Geometris</button>
+                                            <button class="toggle-button" data-value="Hand-drawn">Gambar Tangan</button>
+                                            <button class="toggle-button" data-value="Futuristic">Futuristik</button>
+                                        </div>
+                                    </div>
+                                    <div class="input-group">
+                                        <label for="logo-lab-colors">Warna (Opsional)</label>
+                                        <input type="text" id="logo-lab-colors" placeholder="contoh: cokelat hangat, krem, sentuhan emas">
+                                    </div>
+                                    <div class="button-group" style="justify-content: space-between;">
+                                        <button id="logo-lab-back-step-2" class="secondary-button">
+                                             <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 0 24 24" width="20px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+                                            <span>Kembali</span>
+                                        </button>
+                                        <button id="logo-lab-generate-button">
+                                            <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 0 24 24" width="20px" fill="currentColor"><g><rect fill="none" height="24" width="24"/></g><g><path d="M19,9l1.25-2.75L23,5l-2.75-1.25L19,1l-1.25,2.75L15,5l2.75,1.25L19,9z M11.5,9.5L9,4L6.5,9.5L1,12l5.5,2.5L9,20l2.5-5.5 L17,12L11.5,9.5z M19,15l-1.25,2.75L15,19l2.75,1.25L19,23l1.25-2.75L23,19l-2.75-1.25L19,15z"/></g></svg>
+                                            <span>Buat Logo</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Results State -->
+                            <div id="logo-lab-results-state" style="display: none;">
+                                <h2>Hasil Logo Lab</h2>
+                                <p class="modal-subtitle" style="margin-top: 0.5rem; margin-bottom: 2rem;">Berikut adalah beberapa konsep awal. Klik pada logo untuk menyempurnakan, mengunduh, atau melihat pratinjau.</p>
+                                <div id="logo-lab-results-grid" class="studio-results-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));"></div>
+                                
+                                <div id="logo-lab-refinement-panel" style="display: none; margin-top: 2rem; padding-top: 2rem; border-top: 1px solid var(--color-border);">
+                                    <h3>Sempurnakan Logo</h3>
+                                    <div style="display: flex; gap: 1.5rem; align-items: flex-start;">
+                                        <div style="flex: 0 0 150px;">
+                                            <div id="logo-lab-refine-preview" class="image-result-item"></div>
+                                        </div>
+                                        <div style="flex: 1;">
+                                            <div class="input-group">
+                                                <label for="logo-lab-refine-prompt">Instruksi Penyempurnaan</label>
+                                                <textarea id="logo-lab-refine-prompt" rows="3" placeholder="contoh: buat lebih modern, gunakan warna yang lebih cerah, tambahkan ikon cangkir kopi kecil"></textarea>
+                                            </div>
+                                            <div class="button-group">
+                                                <button id="logo-lab-refine-generate">Buat 2 Variasi</button>
+                                                <button id="logo-lab-refine-cancel" class="secondary-button">Batal</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                     <div id="logo-lab-refinement-results" class="studio-results-grid" style="margin-top: 1.5rem; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));"></div>
+                                </div>
+
+                                <div class="button-group" style="margin-top: 2rem; justify-content: center;">
+                                    <button id="logo-lab-start-over-button" class="secondary-button">Mulai Lagi</button>
+                                </div>
+                            </div>
+
+                            <!-- Shared Status -->
+                            <div id="logo-lab-status-container" class="status-container" style="display:none;">
+                                <div class="loading-clock"></div>
+                                <p id="logo-lab-status" style="margin-left: 1rem;"></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="model-creative-view" class="view">
+                    <div class="card-container">
+                        <div class="content-container">
+                             <!-- Input State -->
+                            <div id="model-creative-input-state">
+                                <h2>Model Creative</h2>
+                                <p class="modal-subtitle" style="margin-top: 0.5rem; margin-bottom: 2rem;">Buat model fesyen AI yang unik untuk kebutuhan kreatif Anda.</p>
+                                <div class="input-group">
+                                    <label for="model-creative-gender">Jenis Kelamin</label>
+                                    <select id="model-creative-gender">
+                                        <option value="Perempuan">Perempuan</option>
+                                        <option value="Laki-laki">Laki-laki</option>
+                                        <option value="Androgini">Androgini</option>
+                                    </select>
+                                </div>
+                                <div class="input-group">
+                                    <label for="model-creative-race">Ras / Kebangsaan</label>
+                                    <select id="model-creative-race">
+                                        <option value="Asia">Asia</option>
+                                        <option value="Kaukasia">Kaukasia</option>
+                                        <option value="Afrika">Afrika</option>
+                                        <option value="Hispanik">Hispanik</option>
+                                        <option value="Timur Tengah">Timur Tengah</option>
+                                        <option value="Campuran">Campuran</option>
+                                    </select>
+                                </div>
+                                <div class="input-group">
+                                    <label for="model-creative-age">Kelompok Usia</label>
+                                    <select id="model-creative-age">
+                                        <option value="Remaja (18-24)">Remaja (18-24)</option>
+                                        <option value="Dewasa Muda (25-35)">Dewasa Muda (25-35)</option>
+                                        <option value="Dewasa (36-50)">Dewasa (36-50)</option>
+                                        <option value="Senior (50+)">Senior (50+)</option>
+                                    </select>
+                                </div>
+                                <div class="input-group">
+                                    <label for="model-creative-skin">Warna Kulit</label>
+                                    <input type="text" id="model-creative-skin" placeholder="contoh: sawo matang, porselen, zaitun, gelap">
+                                </div>
+                                <div class="input-group">
+                                    <label for="model-creative-hair">Gaya Rambut</label>
+                                    <input type="text" id="model-creative-hair" placeholder="contoh: panjang bergelombang pirang, pendek ikal hitam, buzz cut">
+                                </div>
+                                <div class="input-group">
+                                    <label for="model-creative-body">Bentuk Tubuh</label>
+                                    <input type="text" id="model-creative-body" placeholder="contoh: atletis, ramping, berisi, mungil">
+                                </div>
+                                <button id="model-creative-generate-button">
+                                    <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 0 24 24" width="20px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                                    <span>Buat Model</span>
+                                </button>
+                            </div>
+                             <!-- Results State -->
+                            <div id="model-creative-results-state" style="display: none;">
+                                <div id="model-creative-result-container">
+                                    <div id="model-creative-result-box">
+                                        <!-- Result will be populated by JS -->
+                                    </div>
+                                    <div class="button-group" style="justify-content: center;">
+                                        <button id="model-creative-download-button" disabled>Unduh Model</button>
+                                        <button id="model-creative-start-over-button" class="secondary-button">Mulai Lagi</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="outfit-pro-view" class="view">
+                    <div class="card-container">
+                        <div class="content-container">
+                            <!-- Input State -->
+                            <div id="outfit-pro-input-state">
+                                <h2>Outfit Pro</h2>
+                                <p class="modal-subtitle" style="margin-top: 0.5rem; margin-bottom: 2rem;">Unggah beberapa item fesyen untuk membuat mockup flat lay dan try-on model.</p>
+                                <div class="input-group">
+                                    <label for="outfit-pro-input">Item Pakaian (hingga 10)</label>
+                                    <div class="file-drop-zone multi-upload-zone">
+                                        <div id="outfit-pro-preview-container" class="multi-image-preview-container"></div>
+                                        <label for="outfit-pro-input" role="button">
+                                            <span>Klik atau seret & jatuhkan gambar di sini</span>
+                                        </label>
+                                        <input id="outfit-pro-input" type="file" accept="image/*" multiple>
+                                    </div>
+                                </div>
+                                <button id="outfit-pro-generate-button" disabled>
+                                    <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 0 24 24" width="20px" fill="currentColor"><g><rect fill="none" height="24" width="24"/></g><g><g><path d="M21.6,18.2l-2.78-3.9c-0.12-0.17-0.33-0.26-0.54-0.24l-2.19,0.22c-0.23,0.02-0.44-0.07-0.58-0.24l-2.5-3 c-0.21-0.25-0.58-0.25-0.79,0l-2.5,3C9.56,14.23,9.35,14.32,9.12,14.29L6.93,14.07c-0.21-0.02-0.42,0.07-0.54,0.24l-2.78,3.9 C3.3,18.7,3.6,19.2,4,19.2h16C20.4,19.2,20.7,18.7,21.6,18.2z"/><path d="M12,11.5c1.1,0,2-0.9,2-2s-0.9-2-2-2s-2,0.9-2,2S10.9,11.5,12,11.5z"/><path d="M14,4c0-1.1-0.9-2-2-2S10,2.9,10,4s0.9,2,2,2S14,5.1,14,4z"/></g></g></svg>
+                                    <span>Buat Mockup</span>
+                                </button>
+                            </div>
+
+                            <!-- Results State -->
+                            <div id="outfit-pro-results-state" style="display: none;">
+                                <h2>Hasil Outfit Pro</h2>
+                                <div class="outfit-pro-results-container">
+                                    <div class="outfit-pro-result-column">
+                                        <h3>Flat Lay</h3>
+                                        <div id="outfit-pro-flatlay-box" class="outfit-pro-result-box"></div>
+                                        <button id="outfit-pro-download-flatlay-button" disabled>Unduh Flat Lay</button>
+                                    </div>
+                                    <div class="outfit-pro-result-column">
+                                        <h3>Model Try-On</h3>
+                                        <div id="outfit-pro-model-box" class="outfit-pro-result-box"></div>
+                                        <button id="outfit-pro-download-model-button" disabled>Unduh Model</button>
+                                    </div>
+                                </div>
+                                <div class="button-group" style="justify-content: center;">
+                                    <button id="outfit-pro-start-over-button" class="secondary-button">Mulai Lagi</button>
+                                </div>
+                            </div>
+
+                            <!-- Shared Status -->
+                            <div id="outfit-pro-status-container" class="status-container" style="display:none;">
+                                <div class="loading-clock"></div>
+                                <p id="outfit-pro-status" style="margin-left: 1rem;"></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="retouch-view" class="view">
+                    <div class="card-container">
+                        <div class="content-container" style="align-items: center;">
+                            <!-- Idle State -->
+                            <div id="retouch-idle-state" style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 400px; text-align: center; width: 100%;">
+                                <h2 class="retouch-title" style="margin-bottom: 1rem;">Pulihkan & Warnai Foto Lama</h2>
+                                <p class="modal-subtitle" style="margin-bottom: 2rem;">Perbaiki goresan, pudar, dan tambahkan warna pada foto hitam putih atau lama Anda.</p>
+                                <label for="retouch-file-input" class="button retouch-upload-button" role="button">
+                                    <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 0 24 24" width="20px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/></svg>
+                                    <span>Unggah Foto</span>
+                                </label>
+                                <input type="file" id="retouch-file-input" accept="image/*" style="display: none;">
+                            </div>
+                
+                            <!-- Active State -->
+                            <div id="retouch-active-state" style="display: none; width: 100%;">
+                                <div class="retouch-comparison-container">
+                                    <div class="retouch-image-wrapper">
+                                        <label>Asli</label>
+                                        <div class="retouch-image-box">
+                                            <img id="retouch-original-image" src="#" alt="Original user upload">
+                                        </div>
+                                    </div>
+                                    <div class="retouch-image-wrapper">
+                                        <label>Hasil</label>
+                                        <div id="retouch-result-box" class="retouch-image-box">
+                                            <!-- Result will be populated by JS -->
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="button-group" style="margin-top: 2rem; justify-content: center;">
+                                    <button id="retouch-download-button" disabled>
+                                        <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 0 24 24" width="20px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+                                        <span>Unduh Hasil</span>
+                                    </button>
+                                    <button id="retouch-start-over-button" class="secondary-button">
+                                        <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 0 24 24" width="20px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M12.5 8c-2.65 0-5.05.99-6.9 2.6L2 7v9h9l-3.62-3.62c1.39-1.16 3.16-1.88 5.12-1.88 3.54 0 6.55 2.31 7.6 5.5l2.37-.78C21.08 11.03 17.15 8 12.5 8z"/></svg>
+                                        <span>Mulai Lagi</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="photo-studio-view" class="view active">
+                    <div class="card-container">
+                        <div class="content-container">
+                             <!-- Input State -->
+                            <div id="studio-input-state">
+                                <h2>Studio Foto</h2>
+                                <p class="modal-subtitle" style="margin-top: 0.5rem; margin-bottom: 2rem;">Buat sesi foto profesional dengan variasi pose, ekspresi, dan sudut pengambilan gambar.</p>
+                                <div class="input-group">
+                                    <label for="studio-multi-image-input">1. Gambar Subjek</label>
+                                    <div class="file-drop-zone multi-upload-zone" role="button" aria-label="Unggah gambar subjek">
+                                        <div id="studio-multi-image-preview" class="multi-image-preview-container"></div>
+                                        <span>Klik atau seret & jatuhkan gambar subjek (bisa lebih dari satu)</span>
+                                        <input id="studio-multi-image-input" type="file" accept="image/*" multiple style="display: none;">
+                                    </div>
+                                    <p class="help-text">Unggah satu atau lebih gambar subjek Anda. AI akan mencoba menggabungkan konsep jika lebih dari satu gambar diunggah.</p>
+                                </div>
+                                <div class="input-group">
+                                    <label for="studio-wardrobe-image">2. Pakaian (Opsional)</label>
+                                    <div class="file-input-wrapper">
+                                        <label class="file-drop-zone" for="studio-wardrobe-image" role="button" aria-label="Upload wardrobe image">
+                                            <span>Klik atau seret & jatuhkan gambar pakaian</span>
+                                            <img id="studio-wardrobe-image-preview" src="#" alt="Wardrobe preview" class="image-preview-hidden">
+                                        </label>
+                                        <input id="studio-wardrobe-image" type="file" accept="image/*">
+                                    </div>
+                                    <p class="help-text">Unggah gambar pakaian yang ingin dikenakan oleh subjek.</p>
+                                </div>
+                                <div class="studio-controls-grid">
+                                    <div class="input-group">
+                                        <label>3. Pose & Sudut Pengambilan Gambar</label>
+                                        <div class="status-container" style="margin-top:0; padding: 0.75rem; background-color: var(--color-background);">
+                                             <p class="help-text" style="text-align:center; margin:0;">Pose (berdiri, duduk, berjalan) dan sudut (close-up, full body) akan divariasikan secara otomatis oleh AI untuk hasil yang dinamis.</p>
+                                        </div>
+                                    </div>
+                                    <div class="input-group">
+                                        <label>4. Variasi Ekspresi</label>
+                                        <div id="studio-expression-group" class="button-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+                                            <button class="toggle-button active" data-value="a neutral expression">Netral</button>
+                                            <button class="toggle-button" data-value="a gentle, friendly smile">Senyum</button>
+                                            <button class="toggle-button" data-value="a confident, assertive expression">Percaya Diri</button>
+                                            <button class="toggle-button" data-value="a relaxed, casual expression">Santai</button>
+                                        </div>
+                                        <p class="help-text">Pilih satu atau lebih. AI akan mendistribusikannya secara alami.</p>
+                                    </div>
+                                </div>
+                                <div class="input-group">
+                                    <label for="studio-lighting-select">5. Pencahayaan</label>
+                                    <select id="studio-lighting-select">
+                                        <option value="clean, professional studio lighting with a softbox setup">Softbox Clean</option>
+                                        <option value="soft, natural daylight coming from a window">Natural Daylight</option>
+                                        <option value="classic Rembrandt lighting, creating a small triangle of light on the cheek opposite the light source">Rembrandt</option>
+                                        <option value="split lighting, where one side of the face is lit and the other is in shadow">Split Lighting</option>
+                                        <option value="high-key lighting with a bright, almost shadowless look against a white background">High-Key</option>
+                                        <option value="low-key lighting with dark tones and selective highlights for a cinematic mood">Low-Key</option>
+                                        <option value="clamshell lighting with a main light above and a reflector below, ideal for beauty shots">Clamshell</option>
+                                        <option value="backlight or rim light, where the light source is behind the subject creating a glowing outline">Backlight / Rim Light</option>
+                                        <option value="hard light from a single spotlight, creating defined, dramatic shadows">Hard Light Spotlight</option>
+                                        <option value="creative colored gel lighting, using tones of blue, red, or purple for a modern effect">Colored Gel</option>
+                                    </select>
+                                </div>
+                                <div class="input-group">
+                                    <label>6. Latar Belakang</label>
+                                    <div id="studio-bg-preset-group" class="button-group" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.5rem;">
+                                        <button class="toggle-button active" data-bg="a seamless, plain white backdrop">Putih Polos</button>
+                                        <button class="toggle-button" data-bg="a soft, professional gradient backdrop">Gradien</button>
+                                        <button class="toggle-button" data-bg="a textured wall, like concrete or brick">Dinding Bertekstur</button>
+                                    </div>
+                                    <textarea id="studio-custom-bg-input" rows="2" placeholder="Atau, ketik latar belakang kustom Anda di sini..." style="margin-top: 0.75rem;"></textarea>
+                                </div>
+                                <div class="studio-controls-grid">
+                                    <div class="input-group">
+                                        <label for="studio-props-input">7. Properti (Opsional)</label>
+                                        <input type="text" id="studio-props-input" placeholder="cth: kursi, tas, botol minum, buku">
+                                        <p class="help-text">AI akan mencoba memasukkan properti ini ke dalam beberapa foto.</p>
+                                    </div>
+                                    <div class="input-group">
+                                        <label>8. Format Output</label>
+                                        <div class="button-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+                                            <button id="studio-output-format-jpeg" class="toggle-button active" data-value="jpeg">JPEG (Solid)</button>
+                                            <button id="studio-output-format-png" class="toggle-button" data-value="png">PNG (Transparan)</button>
+                                        </div>
+                                    </div>
+                                     <div class="input-group">
+                                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                                            <label for="studio-consistent-set-toggle">Mode Sesi</label>
+                                            <div class="theme-switcher">
+                                                <input type="checkbox" id="studio-consistent-set-toggle" checked aria-label="Toggle Session Mode">
+                                                <label for="studio-consistent-set-toggle" class="slider-label" style="width: 40px; height: 22px;"></label>
+                                            </div>
+                                        </div>
+                                        <p class="help-text">Mengunci wajah subjek, pencahayaan, dan tone untuk memastikan konsistensi maksimal di semua foto.</p>
+                                    </div>
+                                </div>
+                                <div class="button-group" style="margin-top: 1rem;">
+                                    <button id="studio-generate-button" disabled>
+                                        <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 0 24 24" width="20px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
+                                        <span>Mulai Sesi Foto</span>
+                                    </button>
+                                    <button id="studio-surprise-me-button" class="secondary-button">
+                                        <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 0 24 24" width="20px" fill="currentColor"><g><rect fill="none" height="24" width="24"/></g><g><path d="M19,9l1.25-2.75L23,5l-2.75-1.25L19,1l-1.25,2.75L15,5l2.75,1.25L19,9z M11.5,9.5L9,4L6.5,9.5L1,12l5.5,2.5L9,20l2.5-5.5 L17,12L11.5,9.5z M19,15l-1.25,2.75L15,19l2.75,1.25L19,23l1.25-2.75L23,19l-2.75-1.25L19,15z"/></g></svg>
+                                        <span>Kejutkan Saya</span>
+                                    </button>
+                                </div>
+                            </div>
+                            <!-- Results State -->
+                            <div id="studio-results-state" style="display: none;">
+                                <div id="studio-results-placeholder" style="display: none; min-height: 400px; align-items: center; justify-content: center; text-align: center; color: var(--color-text-muted);">
+                                    <p>AI sedang bekerja di studio foto...</p>
+                                </div>
+                                <div id="studio-results-grid" class="studio-results-grid" style="display: none;"></div>
+                                <div class="button-group" style="margin-top: 1.5rem; justify-content: center;">
+                                    <button id="studio-download-all-button">
+                                        <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 0 24 24" width="20px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-5 5-5-5h3V9h4v4h3z"/></svg>
+                                        <span>Unduh Semua</span>
+                                    </button>
+                                    <button id="studio-start-over-button" class="secondary-button">
+                                        <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 0 24 24" width="20px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M12.5 8c-2.65 0-5.05.99-6.9 2.6L2 7v9h9l-3.62-3.62c1.39-1.16 3.16-1.88 5.12-1.88 3.54 0 6.55 2.31 7.6 5.5l2.37-.78C21.08 11.03 17.15 8 12.5 8z"/></svg>
+                                        <span>Mulai Lagi</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Shared Status -->
+                            <div id="studio-status-container" class="status-container">
+                                <div class="status-content">
+                                    <p id="studio-status"></p>
+                                    <div id="studio-progress-wrapper" class="progress-wrapper" style="display: none;">
+                                        <div class="progress-bar">
+                                            <div id="studio-progress-bar" class="progress-bar-fill"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="stickerrr-view" class="view">
+                    <div class="card-container">
+                        <div class="content-container">
+                            <!-- Input State -->
+                            <div id="stickerrr-input-state">
+                                <h2>Stickerrr</h2>
+                                <p class="modal-subtitle" style="margin-top: 0.5rem; margin-bottom: 2rem;">Ubah foto apa pun menjadi paket stiker yang seru dan ekspresif.</p>
+                                
+                                <div class="input-group">
+                                    <label for="stickerrr-file-input">1. Unggah Foto Anda</label>
+                                    <div class="file-drop-zone" style="min-height: 180px;">
+                                        <label for="stickerrr-file-input" role="button">
+                                            <img id="stickerrr-preview-image" src="#" alt="Pratinjau Stiker" style="display: none; max-height: 160px; width: auto; border-radius: 8px;">
+                                            <span id="stickerrr-upload-label">Klik atau seret & jatuhkan gambar di sini</span>
+                                        </label>
+                                        <input id="stickerrr-file-input" type="file" accept="image/*">
+                                    </div>
+                                </div>
+
+                                <div id="stickerrr-options-panel" style="display: none;">
+                                    <div class="input-group">
+                                        <label for="stickerrr-style-select">2. Pilih Gaya Stiker</label>
+                                        <select id="stickerrr-style-select">
+                                            <option value="Gaya Stiker Kartun 3D">Kartun 3D</option>
+                                            <option value="Gaya Chibi Anime">Chibi Anime</option>
+                                            <option value="Gaya Stiker Vinil Mengkilap">Vinil Mengkilap</option>
+                                            <option value="Gaya Ilustrasi Buku Cerita">Buku Cerita</option>
+                                            <option value="Gaya Seni Piksel">Seni Piksel</option>
+                                        </select>
+                                    </div>
+                                    <div class="input-group">
+                                        <label for="stickerrr-theme-select">3. Pilih Tema Paket</label>
+                                        <select id="stickerrr-theme-select">
+                                            <option value="social-reactions">Reaksi Sosial</option>
+                                            <option value="daily-feelings">Perasaan Sehari-hari</option>
+                                            <option value="mocking">Mengejek</option>
+                                            <option value="angry">Marah</option>
+                                            <option value="work-vibes">Suasana Kerja</option>
+                                            <option value="celebration">Perayaan</option>
+                                        </select>
+                                        <p class="help-text">Setiap tema berisi 10 ekspresi dan caption default.</p>
+                                    </div>
+                                    <div class="input-group">
+                                        <label for="stickerrr-caption-input">4. Kustomisasi (Opsional)</label>
+                                        <div style="display:flex; justify-content: flex-end; margin-bottom: 0.5rem;">
+                                            <button id="stickerrr-autofill-button" class="secondary-button" style="font-size: 0.8rem; padding: 0.4rem 0.8rem;">
+                                                <svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 0 24 24" width="18px" fill="currentColor"><g><rect fill="none" height="24" width="24"/></g><g><path d="M19,9l1.25-2.75L23,5l-2.75-1.25L19,1l-1.25,2.75L15,5l2.75,1.25L19,9z M11.5,9.5L9,4L6.5,9.5L1,12l5.5,2.5L9,20l2.5-5.5 L17,12L11.5,9.5z M19,15l-1.25,2.75L15,19l2.75,1.25L19,23l1.25-2.75L23,19l-2.75-1.25L19,15z"/></g></svg>
+                                                <span>Isi Otomatis dengan AI</span>
+                                            </button>
+                                        </div>
+                                        <input type="text" id="stickerrr-accessory-input" placeholder="Aksesori (cth: memakai kacamata hitam)" style="margin-bottom: 0.5rem;">
+                                        <textarea id="stickerrr-instructions-input" rows="2" placeholder="Instruksi lain (cth: tambahkan efek api di sekelilingnya)" style="margin-bottom: 0.5rem;"></textarea>
+                                        <textarea id="stickerrr-caption-input" rows="5" placeholder="Ketik caption Anda sendiri di sini, satu per baris, untuk menimpa default tema."></textarea>
+                                        <select id="stickerrr-container-select" style="margin-top: 0.5rem;">
+                                            <option value="None">Tanpa Wadah Teks</option>
+                                            <option value="gelembung ucapan (speech bubble)">Gelembung Ucapan</option>
+                                            <option value="kotak teks persegi panjang yang bersih (clean rectangular text box)">Kotak Persegi Panjang</option>
+                                            <option value="spanduk pita (ribbon banner)">Spanduk Pita</option>
+                                        </select>
+                                    </div>
+                                    <div class="button-group">
+                                        <button id="stickerrr-generate-button">Buat 10 Stiker</button>
+                                        <button id="stickerrr-change-photo-button" class="secondary-button">Ganti Foto</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Results State -->
+                             <div id="stickerrr-results-state" style="display: none;">
+                                <h2>Paket Stiker Anda</h2>
+                                <div id="stickerrr-results-grid" class="studio-results-grid" style="grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));"></div>
+                                <div class="button-group" style="margin-top: 1.5rem; justify-content: center;">
+                                    <button id="stickerrr-download-all-button">Unduh Semua</button>
+                                    <button id="stickerrr-start-over-button" class="secondary-button">Mulai Lagi</button>
+                                </div>
+                            </div>
+                            <!-- Shared Status -->
+                            <div id="stickerrr-status-container" class="status-container" style="display:none;">
+                                <div class="status-content">
+                                    <p id="stickerrr-status"></p>
+                                    <div id="stickerrr-progress-wrapper" class="progress-wrapper" style="display: none;">
+                                        <div class="progress-bar">
+                                            <div id="stickerrr-progress-bar" class="progress-bar-fill"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+    
+    <!-- API Key Modal -->
+    <div id="api-key-modal" class="modal-overlay" style="display: none;">
+        <div class="api-key-modal-content">
+            <button id="api-key-modal-close-button" class="icon-button modal-close-btn" style="color: var(--color-text);"><svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg></button>
+            <h3>Kelola Kunci API Premium</h3>
+            <p class="modal-subtitle">Gunakan kunci API Anda sendiri untuk melewati batas default.</p>
+            <div class="input-group" style="margin-top: 1.5rem;">
+                <label for="api-key-input">Kunci API Gemini</label>
+                <input type="password" id="api-key-input" placeholder="Masukkan kunci API Anda di sini">
+            </div>
+            <div id="api-key-modal-status" style="font-size: 0.9rem;"></div>
+            <div class="button-group" style="margin-top: 1.5rem; justify-content: space-between;">
+                <button id="api-key-clear-button" class="secondary-button">Hapus Kunci</button>
+                <div class="button-group">
+                    <button id="api-key-cancel-button" class="secondary-button">Batal</button>
+                    <button id="api-key-save-button">Simpan & Validasi</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Image Preview Modal -->
+    <div id="image-preview-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content-preview">
+            <div id="modal-image-container">
+                <img id="modal-preview-image" src="#" alt="Pratinjau Gambar yang Diperbesar" style="display: none;">
+                <video id="modal-preview-video" controls muted playsinline style="display: none;"></video>
+            </div>
+            <div class="modal-controls-top">
+                 <div id="modal-filter-buttons" class="button-group">
+                    <button class="toggle-button active" data-filter="none">Asli</button>
+                    <button class="toggle-button" data-filter="bw">B&W</button>
+                    <button class="toggle-button" data-filter="vintage">Vintage</button>
+                </div>
+                <div class="modal-zoom-controls" style="display: flex; align-items: center; gap: 0.5rem;">
+                    <button id="modal-zoom-out-button" class="icon-button" aria-label="Perkecil"><svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 0 24 24" width="20px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M19 13H5v-2h14v2z"/></svg></button>
+                    <button id="modal-zoom-in-button" class="icon-button" aria-label="Perbesar"><svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 0 24 24" width="20px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg></button>
+                    <button id="modal-zoom-reset-button" class="icon-button" aria-label="Reset Zoom"><svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 0 24 24" width="20px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M5 13h14v-2H5v2zm-2 4h14v-2H3v2zM7 7v2h14V7H7z"/></svg></button>
+                </div>
+            </div>
+            <div class="modal-editor-controls">
+                <button id="modal-edit-image-button" class="secondary-button" style="display:none;">
+                    <svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 0 24 24" width="18px" fill="currentColor"><g><rect fill="none" height="24" width="24"/></g><g><path d="M19,9l1.25-2.75L23,5l-2.75-1.25L19,1l-1.25,2.75L15,5l2.75,1.25L19,9z M11.5,9.5L9,4L6.5,9.5L1,12l5.5,2.5L9,20l2.5-5.5 L17,12L11.5,9.5z M19,15l-1.25,2.75L15,19l2.75,1.25L19,23l1.25-2.75L23,19l-2.75-1.25L19,15z"/></g></svg>
+                    <span>Hiasan Ajaib</span>
+                </button>
+                <div id="modal-magic-garnish-panel" style="display: none;">
+                    <textarea id="modal-magic-garnish-prompt" placeholder="contoh: tambahkan irisan lemon dan daun mint"></textarea>
+                    <div class="button-group">
+                        <button id="modal-magic-garnish-generate">Buat</button>
+                        <button id="modal-magic-garnish-undo" class="secondary-button" disabled>Urungkan</button>
+                    </div>
+                </div>
+                <button id="modal-download-edited-button" class="secondary-button">
+                    <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 0 24 24" width="20px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+                    <span>Unduh</span>
+                </button>
+                <span id="modal-image-counter"></span>
+            </div>
+            
+            <button id="modal-prev-button" class="icon-button modal-nav-btn left" aria-label="Gambar sebelumnya" style="display: none;"><svg xmlns="http://www.w3.org/2000/svg" height="36px" viewBox="0 0 24 24" width="36px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12l4.58-4.59z"/></svg></button>
+            <button id="modal-next-button" class="icon-button modal-nav-btn right" aria-label="Gambar berikutnya" style="display: none;"><svg xmlns="http://www.w3.org/2000/svg" height="36px" viewBox="0 0 24 24" width="36px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6-6-6z"/></svg></button>
+            <button id="modal-preview-close-button" class="icon-button modal-close-btn" aria-label="Tutup pratinjau"><svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg></button>
+        </div>
+    </div>
+    
+    <!-- Nutrition Modal (for Food Lens) -->
+    <div id="food-lens-nutrition-modal" class="modal-overlay" style="display: none;">
+        <div class="api-key-modal-content">
+            <button id="food-lens-nutrition-close-button" class="icon-button modal-close-btn" style="color: var(--color-text);"><svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg></button>
+            <h3>Estimasi Nutrisi AI</h3>
+            <p class="modal-subtitle">Ini adalah perkiraan dan bukan nasihat medis.</p>
+            <div id="food-lens-nutrition-content" style="margin-top: 1.5rem;">
+                <!-- Content will be populated by JS -->
+            </div>
+        </div>
+    </div>
+
+    <div id="toast-container"></div>
+</body>
+</html>
