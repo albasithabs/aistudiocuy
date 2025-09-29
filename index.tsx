@@ -14,7 +14,7 @@ import { Stickerrr } from './components/Stickerrr.ts';
 // IMPROVEMENT: Imported withRetry to add resilience to modal editor.
 import { blobToDataUrl, downloadFile, setupDragAndDrop, delay, parseAndFormatErrorMessage, withRetry } from './utils/helpers.ts';
 // FIX: Removed generateImageWithImagen and added generateImage and generateText.
-import { validateApiKey, generateImage, generateVideoContent, generateStyledImage, generateText } from './utils/gemini.ts';
+import { validateApiKey, generateImage, generateVideoContent, generateStyledImage, generateText, generateTTS } from './utils/gemini.ts';
 
 // === DOM Elements ===
 const appContainer = document.querySelector('.app-container') as HTMLDivElement;
@@ -85,6 +85,203 @@ let isModalEditing = false;
 let originalModalImageUrl: string | null = null;
 let isGeneratingEdit = false;
 
+
+// === AI Voice Studio ===
+const AiVoiceStudio = {
+    // DOM Elements
+    view: document.querySelector('#ai-voice-studio-view') as HTMLDivElement,
+    scriptInput: document.querySelector('#ai-voice-script-input') as HTMLTextAreaElement,
+    charCount: document.querySelector('#ai-voice-char-count') as HTMLSpanElement,
+    resultContainer: document.querySelector('#ai-voice-result-container') as HTMLDivElement,
+    genderFilterGroup: document.querySelector('#ai-voice-gender-filter') as HTMLDivElement,
+    actorList: document.querySelector('#ai-voice-actor-list') as HTMLDivElement,
+    vibeGroup: document.querySelector('#ai-voice-vibe-group') as HTMLDivElement,
+    speedSlider: document.querySelector('#ai-voice-speed-slider') as HTMLInputElement,
+    speedLabel: document.querySelector('#ai-voice-speed-label') as HTMLSpanElement,
+    generateButton: document.querySelector('#ai-voice-generate-button') as HTMLButtonElement,
+    
+    // State
+    script: '',
+    selectedActor: 'Puck', // Default actor
+    genderFilter: 'Pria' as 'Semua' | 'Pria' | 'Wanita',
+    selectedVibe: 'Promosi',
+    speechRate: 1.0,
+    audioUrl: null as string | null,
+    isLoading: false,
+    currentAudioPlayer: null as HTMLAudioElement | null,
+
+    // Data
+    actors: [
+        { name: 'Sadachbia', apiName: 'Puck', gender: 'Pria', sample: 'Halo, ini adalah contoh suara saya.' },
+        { name: 'Rasalgethi', apiName: 'Charon', gender: 'Pria', sample: 'Halo, ini adalah contoh suara saya.' },
+        { name: 'Sadaltager', apiName: 'Fenrir', gender: 'Pria', sample: 'Halo, ini adalah contoh suara saya.' },
+        { name: 'Zubenelgenubi', apiName: 'Zephyr', gender: 'Pria', sample: 'Halo, ini adalah contoh suara saya.' },
+        { name: 'Lyra', apiName: 'Kore', gender: 'Wanita', sample: 'Halo, ini adalah contoh suara saya.' },
+        { name: 'Pulcherrima', apiName: 'Kore', gender: 'Wanita', sample: 'Halo, ini adalah contoh suara saya.' },
+        { name: 'Schedar', apiName: 'Kore', gender: 'Wanita', sample: 'Halo, ini adalah contoh suara saya.' },
+        { name: 'Sulafat', apiName: 'Kore', gender: 'Wanita', sample: 'Halo, ini adalah contoh suara saya.' },
+        { name: 'Vindemiatrix', apiName: 'Kore', gender: 'Wanita', sample: 'Halo, ini adalah contoh suara saya.' },
+        { name: 'Zephyr', apiName: 'Kore', gender: 'Wanita', sample: 'Halo, ini adalah contoh suara saya.' },
+    ],
+
+    // Dependencies
+    getApiKey: (() => '') as () => string,
+    showNotification: ((message: string, type?: 'info' | 'error') => {}) as (message: string, type?: 'info' | 'error') => void,
+
+    init(dependencies: { getApiKey: () => string; showNotification: (message: string, type?: 'info' | 'error') => void; }) {
+        if (!this.view) return;
+        this.getApiKey = dependencies.getApiKey;
+        this.showNotification = dependencies.showNotification;
+        this.renderActors();
+        this.addEventListeners();
+    },
+
+    addEventListeners() {
+        this.scriptInput.addEventListener('input', () => {
+            this.script = this.scriptInput.value;
+            this.charCount.textContent = this.script.length.toString();
+            this.generateButton.disabled = this.script.trim().length === 0;
+        });
+
+        this.genderFilterGroup.addEventListener('click', (e) => {
+            const button = (e.target as HTMLElement).closest('.toggle-button');
+            if (!button) return;
+            
+            this.genderFilter = button.getAttribute('data-filter') as 'Semua' | 'Pria' | 'Wanita';
+            this.genderFilterGroup.querySelectorAll('.toggle-button').forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+            this.renderActors();
+        });
+        
+        this.actorList.addEventListener('click', (e) => {
+            const card = (e.target as HTMLElement).closest('.actor-card');
+            if (card) {
+                this.selectedActor = card.getAttribute('data-name')!;
+                this.actorList.querySelectorAll('.actor-card').forEach(c => c.classList.remove('active'));
+                card.classList.add('active');
+            }
+        });
+
+        this.vibeGroup.addEventListener('click', (e) => {
+             const button = (e.target as HTMLElement).closest('.toggle-button');
+             if (!button) return;
+
+             this.selectedVibe = button.getAttribute('data-vibe')!;
+             this.vibeGroup.querySelectorAll('.toggle-button').forEach(btn => btn.classList.remove('active'));
+             button.classList.add('active');
+        });
+
+        this.speedSlider.addEventListener('input', () => {
+            this.speechRate = parseFloat(this.speedSlider.value);
+            this.speedLabel.textContent = `${this.speechRate.toFixed(2)}x`;
+            if (this.currentAudioPlayer) {
+                this.currentAudioPlayer.playbackRate = this.speechRate;
+            }
+        });
+
+        this.generateButton.addEventListener('click', this.handleGenerate.bind(this));
+    },
+    
+    renderActors() {
+        this.actorList.innerHTML = '';
+        const filteredActors = this.actors.filter(actor => 
+            this.genderFilter === 'Semua' || actor.gender === this.genderFilter
+        );
+
+        filteredActors.forEach(actor => {
+            const card = document.createElement('div');
+            card.className = 'actor-card';
+            card.dataset.name = actor.apiName;
+            if (actor.apiName === this.selectedActor) {
+                card.classList.add('active');
+            }
+            card.innerHTML = `
+                <div class="actor-card-header">
+                    <h4>${actor.name}</h4>
+                    <span class="actor-gender-tag">${actor.gender}</span>
+                </div>
+                <button class="secondary-button sample-button" data-sample-text="${actor.sample}" data-voice-name="${actor.apiName}">
+                    <svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 0 24 24" width="18px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M10 16.5l6-4.5-6-4.5v9zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>
+                    <span>Contoh</span>
+                </button>
+            `;
+            this.actorList.appendChild(card);
+        });
+
+        // Add event listeners for new sample buttons
+        this.actorList.querySelectorAll('.sample-button').forEach(button => {
+            button.addEventListener('click', async (e) => {
+                e.stopPropagation(); // Prevent card selection when clicking sample
+                const btn = e.currentTarget as HTMLButtonElement;
+                const text = btn.dataset.sampleText!;
+                const voiceName = btn.dataset.voiceName!;
+                btn.disabled = true;
+                btn.innerHTML = `<div class="loading-clock" style="width:16px; height:16px; margin: 0 auto;"></div>`;
+
+                try {
+                    const url = await generateTTS(text, voiceName, this.getApiKey);
+                    const audio = new Audio(url);
+                    audio.play();
+                    audio.onended = () => {
+                         btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 0 24 24" width="18px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M10 16.5l6-4.5-6-4.5v9zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg> <span>Contoh</span>`;
+                         btn.disabled = false;
+                    };
+                } catch (error) {
+                    this.showNotification('Gagal memutar sampel.', 'error');
+                    console.error('Sample playback failed:', error);
+                    btn.innerHTML = `<span>Gagal</span>`;
+                    setTimeout(() => {
+                        btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 0 24 24" width="18px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M10 16.5l6-4.5-6-4.5v9zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg> <span>Contoh</span>`;
+                        btn.disabled = false;
+                    }, 2000);
+                }
+            });
+        });
+    },
+
+    async handleGenerate() {
+        if (this.isLoading) return;
+
+        this.isLoading = true;
+        this.audioUrl = null;
+        this.renderResult();
+
+        try {
+            // Apply a simple prompt modification based on vibe
+            const finalScript = `Dengan nada ${this.selectedVibe.toLowerCase()}, katakan: "${this.script}"`;
+            const url = await generateTTS(finalScript, this.selectedActor, this.getApiKey);
+            this.audioUrl = url;
+        } catch (error: any) {
+            console.error('TTS Generation failed:', error);
+            this.showNotification(parseAndFormatErrorMessage(error, 'Pembuatan suara'), 'error');
+            this.audioUrl = null;
+        } finally {
+            this.isLoading = false;
+            this.renderResult();
+        }
+    },
+
+    renderResult() {
+        if (this.isLoading) {
+            this.resultContainer.innerHTML = `<div class="loading-clock"></div><p>AI sedang menghasilkan audio...</p>`;
+            this.generateButton.disabled = true;
+        } else if (this.audioUrl) {
+            this.resultContainer.innerHTML = `<audio id="ai-voice-result-player" controls></audio>`;
+            this.currentAudioPlayer = this.resultContainer.querySelector('audio');
+            if (this.currentAudioPlayer) {
+                this.currentAudioPlayer.src = this.audioUrl;
+                this.currentAudioPlayer.playbackRate = this.speechRate;
+            }
+            this.generateButton.disabled = this.script.trim().length === 0;
+        } else {
+            this.resultContainer.innerHTML = `
+                <svg xmlns="http://www.w3.org/2000/svg" height="48px" viewBox="0 0 24 24" width="48px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M12 14c1.66 0 2.99-1.34 2.99-3L15 5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm-1.2-9.1c0-.66.54-1.2 1.2-1.2.66 0 1.2.54 1.2 1.2l-.01 6.2c0 .66-.53 1.2-1.19 1.2s-1.2-.54-1.2-1.2V4.9zm6.5 6.1c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z"/></svg>
+                <p>Hasil audio Anda akan muncul di sini.</p>
+            `;
+            this.generateButton.disabled = this.script.trim().length === 0;
+        }
+    }
+};
 
 // === AI Photo Studio ===
 const PhotoStudio = {
@@ -628,6 +825,16 @@ const OutfitPro = {
     addEventListeners() {
         const dropZone = this.fileInput.closest('.file-drop-zone') as HTMLElement;
         setupDragAndDrop(dropZone, this.fileInput);
+        // FIX: Add a click listener to the entire drop zone to trigger the file input,
+        // which fixes the issue of only the center text being clickable. This also ensures
+        // the upload handler is correctly triggered, making the images appear.
+        dropZone.addEventListener('click', (e: MouseEvent) => {
+            // Prevent triggering if a remove button inside the preview is clicked.
+            if ((e.target as HTMLElement).closest('.remove-image-btn')) {
+                return;
+            }
+            this.fileInput.click();
+        });
         this.fileInput.addEventListener('change', this.handleImageUpload.bind(this));
         this.previewContainer.addEventListener('click', this.handleRemoveImage.bind(this));
         this.generateButton.addEventListener('click', this.handleGenerate.bind(this));
@@ -1141,578 +1348,457 @@ const LogoLab = {
         if (target.closest('.refine-btn')) {
             this.selectedLogoForRefinement = { url, base64 };
             this.refinementPanel.style.display = 'block';
-            this.refinePreview.innerHTML = `<img src="${url}" alt="Logo to refine">`;
-            this.refinementResultsGrid.innerHTML = '';
+            // FIX: Fixed template literal syntax error
+            this.refinePreview.innerHTML = `<img src="${url}" alt="Logo terpilih untuk penyempurnaan">`;
             this.refinePromptInput.value = '';
+            this.refinementResultsGrid.innerHTML = '';
             this.refinePromptInput.focus();
         } else if (target.closest('.download-btn')) {
             downloadFile(url, 'logo.png');
-        } else if (target.closest('.preview-btn') || target.closest('.image-result-item')) {
+        } else if (target.closest('.image-result-item')) {
             this.showPreviewModal([url], 0);
         }
     },
-    
+
     handleStartOver() {
         this.state = 'step1';
-        this.results = [];
         this.brandBrief = '';
+        this.logoType = 'Icon';
+        this.logoStyle = 'Minimalist';
+        this.results = [];
         this.selectedLogoForRefinement = null;
         
-        // Clear inputs
+        // Reset form fields
         this.businessNameInput.value = '';
         this.sloganInput.value = '';
         this.descriptionInput.value = '';
         this.keywordsInput.value = '';
+        this.briefInput.value = '';
         this.colorsInput.value = '';
+        this.refinementPanel.style.display = 'none';
 
         this.render();
     },
 
-    renderLogoItem(grid: HTMLElement, result: (typeof this.results)[number]) {
+    render() {
+        this.formContainer.style.display = (this.state === 'step1' || this.state === 'step2' || this.state === 'generating-brief') ? 'block' : 'none';
+        this.resultsState.style.display = (this.state === 'generating-logos' || this.state === 'results') ? 'block' : 'none';
+        this.statusContainer.style.display = (this.state === 'generating-brief' || this.state === 'generating-logos') ? 'flex' : 'none';
+
+        this.step1.style.display = (this.state === 'step1' || this.state === 'generating-brief') ? 'block' : 'none';
+        this.step2.style.display = this.state === 'step2' ? 'block' : 'none';
+        
+        // Update status text
+        if (this.state === 'generating-brief') {
+            this.statusText.textContent = 'AI sedang membuat ringkasan merek...';
+        } else if (this.state === 'generating-logos') {
+            this.statusText.textContent = 'AI sedang membuat konsep logo Anda...';
+        }
+        
+        // Render results grid
+        if (this.state === 'generating-logos' || this.state === 'results') {
+            this.resultsGrid.innerHTML = ''; // Clear previous
+            this.results.forEach(result => {
+                this.renderLogoItem(this.resultsGrid, result);
+            });
+        }
+    },
+    
+    renderLogoItem(grid: HTMLElement, result: { status: 'pending' | 'done' | 'error', url?: string, base64?: string }) {
         const wrapper = document.createElement('div');
         wrapper.className = 'image-result-wrapper';
 
         const item = document.createElement('div');
         item.className = 'image-result-item';
 
+        let itemHTML = '';
         if (result.status === 'pending') {
-            item.innerHTML = `<div class="loading-clock"></div>`;
+            itemHTML = `<div class="loading-clock"></div>`;
         } else if (result.status === 'error') {
-            item.innerHTML = `<span>Error</span>`;
+            itemHTML = `<span>Error</span>`;
         } else if (result.status === 'done' && result.url) {
-            item.innerHTML = `<img src="${result.url}" alt="Generated logo concept">
+            itemHTML = `<img src="${result.url}" alt="Generated logo concept">
             <div class="affiliate-result-item-overlay">
-                <button class="icon-button preview-btn" aria-label="Preview"><svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 0 24 24" width="18px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5C21.27 7.61 17 4.5 12 4.5zm0 10c-2.48 0-4.5-2.02-4.5-4.5S9.52 5.5 12 5.5s4.5 2.02 4.5 4.5-2.02 4.5-4.5 4.5zm0-7C10.62 7.5 9.5 8.62 9.5 10s1.12 2.5 2.5 2.5 2.5-1.12 2.5-2.5S13.38 7.5 12 7.5z"/></svg></button>
-                <button class="icon-button download-btn" aria-label="Download"><svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 0 24 24" width="18px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg></button>
-                <button class="icon-button refine-btn" aria-label="Refine"><svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 0 24 24" width="18px" fill="currentColor"><g><rect fill="none" height="24" width="24"/></g><g><path d="M19,9l1.25-2.75L23,5l-2.75-1.25L19,1l-1.25,2.75L15,5l2.75,1.25L19,9z M11.5,9.5L9,4L6.5,9.5L1,12l5.5,2.5L9,20l2.5-5.5 L17,12L11.5,9.5z M19,15l-1.25,2.75L15,19l2.75,1.25L19,23l1.25-2.75L23,19l-2.75-1.25L19,15z"/></g></svg></button>
+                <button class="icon-button refine-btn" aria-label="Sempurnakan logo ini">
+                    <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 0 24 24" width="20px" fill="currentColor"><g><rect fill="none" height="24" width="24"/></g><g><path d="M19,9l1.25-2.75L23,5l-2.75-1.25L19,1l-1.25,2.75L15,5l2.75,1.25L19,9z M11.5,9.5L9,4L6.5,9.5L1,12l5.5,2.5L9,20l2.5-5.5 L17,12L11.5,9.5z M19,15l-1.25,2.75L15,19l2.75,1.25L19,23l1.25-2.75L23,19l-2.75-1.25L19,15z"/></g></svg>
+                </button>
+                <button class="icon-button download-btn" aria-label="Unduh logo ini">
+                    <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 0 24 24" width="20px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+                </button>
             </div>`;
         }
+        item.innerHTML = itemHTML;
         wrapper.appendChild(item);
         grid.appendChild(wrapper);
-    },
-
-    render() {
-        // Manage visibility of sections
-        this.formContainer.style.display = (this.state === 'step1' || this.state === 'step2' || this.state === 'generating-brief') ? 'block' : 'none';
-        this.resultsState.style.display = (this.state === 'generating-logos' || this.state === 'results') ? 'block' : 'none';
-        this.statusContainer.style.display = (this.state === 'generating-brief' || this.state === 'generating-logos') ? 'flex' : 'none';
-
-        this.step1.style.display = this.state === 'step1' ? 'block' : 'none';
-        this.step2.style.display = this.state === 'step2' ? 'block' : 'none';
-
-        // Update status text
-        if (this.state === 'generating-brief') {
-            this.statusText.textContent = 'AI sedang membuat ringkasan merek...';
-        } else if (this.state === 'generating-logos') {
-            this.statusText.textContent = 'AI sedang membuat konsep logo...';
-        } else {
-            this.statusText.textContent = '';
-        }
-
-        // Render results grid
-        if (this.state === 'generating-logos' || this.state === 'results') {
-            this.resultsGrid.innerHTML = '';
-            this.results.forEach(result => this.renderLogoItem(this.resultsGrid, result));
-        }
-        
-        if (this.state !== 'results') {
-            this.refinementPanel.style.display = 'none';
-        }
     }
 };
 
+// === Initialization ===
+function showToast(message: string, type: 'info' | 'error' = 'info') {
+    const container = document.getElementById('toast-container');
+    if (!container) return;
 
-// === API Key Management ===
-function getPremiumApiKey(): string | null {
-    return localStorage.getItem('premiumApiKey');
-}
-
-function updateApiKeyStatusIndicator() {
-    const key = premiumApiKey;
-    if (key && key.length > 0) {
-        apiKeyStatusIndicator.classList.add('active');
-    } else {
-        apiKeyStatusIndicator.classList.remove('active');
-    }
-}
-
-function loadAndApplyApiKey() {
-    premiumApiKey = getPremiumApiKey();
-    updateApiKeyStatusIndicator();
-}
-
-function showApiKeyModal() {
-    apiKeyModalStatus.textContent = '';
-    apiKeyInput.value = premiumApiKey || '';
-    apiKeyModal.style.display = 'flex';
-}
-
-function hideApiKeyModal() {
-    apiKeyModal.style.display = 'none';
-}
-
-async function handleSaveApiKey() {
-    const key = apiKeyInput.value.trim();
-    if (!key) {
-        handleClearApiKey();
-        return;
-    }
-
-    apiKeyModalStatus.textContent = 'Memvalidasi kunci...';
-    apiKeySaveButton.disabled = true;
-
-    const isValid = await validateApiKey(key);
-
-    if (isValid) {
-        localStorage.setItem('premiumApiKey', key);
-        premiumApiKey = key;
-        updateApiKeyStatusIndicator();
-        apiKeyModalStatus.textContent = 'Kunci API valid dan disimpan!';
-        apiKeyModalStatus.style.color = 'var(--color-secondary)';
-        await delay(1500);
-        hideApiKeyModal();
-    } else {
-        localStorage.setItem('premiumApiKey', ''); // Store empty string to indicate invalid attempt
-        premiumApiKey = '';
-        updateApiKeyStatusIndicator();
-        apiKeyModalStatus.textContent = 'Kunci API tidak valid. Silakan periksa dan coba lagi.';
-        apiKeyModalStatus.style.color = '#f44336';
-    }
-    apiKeySaveButton.disabled = false;
-}
-
-function handleClearApiKey() {
-    localStorage.removeItem('premiumApiKey');
-    premiumApiKey = null;
-    updateApiKeyStatusIndicator();
-    apiKeyModalStatus.textContent = 'Kunci premium dihapus. Menggunakan kunci default.';
-    apiKeyModalStatus.style.color = 'var(--color-text-muted)';
-    apiKeyInput.value = '';
-    setTimeout(hideApiKeyModal, 1500);
-}
-
-function getApiKey(): string {
-    // Use the premium key from memory if it's a valid, non-empty string
-    if (premiumApiKey && premiumApiKey.length > 0) {
-        return premiumApiKey;
-    }
-    // BUG: `process.env` is a Node.js concept and will be undefined in the browser.
-    // This will cause API calls to fail if no premium key is set.
-    return process.env.API_KEY as string;
-}
-
-// === Image Preview Modal Logic ===
-function applyModalTransform() {
-    if (!modalPreviewImage) return;
-    const { x, y } = modalImageOffset;
-    modalPreviewImage.style.transform = `translate(${x}px, ${y}px) scale(${modalZoomLevel})`;
-}
-
-function resetModalTransform() {
-    modalZoomLevel = 1;
-    modalImageOffset = { x: 0, y: 0 };
-    if (modalImageContainer) modalImageContainer.classList.remove('panning');
-    applyModalTransform();
-}
-
-function updateModalMedia() {
-    if (modalImageUrls.length === 0 || !modalImageContainer) return;
-    
-    resetModalTransform(); // Reset pan/zoom when changing media
-
-    const currentUrl = modalImageUrls[modalCurrentIndex];
-    const isVideo = currentUrl.startsWith('blob:');
-
-    // Hide everything first
-    modalPreviewImage.style.display = 'none';
-    modalPreviewVideo.style.display = 'none';
-    modalPreviewVideo.pause();
-    modalPreviewVideo.src = '';
-
-    if (isVideo) {
-        modalPreviewVideo.src = currentUrl;
-        modalPreviewVideo.style.display = 'block';
-        modalPreviewVideo.play().catch(e => console.error("Error playing video:", e));
-        modalZoomControls.style.display = 'none';
-        modalFilterButtons.style.display = 'none';
-        modalEditImageButton.style.display = 'none';
-    } else {
-        modalPreviewImage.style.visibility = 'hidden';
-        modalPreviewImage.style.width = 'auto';
-        modalPreviewImage.style.height = 'auto';
-
-        modalPreviewImage.onload = () => {
-            const img = modalPreviewImage;
-            const container = modalImageContainer;
-
-            const containerRatio = container.clientWidth / container.clientHeight;
-            const imgRatio = img.naturalWidth / img.naturalHeight;
-
-            if (imgRatio > containerRatio) {
-                img.style.width = '100%';
-                img.style.height = 'auto';
-            } else {
-                img.style.width = 'auto';
-                img.style.height = '100%';
-            }
-            
-            img.style.visibility = 'visible';
-            img.onload = null;
-        };
-        
-        modalPreviewImage.src = currentUrl;
-        modalPreviewImage.style.display = 'block';
-        modalZoomControls.style.display = 'flex';
-        modalFilterButtons.style.display = 'flex';
-        // Only show edit button if the current view is Food Lens
-        const isFoodLensActive = document.querySelector('#food-stylist-view')?.classList.contains('active');
-        modalEditImageButton.style.display = isFoodLensActive ? 'flex' : 'none';
-        applyModalFilter(modalActiveFilter); // Reapply filter
-    }
-    
-    const isMultiImage = modalImageUrls.length > 1;
-    modalPrevButton.style.display = isMultiImage ? 'flex' : 'none';
-    modalNextButton.style.display = isMultiImage ? 'flex' : 'none';
-    modalImageCounter.style.display = isMultiImage ? 'block' : 'none';
-    modalImageCounter.innerText = `${modalCurrentIndex + 1} / ${modalImageUrls.length}`;
-}
-
-function changeModalMedia(direction: 1 | -1) {
-    const newIndex = modalCurrentIndex + direction;
-    if (newIndex >= 0 && newIndex < modalImageUrls.length) {
-        modalCurrentIndex = newIndex;
-        resetModalTransform();
-        applyModalFilter('none'); // Reset filter on image change
-        setModalEditMode(false); // Exit edit mode when changing image
-        updateModalMedia();
-    }
-}
-
-function zoomModal(direction: 1 | -1) {
-    const newZoom = direction > 0 ? modalZoomLevel * ZOOM_STEP : modalZoomLevel / ZOOM_STEP;
-    modalZoomLevel = Math.max(MIN_ZOOM, Math.min(newZoom, MAX_ZOOM));
-    
-    if (modalZoomLevel <= MIN_ZOOM) {
-        resetModalTransform();
-    } else {
-        applyModalTransform();
-    }
-}
-
-function startPan(e: MouseEvent) {
-    if (modalZoomLevel <= MIN_ZOOM) return;
-    e.preventDefault();
-    modalIsPanning = true;
-    modalStartPan.x = e.clientX - modalImageOffset.x;
-    modalStartPan.y = e.clientY - modalImageOffset.y;
-    modalImageContainer.classList.add('panning');
-}
-
-function panImage(e: MouseEvent) {
-    if (!modalIsPanning) return;
-    e.preventDefault();
-    const dx = e.clientX - modalStartPan.x;
-    const dy = e.clientY - modalStartPan.y;
-    modalImageOffset.x = dx;
-    modalImageOffset.y = dy;
-    applyModalTransform();
-}
-
-function endPan() {
-    modalIsPanning = false;
-    modalImageContainer.classList.remove('panning');
-}
-
-function applyModalFilter(filterName: string) {
-    modalActiveFilter = filterName;
-    const buttons = modalFilterButtons.querySelectorAll('.toggle-button');
-    buttons.forEach(btn => {
-        if ((btn as HTMLElement).dataset.filter === filterName) {
-            btn.classList.add('active');
-        } else {
-            btn.classList.remove('active');
-        }
-    });
-
-    switch (filterName) {
-        case 'bw':
-            modalPreviewImage.style.filter = 'grayscale(100%)';
-            break;
-        case 'vintage':
-            modalPreviewImage.style.filter = 'sepia(80%) contrast(90%) brightness(110%)';
-            break;
-        case 'none':
-        default:
-            modalPreviewImage.style.filter = 'none';
-            break;
-    }
-}
-
-function handleModalDownload() {
-    if (modalImageUrls.length === 0) return;
-    const currentUrl = modalImageUrls[modalCurrentIndex];
-    const isVideo = currentUrl.startsWith('blob:');
-
-    if (isVideo) {
-        downloadFile(currentUrl, `video-${Date.now()}.mp4`);
-        return;
-    }
-
-    if (!modalPreviewImage || !modalPreviewImage.src || modalPreviewImage.src.endsWith('#')) return;
-
-    const img = modalPreviewImage;
-    const canvas = document.createElement('canvas');
-    canvas.width = img.naturalWidth;
-    canvas.height = img.naturalHeight;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    ctx.filter = img.style.filter || 'none';
-    ctx.drawImage(img, 0, 0);
-
-    const dataUrl = canvas.toDataURL('image/png');
-    downloadFile(dataUrl, `edited-image-${Date.now()}.png`);
-}
-
-function showPreviewModal(imageUrls: (string | null)[], startIndex = 0) {
-    if (!imageUrls || imageUrls.length === 0 || !imagePreviewModal) return;
-
-    modalImageUrls = imageUrls.filter((url): url is string => !!url);
-    if (modalImageUrls.length === 0) return;
-
-    modalCurrentIndex = Math.max(0, Math.min(startIndex, modalImageUrls.length - 1));
-    
-    resetModalTransform();
-    applyModalFilter('none');
-    setModalEditMode(false);
-    updateModalMedia();
-    
-    imagePreviewModal.style.display = 'flex';
-}
-
-function hidePreviewModal() {
-    if (imagePreviewModal) {
-        imagePreviewModal.style.display = 'none';
-        modalPreviewImage.src = '#';
-        modalPreviewVideo.pause();
-        modalPreviewVideo.src = '';
-        modalImageUrls = [];
-        modalCurrentIndex = 0;
-        resetModalTransform();
-        applyModalFilter('none');
-        setModalEditMode(false); // Ensure edit mode is off when hiding
-    }
-}
-
-// === New Functions for Magic Garnish ===
-function setModalEditMode(isEditing: boolean) {
-    isModalEditing = isEditing;
-    if (isEditing) {
-        originalModalImageUrl = modalPreviewImage.src;
-        modalFilterButtons.style.display = 'none';
-        modalMagicGarnishPanel.style.display = 'flex';
-        modalMagicGarnishUndoButton.disabled = true; // Can't undo until an edit is made
-    } else {
-        originalModalImageUrl = null;
-        modalFilterButtons.style.display = 'flex';
-        modalMagicGarnishPanel.style.display = 'none';
-        modalMagicGarnishPrompt.value = '';
-    }
-}
-
-async function handleMagicGarnishGenerate() {
-    const prompt = modalMagicGarnishPrompt.value.trim();
-    if (!prompt || isGeneratingEdit) return;
-
-    isGeneratingEdit = true;
-    const loader = document.createElement('div');
-    loader.className = 'loading-clock';
-    modalImageContainer.appendChild(loader);
-    modalMagicGarnishGenerateButton.disabled = true;
-    
-    try {
-        const sourceImageBase64 = modalPreviewImage.src.split(',')[1];
-        // IMPROVEMENT: Wrap API call in withRetry and use a non-blocking notification for errors.
-        // FIX: Added missing options object for withRetry call.
-        const response = await withRetry(() =>
-            generateStyledImage(sourceImageBase64, null, prompt, getApiKey),
-            {
-                retries: 2,
-                delayMs: 1000,
-                onRetry: (attempt, error) => console.warn(`Magic Garnish attempt ${attempt} failed. Retrying...`, error)
-            }
-        );
-        const imagePart = response.candidates?.[0]?.content?.parts.find(p => p.inlineData);
-
-        if (imagePart?.inlineData) {
-            const newImageUrl = `data:${imagePart.inlineData.mimeType};base64,${imagePart.inlineData.data}`;
-            modalPreviewImage.src = newImageUrl;
-            // Update the URL in the main array so next/prev works correctly with the new image
-            modalImageUrls[modalCurrentIndex] = newImageUrl;
-            modalMagicGarnishUndoButton.disabled = false;
-        } else {
-            throw new Error("No image data returned from edit.");
-        }
-    } catch (e: any) {
-        console.error("Magic Garnish failed:", e);
-        // IMPROVEMENT: Use the showNotification function instead of a blocking alert.
-        const showNotification = (window as any).showNotification;
-        if (showNotification) {
-            showNotification(`Gagal mengedit gambar: ${e.message}`, 'error');
-        } else {
-            alert(`Gagal mengedit gambar: ${e.message}`);
-        }
-    } finally {
-        isGeneratingEdit = false;
-        modalImageContainer.removeChild(loader);
-        modalMagicGarnishGenerateButton.disabled = false;
-    }
-}
-
-
-// === View Switching Logic ===
-function handleViewSwitch(e: Event) {
-    e.preventDefault();
-    const link = (e.target as HTMLElement).closest('.sidebar-link');
-    if (!link || link.classList.contains('active')) return;
-
-    const viewName = link.getAttribute('data-view');
-    if (!viewName) return;
-
-    sidebarLinks.forEach(l => l.classList.remove('active'));
-    link.classList.add('active');
-
-    views.forEach(view => {
-        if (view.id === viewName) {
-            view.classList.add('active');
-        } else {
-            view.classList.remove('active');
-        }
-    });
-
-    const titleText = link.querySelector('span')?.textContent;
-    if (appTitle && titleText) {
-        appTitle.textContent = titleText;
-    }
-}
-
-
-// === Initial Setup ===
-document.addEventListener('DOMContentLoaded', () => {
-  loadAndApplyApiKey();
-
-  const initialActiveLink = document.querySelector('.sidebar-link.active');
-  if (initialActiveLink) {
-    const initialTitle = initialActiveLink.querySelector('span')?.textContent;
-    if (appTitle && initialTitle) {
-      appTitle.textContent = initialTitle;
-    }
-  }
-
-  const applyTheme = (theme: 'light' | 'dark') => {
-      if (theme === 'light') {
-          document.body.classList.add('light-mode');
-          if (themeToggleButton) themeToggleButton.checked = true;
-      } else {
-          document.body.classList.remove('light-mode');
-          if (themeToggleButton) themeToggleButton.checked = false;
-      }
-  };
-
-  const savedTheme = localStorage.getItem('theme') as 'light' | 'dark' | null;
-  if (savedTheme) {
-      applyTheme(savedTheme);
-  } else {
-      applyTheme('dark');
-  }
-
-  themeToggleButton?.addEventListener('change', () => {
-      const newTheme = themeToggleButton.checked ? 'light' : 'dark';
-      applyTheme(newTheme);
-      localStorage.setItem('theme', newTheme);
-  });
-
-  // FIX: Added a showNotification function and passed it to the CreativeStudio init call to resolve the type error.
-  const toastContainer = document.querySelector('#toast-container');
-  const showNotification = (message: string, type: 'info' | 'error' = 'info') => {
-    if (!toastContainer) return;
     const toast = document.createElement('div');
-    toast.className = `toast-notification ${type === 'error' ? 'error' : 'success'}`;
+    toast.className = `toast-notification${type === 'error' ? ' error' : ''}`;
     toast.textContent = message;
-    toastContainer.appendChild(toast);
+    
+    container.appendChild(toast);
+
     setTimeout(() => {
         toast.remove();
     }, 3000);
-  };
-  // IMPROVEMENT: Make the notification function globally accessible for the modal logic.
-  (window as any).showNotification = showNotification;
+}
 
-  CreativeStudio.init({ getApiKey, showPreviewModal, showNotification });
-  Storyboard.init({ getApiKey, showPreviewModal });
-  RetouchAndColorizer.init({ getApiKey, showPreviewModal });
-  FoodStylist.init({ getApiKey, showPreviewModal });
-  PhotoStudio.init({ getApiKey, showPreviewModal });
-  OutfitPro.init({ getApiKey, showPreviewModal });
-  ModelCreative.init({ getApiKey, showPreviewModal });
-  Stickerrr.init({ getApiKey, showPreviewModal });
-  LogoLab.init({ getApiKey, showPreviewModal });
-  
-  // API Key Modal Listeners
-  premiumKeyButton?.addEventListener('click', showApiKeyModal);
-  apiKeyCancelButton?.addEventListener('click', hideApiKeyModal);
-  apiKeyModalCloseButton?.addEventListener('click', hideApiKeyModal);
-  apiKeySaveButton?.addEventListener('click', handleSaveApiKey);
-  apiKeyClearButton?.addEventListener('click', handleClearApiKey);
-  apiKeyModal?.addEventListener('click', (e) => {
-    if (e.target === apiKeyModal) {
-      hideApiKeyModal();
+document.addEventListener('DOMContentLoaded', () => {
+    // === App State & Dependencies ===
+    const dependencies = {
+        getApiKey: () => premiumApiKey || (window as any).process.env.API_KEY,
+        showPreviewModal: (urls: (string|null)[], startIndex = 0) => {
+            if (!urls.length || urls.every(url => url === null)) return;
+            // Filter out any null URLs which might come from errored generations
+            const validUrls = urls.filter((url): url is string => url !== null);
+            if (validUrls.length === 0) return;
+
+            modalImageUrls = validUrls;
+            modalCurrentIndex = startIndex;
+            
+            // Reset state
+            isModalEditing = false;
+            originalModalImageUrl = null;
+            
+            updateModalContent();
+            imagePreviewModal.style.display = 'flex';
+        },
+        showNotification: showToast,
+    };
+
+    // === Module Initialization ===
+    // IMPROVEMENT: The app now checks for the existence of the view before
+    // initializing the corresponding module. This makes the code more robust and
+    // prevents errors if a view is removed from the HTML.
+    if (document.querySelector('#affiliate-pro-view')) {
+        CreativeStudio.init(dependencies);
     }
-  });
-
-  // Modal Listeners
-  modalPreviewCloseButton?.addEventListener('click', hidePreviewModal);
-  imagePreviewModal?.addEventListener('click', (e) => {
-    if (e.target === imagePreviewModal) {
-      hidePreviewModal();
+    if (document.querySelector('#storyboard-view')) {
+        Storyboard.init(dependencies);
     }
-  });
-  modalPrevButton?.addEventListener('click', () => changeModalMedia(-1));
-  modalNextButton?.addEventListener('click', () => changeModalMedia(1));
-
-  // Pan & Zoom Listeners
-  modalImageContainer?.addEventListener('mousedown', startPan);
-  modalImageContainer?.addEventListener('mousemove', panImage);
-  modalImageContainer?.addEventListener('mouseup', endPan);
-  modalImageContainer?.addEventListener('mouseleave', endPan);
-  modalZoomInButton?.addEventListener('click', () => zoomModal(1));
-  modalZoomOutButton?.addEventListener('click', () => zoomModal(-1));
-  modalZoomResetButton?.addEventListener('click', resetModalTransform);
-
-  // Filter and Download
-  modalFilterButtons?.addEventListener('click', (e) => {
-    const button = (e.target as HTMLElement).closest('.toggle-button');
-    if (button) {
-      applyModalFilter((button as HTMLElement).dataset.filter || 'none');
+    if (document.querySelector('#retouch-view')) {
+        RetouchAndColorizer.init(dependencies);
     }
-  });
-  modalDownloadEditedButton?.addEventListener('click', handleModalDownload);
-
-  // Magic Garnish (Food Lens specific)
-  modalEditImageButton?.addEventListener('click', () => setModalEditMode(true));
-  modalMagicGarnishGenerateButton?.addEventListener('click', handleMagicGarnishGenerate);
-  modalMagicGarnishUndoButton?.addEventListener('click', () => {
-    if (originalModalImageUrl) {
-      modalPreviewImage.src = originalModalImageUrl;
-      // Update the URL in the main array so next/prev works correctly with the new image
-      modalImageUrls[modalCurrentIndex] = originalModalImageUrl;
-      modalMagicGarnishUndoButton.disabled = true;
+    if (document.querySelector('#food-stylist-view')) {
+        FoodStylist.init(dependencies);
     }
-  });
-  
-  // View switching
-  sidebarMenu?.addEventListener('click', handleViewSwitch);
+    if (document.querySelector('#stickerrr-view')) {
+        Stickerrr.init(dependencies);
+    }
+    if (document.querySelector('#photo-studio-view')) {
+        PhotoStudio.init(dependencies);
+    }
+     if (document.querySelector('#model-creative-view')) {
+        ModelCreative.init(dependencies);
+    }
+    if (document.querySelector('#logo-lab-view')) {
+        LogoLab.init(dependencies);
+    }
+    if (document.querySelector('#outfit-pro-view')) {
+        OutfitPro.init(dependencies);
+    }
+    if (document.querySelector('#ai-voice-studio-view')) {
+        AiVoiceStudio.init(dependencies);
+    }
+
+
+    // === Event Listeners ===
+
+    // Sidebar navigation
+    sidebarLinks.forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            const viewId = (e.currentTarget as HTMLElement).dataset.view;
+            if (!viewId) return;
+
+            sidebarLinks.forEach(l => l.classList.remove('active'));
+            link.classList.add('active');
+
+            views.forEach(view => {
+                view.classList.toggle('active', view.id === viewId);
+            });
+            
+            const viewTitle = (link.querySelector('span') as HTMLSpanElement).textContent || 'AI Studio';
+            appTitle.textContent = viewTitle;
+        });
+    });
+
+    // Theme switcher
+    themeToggleButton.addEventListener('change', () => {
+        document.body.classList.toggle('light-mode', themeToggleButton.checked);
+    });
+    
+    // --- Image Preview Modal ---
+    function updateModalContent() {
+        const url = modalImageUrls[modalCurrentIndex];
+        if (!url) return;
+        
+        const isVideo = url.startsWith('blob:') || url.includes('.mp4');
+        modalPreviewImage.style.display = isVideo ? 'none' : 'block';
+        modalPreviewVideo.style.display = isVideo ? 'block' : 'video';
+        modalZoomControls.style.display = isVideo ? 'none' : 'flex';
+        
+        if (isVideo) {
+            modalPreviewVideo.src = url;
+            modalPreviewVideo.play();
+        } else {
+            modalPreviewImage.src = url;
+            // Check if current view is food stylist to enable editing
+            modalEditImageButton.style.display = document.querySelector('#food-stylist-view.active') ? 'inline-flex' : 'none';
+        }
+
+        modalPrevButton.style.display = modalImageUrls.length > 1 ? 'flex' : 'none';
+        modalNextButton.style.display = modalImageUrls.length > 1 ? 'flex' : 'none';
+        modalImageCounter.textContent = `${modalCurrentIndex + 1} / ${modalImageUrls.length}`;
+        modalImageCounter.style.display = modalImageUrls.length > 1 ? 'inline' : 'none';
+
+        // Reset zoom and pan for new image
+        resetModalZoomAndPan();
+        
+        // Reset editor
+        modalMagicGarnishPanel.style.display = 'none';
+        modalEditImageButton.style.display = document.querySelector('#food-stylist-view.active') ? 'inline-flex' : 'none';
+        modalMagicGarnishUndoButton.disabled = true;
+    }
+    
+    function showNextModalImage() {
+        modalCurrentIndex = (modalCurrentIndex + 1) % modalImageUrls.length;
+        updateModalContent();
+    }
+    
+    function showPrevModalImage() {
+        modalCurrentIndex = (modalCurrentIndex - 1 + modalImageUrls.length) % modalImageUrls.length;
+        updateModalContent();
+    }
+    
+    function resetModalZoomAndPan() {
+        modalZoomLevel = 1;
+        modalImageOffset = { x: 0, y: 0 };
+        applyModalTransform();
+    }
+
+    function applyModalTransform() {
+        modalPreviewImage.style.transform = `scale(${modalZoomLevel}) translate(${modalImageOffset.x}px, ${modalImageOffset.y}px)`;
+    }
+
+    modalPrevButton.addEventListener('click', showPrevModalImage);
+    modalNextButton.addEventListener('click', showNextModalImage);
+    modalPreviewCloseButton.addEventListener('click', () => {
+        imagePreviewModal.style.display = 'none';
+        modalPreviewVideo.pause();
+    });
+
+    // Modal Zoom & Pan
+    modalZoomInButton.addEventListener('click', () => {
+        modalZoomLevel = Math.min(MAX_ZOOM, modalZoomLevel * ZOOM_STEP);
+        applyModalTransform();
+    });
+    modalZoomOutButton.addEventListener('click', () => {
+        modalZoomLevel = Math.max(MIN_ZOOM, modalZoomLevel / ZOOM_STEP);
+        if (modalZoomLevel === MIN_ZOOM) {
+            resetModalZoomAndPan();
+        }
+        applyModalTransform();
+    });
+    modalZoomResetButton.addEventListener('click', resetModalZoomAndPan);
+
+    modalImageContainer.addEventListener('mousedown', (e) => {
+        if (modalZoomLevel > 1) {
+            modalIsPanning = true;
+            modalStartPan = { x: e.clientX - modalImageOffset.x * modalZoomLevel, y: e.clientY - modalImageOffset.y * modalZoomLevel };
+            modalImageContainer.classList.add('panning');
+        }
+    });
+
+    modalImageContainer.addEventListener('mouseup', () => {
+        modalIsPanning = false;
+        modalImageContainer.classList.remove('panning');
+    });
+
+    modalImageContainer.addEventListener('mouseleave', () => {
+        modalIsPanning = false;
+        modalImageContainer.classList.remove('panning');
+    });
+
+    modalImageContainer.addEventListener('mousemove', (e) => {
+        if (modalIsPanning) {
+            e.preventDefault();
+            modalImageOffset.x = (e.clientX - modalStartPan.x) / modalZoomLevel;
+            modalImageOffset.y = (e.clientY - modalStartPan.y) / modalZoomLevel;
+            applyModalTransform();
+        }
+    });
+
+    // Modal Image Filtering
+    modalFilterButtons.addEventListener('click', (e) => {
+        const button = (e.target as HTMLElement).closest('.toggle-button');
+        if (!button) return;
+        
+        modalFilterButtons.querySelectorAll('.toggle-button').forEach(btn => btn.classList.remove('active'));
+        button.classList.add('active');
+        
+        modalActiveFilter = button.getAttribute('data-filter') || 'none';
+        modalPreviewImage.style.filter = modalActiveFilter === 'bw' ? 'grayscale(100%)' :
+                                         modalActiveFilter === 'vintage' ? 'sepia(70%)' : 'none';
+    });
+
+    // --- Magic Garnish Editor (in Modal) ---
+    modalEditImageButton.addEventListener('click', () => {
+        isModalEditing = !isModalEditing;
+        modalEditImageButton.style.display = isModalEditing ? 'none' : 'inline-flex';
+        modalMagicGarnishPanel.style.display = isModalEditing ? 'flex' : 'none';
+        if (isModalEditing && !originalModalImageUrl) {
+            originalModalImageUrl = modalPreviewImage.src; // Save original state
+        }
+    });
+
+    modalMagicGarnishUndoButton.addEventListener('click', () => {
+        if (originalModalImageUrl) {
+            modalPreviewImage.src = originalModalImageUrl;
+            // Update the main modal array so downloading works correctly
+            modalImageUrls[modalCurrentIndex] = originalModalImageUrl;
+            modalMagicGarnishUndoButton.disabled = true;
+        }
+    });
+
+    modalMagicGarnishGenerateButton.addEventListener('click', async () => {
+        const prompt = modalMagicGarnishPrompt.value.trim();
+        if (!prompt || isGeneratingEdit) return;
+
+        isGeneratingEdit = true;
+        modalMagicGarnishGenerateButton.disabled = true;
+        modalImageContainer.insertAdjacentHTML('beforeend', '<div class="loading-clock"></div>');
+
+        try {
+            const currentImage = modalImageUrls[modalCurrentIndex];
+            const base64 = currentImage.split(',')[1];
+
+            // IMPROVEMENT: Wrapped the API call in withRetry for better resilience against transient errors.
+            const response = await withRetry(
+                () => generateStyledImage(base64, null, prompt, dependencies.getApiKey),
+                {
+                    retries: 2,
+                    delayMs: 1000,
+                    onRetry: (attempt, error) => {
+                        console.warn(`Magic Garnish attempt ${attempt} failed. Retrying...`, error);
+                    }
+                }
+            );
+
+            const imagePart = response.candidates?.[0]?.content?.parts.find(p => p.inlineData);
+            if (imagePart?.inlineData) {
+                const newImageUrl = `data:${imagePart.inlineData.mimeType};base64,${imagePart.inlineData.data}`;
+                modalPreviewImage.src = newImageUrl;
+                modalImageUrls[modalCurrentIndex] = newImageUrl; // Update the array
+                modalMagicGarnishUndoButton.disabled = false;
+            } else {
+                throw new Error("Tidak ada gambar yang dikembalikan dari API.");
+            }
+        } catch (error) {
+            console.error('Magic Garnish error:', error);
+            showToast('Gagal membuat hiasan.', 'error');
+        } finally {
+            isGeneratingEdit = false;
+            modalMagicGarnishGenerateButton.disabled = false;
+            modalImageContainer.querySelector('.loading-clock')?.remove();
+        }
+    });
+
+    // Modal Download Button (handles both original and filtered images)
+    modalDownloadEditedButton.addEventListener('click', async () => {
+        const url = modalImageUrls[modalCurrentIndex];
+        if (!url) return;
+
+        // If a filter is active, we need to apply it via canvas
+        if (modalActiveFilter !== 'none' && !url.startsWith('blob:')) {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            const img = new Image();
+            img.crossOrigin = "anonymous";
+            img.onload = () => {
+                canvas.width = img.width;
+                canvas.height = img.height;
+                if (ctx) {
+                    ctx.filter = modalPreviewImage.style.filter;
+                    ctx.drawImage(img, 0, 0);
+                    const filteredUrl = canvas.toDataURL('image/png');
+                    downloadFile(filteredUrl, `edited_image_${Date.now()}.png`);
+                }
+            };
+            img.src = url;
+        } else {
+            // No filter, just download the current URL
+            const fileExtension = url.startsWith('blob:') ? 'mp4' : 'png';
+            downloadFile(url, `creative_studio_${Date.now()}.${fileExtension}`);
+        }
+    });
+
+
+    // --- API Key Management ---
+    premiumApiKey = localStorage.getItem('geminiApiKey');
+    apiKeyStatusIndicator.classList.toggle('active', !!premiumApiKey);
+
+    premiumKeyButton.addEventListener('click', () => {
+        apiKeyInput.value = premiumApiKey || '';
+        apiKeyModalStatus.textContent = '';
+        apiKeyModal.style.display = 'flex';
+    });
+    
+    apiKeyModalCloseButton.addEventListener('click', () => apiKeyModal.style.display = 'none');
+    apiKeyCancelButton.addEventListener('click', () => apiKeyModal.style.display = 'none');
+    
+    apiKeyClearButton.addEventListener('click', () => {
+        localStorage.removeItem('geminiApiKey');
+        premiumApiKey = null;
+        apiKeyStatusIndicator.classList.remove('active');
+        apiKeyModal.style.display = 'none';
+        showToast('Kunci API premium dihapus.', 'info');
+    });
+
+    apiKeySaveButton.addEventListener('click', async () => {
+        const key = apiKeyInput.value.trim();
+        if (!key) {
+            apiKeyModalStatus.textContent = 'Kunci API tidak boleh kosong.';
+            return;
+        }
+
+        apiKeySaveButton.disabled = true;
+        apiKeyModalStatus.textContent = 'Memvalidasi kunci...';
+
+        const isValid = await validateApiKey(key);
+
+        if (isValid) {
+            localStorage.setItem('geminiApiKey', key);
+            premiumApiKey = key;
+            apiKeyStatusIndicator.classList.add('active');
+            apiKeyModalStatus.textContent = 'Kunci API valid disimpan!';
+            showToast('Kunci API Premium disimpan.');
+            setTimeout(() => {
+                apiKeyModal.style.display = 'none';
+            }, 1000);
+        } else {
+            apiKeyModalStatus.textContent = 'Kunci API tidak valid atau terjadi kesalahan jaringan.';
+            premiumApiKey = ''; // Set to empty to indicate invalid attempt
+            apiKeyStatusIndicator.classList.remove('active');
+        }
+        apiKeySaveButton.disabled = false;
+    });
+
+    // Initialize the correct view on load
+    const initialView = document.querySelector('.sidebar-link.active')?.getAttribute('data-view');
+    if (initialView) {
+        document.getElementById(initialView)?.classList.add('active');
+        appTitle.textContent = document.querySelector('.sidebar-link.active span')?.textContent || 'Creative Studio';
+    } else {
+        // Fallback if no active link is set
+        document.querySelector('.sidebar-link')?.classList.add('active');
+        document.querySelector('.view')?.classList.add('active');
+    }
+
 });
-
-// BUG: This line will cause a runtime error in the browser because 'process' is not defined.
-// It needs to be replaced with a browser-compatible way to handle default/fallback API keys.
-declare const process: any;

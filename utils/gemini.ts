@@ -290,7 +290,8 @@ export async function generateTTS(textToSpeak: string, voiceName: string, getApi
         model: 'gemini-2.5-flash-preview-tts',
         contents: [{ parts: [{ text: textToSpeak }] }],
         config: {
-            responseModalities: ["AUDIO"],
+            // FIX: Use Modality enum instead of string literal for responseModalities
+            responseModalities: [Modality.AUDIO],
             speechConfig: {
                 voiceConfig: {
                     prebuiltVoiceConfig: { voiceName: voiceName }

@@ -67,8 +67,14 @@
                     <span>Retouch & Warnai</span>
                 </a>
             </li>
+             <li>
+                <a href="#" class="sidebar-link active" data-view="ai-voice-studio-view">
+                    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M12 14c1.66 0 2.99-1.34 2.99-3L15 5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm-1.2-9.1c0-.66.54-1.2 1.2-1.2.66 0 1.2.54 1.2 1.2l-.01 6.2c0 .66-.53 1.2-1.19 1.2s-1.2-.54-1.2-1.2V4.9zm6.5 6.1c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z"/></svg>
+                    <span>Studio Suara AI</span>
+                </a>
+            </li>
             <li>
-                <a href="#" class="sidebar-link active" data-view="photo-studio-view">
+                <a href="#" class="sidebar-link" data-view="photo-studio-view">
                     <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M14.12 4H9.88L8.05 6H4v12h16V6h-4.05l-1.83-2zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z" opacity=".3"/><path d="M4 4h5.88l1.83-2h4.58l1.83-2H22v16H2V4h2zm0 2v12h16V6h-4.05l-1.83-2H9.88L8.05 6H4zm8 11c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.65 0-3 1.35-3 3s1.35 3 3 3 3-1.35 3-3-1.35-3-3-3z"/></svg>
                     <span>Studio Foto</span>
                 </a>
@@ -102,6 +108,73 @@
             </header>
 
             <main class="main-content">
+                <div id="ai-voice-studio-view" class="view active">
+                    <div class="card-container">
+                        <div class="content-container">
+                            <h2>Studio Suara AI</h2>
+                            <p class="modal-subtitle" style="margin-top: 0.5rem; margin-bottom: 2rem;">Ubah teks menjadi audio berkualitas tinggi dengan beragam pilihan suara.</p>
+                            
+                            <div class="ai-voice-studio-layout">
+                                <!-- Left Column -->
+                                <div class="ai-voice-studio-left-col">
+                                    <div class="input-group">
+                                        <label for="ai-voice-script-input">1. Tulis Naskah Anda</label>
+                                        <textarea id="ai-voice-script-input" rows="10" placeholder="Ketik atau tempel naskah voice over Anda di sini..."></textarea>
+                                        <div id="ai-voice-char-count-wrapper">
+                                            <span id="ai-voice-char-count">0</span> karakter
+                                        </div>
+                                    </div>
+                                    <div class="input-group">
+                                        <label>Hasil Voice Over</label>
+                                        <div id="ai-voice-result-container">
+                                            <svg xmlns="http://www.w3.org/2000/svg" height="48px" viewBox="0 0 24 24" width="48px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M12 14c1.66 0 2.99-1.34 2.99-3L15 5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm-1.2-9.1c0-.66.54-1.2 1.2-1.2.66 0 1.2.54 1.2 1.2l-.01 6.2c0 .66-.53 1.2-1.19 1.2s-1.2-.54-1.2-1.2V4.9zm6.5 6.1c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z"/></svg>
+                                            <p>Hasil audio Anda akan muncul di sini.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Right Column -->
+                                <div class="ai-voice-studio-right-col">
+                                    <div class="input-group">
+                                        <label>2. Pilih Aktor Suara</label>
+                                        <div id="ai-voice-gender-filter" class="button-group">
+                                            <button class="toggle-button" data-filter="Semua">Semua</button>
+                                            <button class="toggle-button active" data-filter="Pria">Pria</button>
+                                            <button class="toggle-button" data-filter="Wanita">Wanita</button>
+                                        </div>
+                                        <div id="ai-voice-actor-list">
+                                            <!-- Actor cards will be populated by JS -->
+                                        </div>
+                                    </div>
+                                    <div class="input-group">
+                                        <label>3. Pilih Vibe Suara</label>
+                                        <div id="ai-voice-vibe-group">
+                                            <button class="vibe-button toggle-button active" data-vibe="Promosi">Promosi</button>
+                                            <button class="vibe-button toggle-button" data-vibe="Ceria">Ceria</button>
+                                            <button class="vibe-button toggle-button" data-vibe="Tegas">Tegas</button>
+                                            <button class="vibe-button toggle-button" data-vibe="Tenang">Tenang</button>
+                                            <button class="vibe-button toggle-button" data-vibe="Sedih">Sedih</button>
+                                            <button class="vibe-button toggle-button" data-vibe="Pencerita">Pencerita</button>
+                                            <button class="vibe-button toggle-button" data-vibe="Profesional">Profesional</button>
+                                            <button class="vibe-button toggle-button" data-vibe="Bisikan">Bisikan</button>
+                                            <button class="vibe-button toggle-button" data-vibe="Energik">Energik</button>
+                                            <button class="vibe-button toggle-button" data-vibe="Berwibawa">Berwibawa</button>
+                                        </div>
+                                    </div>
+                                    <div class="input-group">
+                                        <label for="ai-voice-speed-slider">4. Kontrol Kecepatan Suara (<span id="ai-voice-speed-label">1.00x</span>)</label>
+                                        <div class="speed-slider-container">
+                                            <span>Lambat</span>
+                                            <input type="range" id="ai-voice-speed-slider" min="0.5" max="2.0" step="0.05" value="1.0">
+                                            <span>Cepat</span>
+                                        </div>
+                                    </div>
+                                    <button id="ai-voice-generate-button" class="affiliate-generate-button" disabled>Generate Voice Over</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <div id="affiliate-pro-view" class="view">
                     <div id="affiliate-pro-card">
                         <div class="card-container">
@@ -299,7 +372,7 @@
                                 <div class="input-group">
                                     <label for="storyboard-cta-input" class="storyboard-section-header">3. Call to Action</label>
                                      <p class="help-text">Tambahkan CTA otomatis di adegan terakhir.</p>
-                                    <input type="text" id="storyboard-cta-input" placeholder="mis. “Beli Sekarang di Flixe.co”">
+                                    <input type="text" id="storyboard-cta-input" placeholder="mis. “Beli Sekarang di ingfo.ai”">
                                 </div>
 
                                 <div class="input-group">
@@ -723,12 +796,10 @@
                                 <p class="modal-subtitle" style="margin-top: 0.5rem; margin-bottom: 2rem;">Unggah beberapa item fesyen untuk membuat mockup flat lay dan try-on model.</p>
                                 <div class="input-group">
                                     <label for="outfit-pro-input">Item Pakaian (hingga 10)</label>
-                                    <div class="file-drop-zone multi-upload-zone">
+                                    <div class="file-drop-zone multi-upload-zone" role="button">
                                         <div id="outfit-pro-preview-container" class="multi-image-preview-container"></div>
-                                        <label for="outfit-pro-input" role="button">
-                                            <span>Klik atau seret & jatuhkan gambar di sini</span>
-                                        </label>
-                                        <input id="outfit-pro-input" type="file" accept="image/*" multiple>
+                                        <span>Klik atau seret & jatuhkan gambar di sini</span>
+                                        <input id="outfit-pro-input" type="file" accept="image/*" multiple style="display: none;">
                                     </div>
                                 </div>
                                 <button id="outfit-pro-generate-button" disabled>
@@ -809,7 +880,7 @@
                         </div>
                     </div>
                 </div>
-                <div id="photo-studio-view" class="view active">
+                <div id="photo-studio-view" class="view">
                     <div class="card-container">
                         <div class="content-container">
                              <!-- Input State -->
