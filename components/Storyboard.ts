@@ -113,7 +113,7 @@ export const Storyboard = {
     voiceStyle: 'natural',
     aspectRatio: '16:9',
     videoModel: 'veo-2.0-generate-001',
-    voiceNameMap: { natural: 'Kore', formal: 'Zephyr', friendly: 'Polly', energetic: 'Puck' } as { [key: string]: string },
+    voiceNameMap: { natural: 'Kore', formal: 'Zephyr', friendly: 'Kore', energetic: 'Puck' } as { [key: string]: string },
 
     // Dependencies
     getApiKey: (() => '') as () => string,
@@ -684,7 +684,8 @@ export const Storyboard = {
                     (message, step) => {
                         scene.videoStatusText = message;
                         this.updateSceneCard(index);
-                    }
+                    },
+                    this.aspectRatio
                 ),
                 {
                     retries: 2,

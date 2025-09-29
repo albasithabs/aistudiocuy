@@ -280,13 +280,13 @@
                                     <!-- == START: MixStyle Mode Specific Settings == -->
                                     <div id="affiliate-mixstyle-settings" style="display: none;">
                                         <div class="input-group">
-                                            <label>Pilih Rasio Aspek</label>
-                                            <div id="affiliate-mixstyle-aspect-ratio-group" class="button-group" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.5rem;">
+                                            <label style="display: none;">Pilih Rasio Aspek</label>
+                                            <div id="affiliate-mixstyle-aspect-ratio-group" class="button-group" style="display: none; grid-template-columns: 1fr 1fr 1fr; gap: 0.5rem;">
                                                 <button class="toggle-button active" data-ratio="4:5">4:5 (Marketplace)</button>
                                                 <button class="toggle-button" data-ratio="9:16">9:16 (Story)</button>
                                                 <button class="toggle-button" data-ratio="1:1">1:1 (Persegi)</button>
                                             </div>
-                                            <p class="help-text">AI akan menghasilkan 3 gambar "Lifestyle" dan 3 gambar "Hands-On".</p>
+                                            <p class="help-text">AI akan menghasilkan 3 gambar "Lifestyle" dan 3 gambar "Hands-On" dalam format 9:16 (Story/Reels).</p>
                                         </div>
                                     </div>
                                     <!-- == END: MixStyle Mode Specific Settings == -->
@@ -406,9 +406,9 @@
                                     </div>
                                     <label style="margin-top: 1rem; margin-bottom: 0.5rem; font-weight: normal;">Rasio Aspek</label>
                                     <div id="storyboard-aspect-ratio-group" class="creative-options-group">
-                                        <button class="creative-option-button toggle-button" data-value="9:16">9:16 (Story/Reels)</button>
-                                        <button class="creative-option-button toggle-button" data-value="1:1">1:1 (Feed)</button>
-                                        <button class="creative-option-button toggle-button active" data-value="16:9">16:9 (YouTube)</button>
+                                        <button class="creative-option-button" data-value="9:16">9:16 (Story/Reels)</button>
+                                        <button class="creative-option-button" data-value="1:1">1:1 (Feed)</button>
+                                        <button class="creative-option-button active" data-value="16:9">16:9 (YouTube)</button>
                                     </div>
                                 </div>
 

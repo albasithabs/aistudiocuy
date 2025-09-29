@@ -41,10 +41,13 @@ export async function generateVideoContent(
     model: string,
     getApiKey: () => string,
     updateStatus: (message: string, step?: number) => void,
-    resolution?: '720p' | '1080p'
+    aspectRatio?: string
 ): Promise<string> {
   const ai = new GoogleGenAI({apiKey: getApiKey()});
   const videoGenConfig: any = { numberOfVideos: 1 };
+  if (aspectRatio) {
+    videoGenConfig.aspectRatio = aspectRatio;
+  }
   const config: GenerateVideosParameters = { model, prompt, config: videoGenConfig };
   if (imageBytes) { config.image = { imageBytes, mimeType: 'image/png' }; }
   let operation = await ai.models.generateVideos(config);

@@ -1541,7 +1541,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const isVideo = url.startsWith('blob:') || url.includes('.mp4');
         modalPreviewImage.style.display = isVideo ? 'none' : 'block';
-        modalPreviewVideo.style.display = isVideo ? 'block' : 'video';
+        modalPreviewVideo.style.display = isVideo ? 'block' : 'none';
         modalZoomControls.style.display = isVideo ? 'none' : 'flex';
         
         if (isVideo) {

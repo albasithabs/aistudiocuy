@@ -156,7 +156,7 @@ export const CreativeStudio = {
     sourceImage: null as string | null, // Base64 string
     modelImage: null as { file: File, dataUrl: string, base64: string } | null,
     sourceImageAspectRatio: null as string | null,
-    mixstyleAspectRatio: '4:5',
+    mixstyleAspectRatio: '9:16',
     customPrompt: '',
     imageResults: [] as ImageResult[],
     
@@ -226,9 +226,6 @@ export const CreativeStudio = {
             });
         });
 
-        // MixStyle Listener
-        this.mixstyleAspectRatioGroup.addEventListener('click', this.handleMixStyleAspectRatioSelection.bind(this));
-
         this.render();
         this.updateGenerateButton();
     },
@@ -252,14 +249,12 @@ export const CreativeStudio = {
                 case 'ProductStyle':
                     this.subtitleEl.textContent = 'Buat foto produk profesional dengan berbagai latar belakang.';
                     this.fashionInfoMessage.style.display = (this.state === 'image-uploaded' && this.productCategory === 'fashion') ? 'block' : 'none';
-                    if (this.sourceImageAspectRatio) {
-                        this.resultsGrid.style.setProperty('--product-shot-aspect-ratio', this.sourceImageAspectRatio);
-                    }
+                    this.resultsGrid.style.setProperty('--product-shot-aspect-ratio', '9 / 16');
                     break;
                 case 'LookBook':
                     this.subtitleEl.textContent = 'Hasilkan serangkaian bidikan gaya fesyen dari gambar Anda.';
                     this.fashionInfoMessage.style.display = 'none';
-                    this.resultsGrid.style.setProperty('--product-shot-aspect-ratio', '3 / 4');
+                    this.resultsGrid.style.setProperty('--product-shot-aspect-ratio', '9 / 16');
                     // Disable diversity pack if a custom model is uploaded
                     this.diversityPackToggle.disabled = !!this.modelImage;
                     this.diversityPackGroup.style.opacity = this.modelImage ? '0.5' : '1';
@@ -267,7 +262,7 @@ export const CreativeStudio = {
                 case 'MixStyle':
                     this.subtitleEl.textContent = 'Hasilkan foto gaya hidup & interaksi langsung untuk produk Anda.';
                     this.fashionInfoMessage.style.display = 'none';
-                    this.resultsGrid.style.setProperty('--product-shot-aspect-ratio', this.mixstyleAspectRatio.replace(':', ' / '));
+                    this.resultsGrid.style.setProperty('--product-shot-aspect-ratio', '9 / 16');
                     break;
             }
         }
@@ -342,16 +337,6 @@ export const CreativeStudio = {
             });
         }
         this.updateStatusText();
-    },
-
-    handleMixStyleAspectRatioSelection(e: MouseEvent) {
-        const target = e.target as HTMLElement;
-        const button = target.closest('.toggle-button');
-        if (button) {
-            this.mixstyleAspectRatioGroup.querySelectorAll('.toggle-button').forEach(btn => btn.classList.remove('active'));
-            button.classList.add('active');
-            this.mixstyleAspectRatio = (button as HTMLElement).dataset.ratio as string;
-        }
     },
 
     updateStatusText() {
@@ -455,7 +440,7 @@ export const CreativeStudio = {
     },
 
     buildLookBookPrompt(poseKey: string, sessionID: string | null = null): string {
-        let prompt = "Hasilkan foto fesyen profesional seluruh tubuh. Gambar akhir harus ultra-realistis, berkualitas 4K.";
+        let prompt = "Hasilkan foto fesyen profesional seluruh tubuh. Gambar akhir harus ultra-realistis, berkualitas 4K, dan dalam rasio aspek vertikal 9:16.";
 
         // Model specification
         if (this.modelImage) {
@@ -580,15 +565,15 @@ export const CreativeStudio = {
         this.statusEl.innerText = 'Membuat prompt...';
 
         const lifestylePrompts = [
-            `Gambar gaya hidup fotorealistik. Sebuah ${productDescription} ditempatkan secara alami di atas meja modern yang bersih yang relevan dengan produk. Latar belakang sedikit kabur (bokeh) untuk menjaga fokus pada produk. Pencahayaannya lembut dan alami. Gambar akhir harus memiliki rasio aspek ${this.mixstyleAspectRatio}. Tampilan, logo, dan warna produk harus sama persis dengan gambar referensi yang diberikan.`,
-            `Bidikan gaya hidup editorial kelas atas. ${productDescription} adalah pusat perhatian dalam adegan bergaya yang membangkitkan perasaan mewah/nyaman/efisiensi (sesuai untuk produk). Gunakan alat peraga pelengkap tetapi jaga agar komposisinya minimalis. Gambar akhir harus memiliki rasio aspek ${this.mixstyleAspectRatio}. Produk harus cocok identik dengan gambar referensi.`,
-            `Buat foto 'in-situ' yang realistis dari ${productDescription} dalam lingkungan penggunaan alaminya (misalnya, di meja rias untuk perawatan kulit, di meja dapur untuk makanan). Adegan harus terlihat otentik dan tidak berpose. Gambar akhir harus memiliki rasio aspek ${this.mixstyleAspectRatio}. Pastikan produk adalah replika sempurna dari yang ada di gambar referensi.`
+            `Gambar gaya hidup fotorealistik. Sebuah ${productDescription} ditempatkan secara alami di atas meja modern yang bersih yang relevan dengan produk. Latar belakang sedikit kabur (bokeh) untuk menjaga fokus pada produk. Pencahayaannya lembut dan alami. Gambar akhir harus memiliki rasio aspek 9:16. Tampilan, logo, dan warna produk harus sama persis dengan gambar referensi yang diberikan.`,
+            `Bidikan gaya hidup editorial kelas atas. ${productDescription} adalah pusat perhatian dalam adegan bergaya yang membangkitkan perasaan mewah/nyaman/efisiensi (sesuai untuk produk). Gunakan alat peraga pelengkap tetapi jaga agar komposisinya minimalis. Gambar akhir harus memiliki rasio aspek 9:16. Produk harus cocok identik dengan gambar referensi.`,
+            `Buat foto 'in-situ' yang realistis dari ${productDescription} dalam lingkungan penggunaan alaminya (misalnya, di meja rias untuk perawatan kulit, di meja dapur untuk makanan). Adegan harus terlihat otentik dan tidak berpose. Gambar akhir harus memiliki rasio aspek 9:16. Pastikan produk adalah replika sempurna dari yang ada di gambar referensi.`
         ];
 
         const handsOnPrompts = [
-            `Gambar langsung fotorealistik. Sepasang tangan yang terawat baik berinteraksi dengan ${productDescription} (misalnya, membuka, menggunakan, memegangnya). Tangan harus dalam pose alami dan memiliki proporsi yang realistis. Produk adalah fokus yang jelas. Gambar akhir harus memiliki rasio aspek ${this.mixstyleAspectRatio}. Produk yang ditampilkan harus merupakan salinan persis dari gambar referensi.`,
-            `Bidikan close-up dan dinamis dari tangan yang menggunakan ${productDescription}. Aksi harus dibekukan dalam waktu (misalnya, setetes jatuh dari pipet, tombol ditekan). Pencahayaan harus dramatis, menyoroti interaksi. Gambar akhir harus memiliki rasio aspek ${this.mixstyleAspectRatio}. Produk harus identik dengan gambar referensi yang diberikan.`,
-            `Buat gambar Point-of-View (POV) yang realistis di mana pemirsa memegang atau menggunakan ${productDescription}. Produk harus tajam dan detail di latar depan. Gambar akhir harus memiliki rasio aspek ${this.mixstyleAspectRatio}. Tiru produk dari gambar referensi dengan sempurna.`
+            `Gambar langsung fotorealistik. Sepasang tangan yang terawat baik berinteraksi dengan ${productDescription} (misalnya, membuka, menggunakan, memegangnya). Tangan harus dalam pose alami dan memiliki proporsi yang realistis. Produk adalah fokus yang jelas. Gambar akhir harus memiliki rasio aspek 9:16. Produk yang ditampilkan harus merupakan salinan persis dari gambar referensi.`,
+            `Bidikan close-up dan dinamis dari tangan yang menggunakan ${productDescription}. Aksi harus dibekukan dalam waktu (misalnya, setetes jatuh dari pipet, tombol ditekan). Pencahayaan harus dramatis, menyoroti interaksi. Gambar akhir harus memiliki rasio aspek 9:16. Produk harus identik dengan gambar referensi yang diberikan.`,
+            `Buat gambar Point-of-View (POV) yang realistis di mana pemirsa memegang atau menggunakan ${productDescription}. Produk harus tajam dan detail di latar depan. Gambar akhir harus memiliki rasio aspek 9:16. Tiru produk dari gambar referensi dengan sempurna.`
         ];
 
         const allPrompts = [...lifestylePrompts, ...handsOnPrompts];
@@ -615,7 +600,7 @@ export const CreativeStudio = {
         const prompts = Array(6).fill('').map((_, i) => {
             const theme = categoryData.themes[i % categoryData.themes.length];
             const angle = categoryData.angles[i % categoryData.angles.length];
-            return `Bayangkan kembali foto produk ini sebagai ${angle} dengan penempatan objek ${theme}, menciptakan iklan yang dinamis dan profesional.`;
+            return `Bayangkan kembali foto produk ini sebagai ${angle} dengan penempatan objek ${theme}, menciptakan iklan yang dinamis dan profesional. Gambar akhir harus dalam rasio aspek vertikal 9:16.`;
         });
 
         await this.runPromptBasedGeneration(prompts);
@@ -711,9 +696,16 @@ export const CreativeStudio = {
             const clickedUrl = result.videoUrl || result.imageUrl;
             if (!clickedUrl) return;
 
-            const urls = this.imageResults
-                .map(r => r.videoUrl || r.imageUrl)
-                .filter((url): url is string => !!url);
+            let urls: string[];
+            // FIX: If the clicked item is now a video, show only that video.
+            // Otherwise, create a gallery of *only* the images.
+            if (result.videoUrl && clickedUrl === result.videoUrl) {
+                urls = [result.videoUrl];
+            } else {
+                urls = this.imageResults
+                    .map(r => r.imageUrl) // Only collect image URLs for the gallery
+                    .filter((url): url is string => !!url);
+            }
             
             const startIndex = urls.indexOf(clickedUrl);
             
@@ -800,7 +792,8 @@ export const CreativeStudio = {
                         const statusOverlay = wrapper.querySelector('.video-generation-status');
                         if (statusOverlay) statusOverlay.textContent = message;
                     }
-                }
+                },
+                '9:16'
             );
             result.status = 'video-done';
             result.videoUrl = videoUrl;
@@ -838,7 +831,7 @@ export const CreativeStudio = {
         this.poseControlGroup.querySelectorAll('.toggle-button').forEach(btn => btn.classList.add('active'));
 
         // Reset MixStyle state
-        this.mixstyleAspectRatio = '4:5';
+        this.mixstyleAspectRatio = '9:16';
         this.mixstyleAspectRatioGroup.querySelectorAll('.toggle-button').forEach(btn => btn.classList.toggle('active', (btn as HTMLElement).dataset.ratio === '4:5'));
 
         // Reset ProductStyle state
