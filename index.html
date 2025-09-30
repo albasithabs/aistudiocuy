@@ -38,6 +38,12 @@
                 </a>
             </li>
             <li>
+                <a href="#" class="sidebar-link" data-view="interior-designer-view">
+                    <svg xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><g><rect fill="none" height="24" width="24"/></g><g><path d="M19,7h-2V5h2V7z M19,13h-2v-2h2V13z M19,19h-2v-2h2V19z M15,13h-2v-2h2V13z M15,19h-2v-2h2V19z M11,19H9v-2h2V19z M7,13H5v-2h2V13z M15,7h-2V5h2V7z M11,7H9V5h2V7z M7,7H5V5h2V7z M5,3h14c1.1,0,2,0.9,2,2v14c0,1.1-0.9,2-2,2H5c-1.1,0-2-0.9,2-2V5 C3,3.9,3.9,3,5,3z M5,19h14V5H5V19z"/></g></svg>
+                    <span>Desainer Interior</span>
+                </a>
+            </li>
+            <li>
                 <a href="#" class="sidebar-link" data-view="food-stylist-view">
                     <svg xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><g><rect fill="none" height="24" width="24"/></g><g><g><path d="M16.29,11.29l-2.58,2.58c-0.39,0.39-1.02,0.39-1.41,0l-2.59-2.59c-0.39-0.39-0.39-1.02,0-1.41l2.59-2.59 c0.39-0.39,1.02-0.39,1.41,0l2.58,2.58C16.68,10.27,16.68,10.9,16.29,11.29z M12,2C6.5,2,2,6.5,2,12s4.5,10,10,10s10-4.5,10-10 S17.5,2,12,2z M18,12c0,0.83-0.25,1.6-0.68,2.26L12,18.6l-5.32-5.32C6.25,12.8,6,12.03,6,11.2V11c0-3.31,2.69-6,6-6s6,2.69,6,6V12z"/></g></g></svg>
                     <span>Food Lens</span>
@@ -836,6 +842,109 @@
                         </div>
                     </div>
                 </div>
+                <div id="interior-designer-view" class="view">
+                    <div class="card-container">
+                        <div class="content-container">
+                            <!-- Input State -->
+                            <div id="interior-designer-input-state">
+                                <h2>Desainer Interior AI</h2>
+                                <p class="modal-subtitle" style="margin-top: 0.5rem; margin-bottom: 2rem;">Unggah foto ruangan dan ubah gayanya dengan kekuatan AI.</p>
+                                <div class="input-group">
+                                    <label for="interior-designer-input">1. Unggah Foto Ruangan</label>
+                                    <div class="file-drop-zone" style="min-height: 200px;">
+                                        <label for="interior-designer-input" role="button">
+                                            <img id="interior-designer-preview" src="#" alt="Pratinjau Ruangan" style="display: none; max-height: 180px; width: auto; border-radius: 8px;">
+                                            <span id="interior-designer-upload-label">Klik atau seret & jatuhkan gambar di sini</span>
+                                        </label>
+                                        <input id="interior-designer-input" type="file" accept="image/*" style="display: none;">
+                                    </div>
+                                </div>
+                                <div id="interior-designer-options-panel" style="display: none;">
+                                    <div class="input-group">
+                                        <label>2. Jenis Ruangan</label>
+                                        <div id="interior-designer-room-type-group" class="button-group" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 0.5rem;">
+                                            <button class="toggle-button active" data-value="Ruang Tamu">Ruang Tamu</button>
+                                            <button class="toggle-button" data-value="Kamar Tidur">Kamar Tidur</button>
+                                            <button class="toggle-button" data-value="Dapur">Dapur</button>
+                                            <button class="toggle-button" data-value="Kantor">Kantor</button>
+                                            <button class="toggle-button" data-value="Kamar Mandi">Kamar Mandi</button>
+                                        </div>
+                                    </div>
+                                    <div class="input-group">
+                                        <label>3. Gaya Desain</label>
+                                        <div id="interior-designer-style-group" class="button-group" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 0.5rem;">
+                                            <button class="toggle-button active" data-value="Skandinavia">Skandinavia</button>
+                                            <button class="toggle-button" data-value="Minimalis Modern">Minimalis Modern</button>
+                                            <button class="toggle-button" data-value="Industrial">Industrial</button>
+                                            <button class="toggle-button" data-value="Tropis Modern">Tropis Modern</button>
+                                            <button class="toggle-button" data-value="Bohemian">Bohemian</button>
+                                            <button class="toggle-button" data-value="Japandi">Japandi</button>
+                                        </div>
+                                    </div>
+                                    <div class="input-group">
+                                        <label for="interior-designer-prompt">4. Instruksi Kustom (cth: Ganti Perabotan)</label>
+                                        <textarea id="interior-designer-prompt" rows="3" placeholder="contoh: ubah sofa menjadi abu-abu, ganti kursi plastik dengan kursi kayu Skandinavia"></textarea>
+                                    </div>
+                                    <div class="input-group">
+                                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                                            <label for="interior-designer-autolayout-toggle">5. Tata Letak Otomatis</label>
+                                            <div class="theme-switcher">
+                                                <input type="checkbox" id="interior-designer-autolayout-toggle" aria-label="Toggle Auto Layout">
+                                                <label for="interior-designer-autolayout-toggle" class="slider-label" style="width: 40px; height: 22px;"></label>
+                                            </div>
+                                        </div>
+                                        <p class="help-text">Biarkan AI menata ulang perabotan untuk aliran dan kelapangan yang lebih baik.</p>
+                                    </div>
+                                    <div class="input-group">
+                                        <label>6. Palet Warna</label>
+                                        <div id="interior-designer-color-group" class="button-group" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); gap: 0.5rem;">
+                                            <button class="toggle-button active" data-value="Original">Asli</button>
+                                            <button class="toggle-button" data-value="Beige & Earthy Tones">Beige</button>
+                                            <button class="toggle-button" data-value="Cool Pastels">Pastel</button>
+                                            <button class="toggle-button" data-value="Bold & Vibrant">Bold</button>
+                                            <button class="toggle-button" data-value="Monochromatic Grays">Monokrom</button>
+                                        </div>
+                                    </div>
+                                    <div class="input-group">
+                                        <label>7. Simulasi Pencahayaan</label>
+                                        <div id="interior-designer-lighting-group" class="button-group" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 0.5rem;">
+                                            <button class="toggle-button active" data-value="Original">Asli</button>
+                                            <button class="toggle-button" data-value="Natural Daylight">Siang Hari</button>
+                                            <button class="toggle-button" data-value="Warm Cozy Light">Hangat & Nyaman</button>
+                                            <button class="toggle-button" data-value="Cool Modern Light">Modern & Dingin</button>
+                                        </div>
+                                    </div>
+                                    <div class="button-group">
+                                        <button id="interior-designer-generate-button">8. Desain Ulang Ruangan</button>
+                                        <button id="interior-designer-change-photo-button" class="secondary-button">Ganti Foto</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Results State -->
+                            <div id="interior-designer-results-state" style="display: none;">
+                                <h2>Hasil Desain</h2>
+                                <div class="retouch-comparison-container" style="margin-top: 1rem;">
+                                    <div class="retouch-image-wrapper">
+                                        <label>Sebelum</label>
+                                        <div class="retouch-image-box">
+                                            <img id="interior-designer-original-image" src="#" alt="Original room">
+                                        </div>
+                                    </div>
+                                    <div class="retouch-image-wrapper">
+                                        <label>Sesudah</label>
+                                        <div id="interior-designer-result-box" class="retouch-image-box">
+                                            <!-- Result will be populated by JS -->
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="button-group" style="margin-top: 2rem; justify-content: center;">
+                                    <button id="interior-designer-download-button" disabled>Unduh Hasil</button>
+                                    <button id="interior-designer-start-over-button" class="secondary-button">Mulai Lagi</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <div id="retouch-view" class="view">
                     <div class="card-container">
                         <div class="content-container" style="align-items: center;">
@@ -1031,7 +1140,7 @@
                                             <img id="stickerrr-preview-image" src="#" alt="Pratinjau Stiker" style="display: none; max-height: 160px; width: auto; border-radius: 8px;">
                                             <span id="stickerrr-upload-label">Klik atau seret & jatuhkan gambar di sini</span>
                                         </label>
-                                        <input id="stickerrr-file-input" type="file" accept="image/*">
+                                        <input id="stickerrr-file-input" type="file" accept="image/*" style="display: none;">
                                     </div>
                                 </div>
 

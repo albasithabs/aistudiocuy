@@ -5,7 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { blobToDataUrl, delay, downloadFile, parseAndFormatErrorMessage, setupDragAndDrop, withGenericRetry } from "../utils/helpers.js";
+import { blobToDataUrl, delay, downloadFile, parseAndFormatErrorMessage, setupDragAndDrop, withGenericRetry } from "../utils/helpers.ts";
 // FIX: Corrected import path and added missing functions to gemini.ts
 import { generateStyledImage, generateVideoContent, generateOutdoorThemesForProduct, generateTextFromImage } from "../utils/gemini.ts";
 

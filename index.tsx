@@ -283,6 +283,266 @@ const AiVoiceStudio = {
     }
 };
 
+// === Desainer Interior AI ===
+const InteriorDesignerAI = {
+    // DOM Elements
+    view: document.querySelector('#interior-designer-view') as HTMLDivElement,
+    inputStateEl: document.querySelector('#interior-designer-input-state') as HTMLDivElement,
+    resultsStateEl: document.querySelector('#interior-designer-results-state') as HTMLDivElement,
+    
+    // Inputs
+    fileInput: document.querySelector('#interior-designer-input') as HTMLInputElement,
+    previewImage: document.querySelector('#interior-designer-preview') as HTMLImageElement,
+    uploadLabel: document.querySelector('#interior-designer-upload-label') as HTMLSpanElement,
+    optionsPanel: document.querySelector('#interior-designer-options-panel') as HTMLDivElement,
+    roomTypeGroup: document.querySelector('#interior-designer-room-type-group') as HTMLDivElement,
+    styleGroup: document.querySelector('#interior-designer-style-group') as HTMLDivElement,
+    promptInput: document.querySelector('#interior-designer-prompt') as HTMLTextAreaElement,
+    autoLayoutToggle: document.querySelector('#interior-designer-autolayout-toggle') as HTMLInputElement,
+    colorGroup: document.querySelector('#interior-designer-color-group') as HTMLDivElement,
+    lightingGroup: document.querySelector('#interior-designer-lighting-group') as HTMLDivElement,
+    
+    // Actions & Results
+    generateButton: document.querySelector('#interior-designer-generate-button') as HTMLButtonElement,
+    changePhotoButton: document.querySelector('#interior-designer-change-photo-button') as HTMLButtonElement,
+    originalImage: document.querySelector('#interior-designer-original-image') as HTMLImageElement,
+    resultBox: document.querySelector('#interior-designer-result-box') as HTMLDivElement,
+    downloadButton: document.querySelector('#interior-designer-download-button') as HTMLButtonElement,
+    startOverButton: document.querySelector('#interior-designer-start-over-button') as HTMLButtonElement,
+
+    // State
+    state: 'idle' as 'idle' | 'processing' | 'results' | 'error',
+    sourceImage: null as { dataUrl: string; base64: string; } | null,
+    resultImageUrl: null as string | null,
+    errorMessage: '',
+    roomType: 'Ruang Tamu',
+    designStyle: 'Skandinavia',
+    isAutoLayoutEnabled: false,
+    colorPalette: 'Original',
+    lighting: 'Original',
+
+    // Dependencies
+    getApiKey: (() => '') as () => string,
+    showPreviewModal: ((urls: (string | null)[], startIndex?: number) => {}) as (urls: (string | null)[], startIndex?: number) => void,
+    showNotification: ((message: string, type?: 'info' | 'error') => {}) as (message: string, type?: 'info' | 'error') => void,
+
+    init(dependencies: { getApiKey: () => string; showPreviewModal: (urls: (string | null)[], startIndex?: number) => void; showNotification: (message: string, type?: 'info' | 'error') => void; }) {
+        if (!this.view) return;
+        this.getApiKey = dependencies.getApiKey;
+        this.showPreviewModal = dependencies.showPreviewModal;
+        this.showNotification = dependencies.showNotification;
+        this.addEventListeners();
+        this.render();
+    },
+
+    addEventListeners() {
+        const dropZone = this.fileInput.closest('.file-drop-zone') as HTMLElement;
+        setupDragAndDrop(dropZone, this.fileInput);
+
+        this.fileInput.addEventListener('change', this.handleUpload.bind(this));
+        this.changePhotoButton.addEventListener('click', () => this.fileInput.click());
+        this.generateButton.addEventListener('click', this.handleGenerate.bind(this));
+        this.downloadButton.addEventListener('click', this.handleDownload.bind(this));
+        this.startOverButton.addEventListener('click', this.handleStartOver.bind(this));
+        
+        this.roomTypeGroup.addEventListener('click', (e) => this.handleOptionClick('roomType', e));
+        this.styleGroup.addEventListener('click', (e) => this.handleOptionClick('designStyle', e));
+        this.colorGroup.addEventListener('click', (e) => this.handleOptionClick('colorPalette', e));
+        this.lightingGroup.addEventListener('click', (e) => this.handleOptionClick('lighting', e));
+
+        this.autoLayoutToggle.addEventListener('change', () => {
+            this.isAutoLayoutEnabled = this.autoLayoutToggle.checked;
+        });
+
+        (this.originalImage.closest('.retouch-image-box') as HTMLElement).addEventListener('click', () => this.handleImageClick(0));
+        this.resultBox.addEventListener('click', () => this.handleImageClick(1));
+    },
+    
+    handleOptionClick(stateKey: 'roomType' | 'designStyle' | 'colorPalette' | 'lighting', e: MouseEvent) {
+        const target = e.target as HTMLElement;
+        const button = target.closest('.toggle-button');
+        if (button) {
+            const value = (button as HTMLElement).dataset.value!;
+            (this as any)[stateKey] = value;
+            
+            let group: HTMLElement | null = null;
+            if (stateKey === 'roomType') group = this.roomTypeGroup;
+            else if (stateKey === 'designStyle') group = this.styleGroup;
+            else if (stateKey === 'colorPalette') group = this.colorGroup;
+            else if (stateKey === 'lighting') group = this.lightingGroup;
+
+            if (group) {
+                group.querySelectorAll('.toggle-button').forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+            }
+        }
+    },
+
+    async handleUpload(e: Event) {
+        const file = (e.target as HTMLInputElement).files?.[0];
+        if (!file) return;
+
+        try {
+            const dataUrl = await blobToDataUrl(file);
+            this.sourceImage = {
+                dataUrl,
+                base64: dataUrl.split(',')[1],
+            };
+            this.render();
+        } catch (error: any) {
+            this.showNotification(`Gagal memproses file: ${error.message}`, 'error');
+        }
+    },
+
+    buildPrompt(): string {
+        const userPrompt = this.promptInput.value.trim();
+        let prompt = `Tugas: Ubah foto interior ruangan yang diberikan secara fotorealistis.\n`;
+        prompt += `Gaya Desain Baru: ${this.designStyle}\n`;
+        prompt += `Tipe Ruangan: ${this.roomType}\n`;
+
+        const optionalInstructions: string[] = [];
+        if (userPrompt) {
+            optionalInstructions.push(`Instruksi Kustom: ${userPrompt}`);
+        }
+        if (this.isAutoLayoutEnabled) {
+            optionalInstructions.push("Tata Ulang Perabotan: Optimalkan tata letak perabotan untuk aliran dan kelapangan yang lebih baik. JANGAN mengubah struktur (dinding, jendela, pintu).");
+        }
+        if (this.colorPalette !== 'Original') {
+            optionalInstructions.push(`Palet Warna: Terapkan palet warna dominan '${this.colorPalette}'.`);
+        }
+        if (this.lighting !== 'Original') {
+            optionalInstructions.push(`Pencahayaan: Render ulang adegan dengan pencahayaan '${this.lighting}'.`);
+        }
+
+        if (optionalInstructions.length > 0) {
+            prompt += `\nInstruksi Spesifik:\n- ${optionalInstructions.join('\n- ')}\n`;
+        }
+        
+        prompt += `\nAturan Penting:
+1. Hasil akhir HARUS berupa gambar, bukan deskripsi teks.
+2. ${this.isAutoLayoutEnabled ? 'Hanya ubah posisi perabotan. JANGAN mengubah struktur arsitektur (dinding, jendela, pintu).' : 'Pertahankan tata letak dan arsitektur dasar ruangan. Jangan mengubah jendela, pintu, atau struktur utama.'}
+3. Terapkan gaya dan instruksi baru ke perabotan, warna, dan dekorasi.`;
+        
+        return prompt;
+    },
+
+    async handleGenerate() {
+        if (!this.sourceImage) return;
+
+        this.state = 'processing';
+        this.render();
+
+        const prompt = this.buildPrompt();
+
+        try {
+            const response = await generateStyledImage(this.sourceImage.base64, null, prompt, this.getApiKey);
+            const imagePart = response.candidates?.[0]?.content?.parts.find(p => p.inlineData);
+
+            if (imagePart?.inlineData) {
+                this.resultImageUrl = `data:${imagePart.inlineData.mimeType};base64,${imagePart.inlineData.data}`;
+                this.state = 'results';
+            } else {
+                const textPart = response.candidates?.[0]?.content?.parts.find(p => p.text);
+                throw new Error(textPart?.text || "Tidak ada data gambar dalam respons. Gambar mungkin diblokir.");
+            }
+        } catch (e: any) {
+            console.error("Error during interior design generation:", e);
+            this.state = 'error';
+            this.errorMessage = parseAndFormatErrorMessage(e, 'Desain interior');
+        } finally {
+            this.render();
+        }
+    },
+    
+    handleImageClick(startIndex: number) {
+        if (!this.sourceImage) return;
+    
+        if (this.state === 'results' && this.resultImageUrl) {
+            const urls = [this.sourceImage.dataUrl, this.resultImageUrl];
+            this.showPreviewModal(urls, startIndex);
+        } else if (startIndex === 0) {
+            this.showPreviewModal([this.sourceImage.dataUrl], 0);
+        }
+    },
+
+    handleDownload() {
+        if (this.resultImageUrl) {
+            downloadFile(this.resultImageUrl, 'desain_interior_ai.png');
+        }
+    },
+
+    handleStartOver() {
+        this.state = 'idle';
+        this.sourceImage = null;
+        this.resultImageUrl = null;
+        this.errorMessage = '';
+        this.fileInput.value = '';
+        this.promptInput.value = '';
+
+        // Reset new states
+        this.isAutoLayoutEnabled = false;
+        this.autoLayoutToggle.checked = false;
+        this.colorPalette = 'Original';
+        this.lighting = 'Original';
+
+        // Reset UI toggle buttons to default
+        const resetGroup = (group: HTMLElement | null, defaultValue: string) => {
+            if (!group) return;
+            group.querySelectorAll('.toggle-button').forEach(btn => {
+                btn.classList.toggle('active', (btn as HTMLElement).dataset.value === defaultValue);
+            });
+        };
+        
+        resetGroup(this.roomTypeGroup, 'Ruang Tamu');
+        resetGroup(this.styleGroup, 'Skandinavia');
+        resetGroup(this.colorGroup, 'Original');
+        resetGroup(this.lightingGroup, 'Original');
+        
+        this.roomType = 'Ruang Tamu';
+        this.designStyle = 'Skandinavia';
+        
+        this.render();
+    },
+
+    render() {
+        const hasImage = !!this.sourceImage;
+
+        // Main view visibility
+        this.inputStateEl.style.display = this.state === 'idle' ? 'block' : 'none';
+        this.resultsStateEl.style.display = this.state !== 'idle' ? 'block' : 'none';
+        
+        // Input state details
+        this.optionsPanel.style.display = hasImage ? 'block' : 'none';
+        this.uploadLabel.style.display = hasImage ? 'none' : 'block';
+        this.previewImage.style.display = hasImage ? 'block' : 'none';
+        if (hasImage) {
+            this.previewImage.src = this.sourceImage!.dataUrl;
+        }
+
+        // Results state details
+        if (this.state !== 'idle' && this.sourceImage) {
+            this.originalImage.src = this.sourceImage.dataUrl;
+        }
+
+        switch(this.state) {
+            case 'processing':
+                this.resultBox.innerHTML = '<div class="loading-clock"></div><p class="pending-status-text">AI sedang mendesain...</p>';
+                this.downloadButton.disabled = true;
+                break;
+            case 'results':
+                if (this.resultImageUrl) {
+                    this.resultBox.innerHTML = `<img src="${this.resultImageUrl}" alt="Hasil desain interior" />`;
+                    this.downloadButton.disabled = false;
+                }
+                break;
+            case 'error':
+                this.resultBox.innerHTML = `<p class="pending-status-text" style="padding: 1rem;">${this.errorMessage}</p>`;
+                this.downloadButton.disabled = true;
+                break;
+        }
+    }
+};
+
 // === AI Photo Studio ===
 const PhotoStudio = {
     // Constants
@@ -924,7 +1184,7 @@ const OutfitPro = {
             inlineData: { data: img.base64, mimeType: img.file.type || 'image/png' }
         }));
 
-        const flatLayPrompt = "Create a photorealistic flat lay composition using all the provided fashion items. Arrange them neatly and artistically on a clean, neutral surface like light wood or marble. The final image must be in a 9:16 vertical aspect ratio.";
+        const flatLayPrompt = "Dengan menggunakan item pakaian yang disediakan, buatlah sebuah foto flat lay yang profesional. Mulailah dengan latar belakang yang bersih dan netral (seperti abu-abu muda, kayu putih, atau marmer). Kemudian, susun SEMUA item pakaian dengan rapi dan artistik di atas permukaan ini. Gambar akhir harus berupa bidikan flat lay yang tersusun dengan baik, fotorealistik, dan cocok untuk toko online. Jangan sertakan model atau manekin.";
         const modelTryOnPrompt = "Create a photorealistic image of a faceless mannequin or gender-neutral model wearing all the provided fashion items to form a complete outfit. The model should be standing in a confident, full-body pose against a simple light gray studio background. The focus should be on how the clothes fit and drape together. The final image must be in a 9:16 vertical aspect ratio.";
         
         const generateMockup = async (prompt: string, type: 'flatLay' | 'modelTryOn') => {
@@ -947,7 +1207,7 @@ const OutfitPro = {
                 }
             } catch (e: any) {
                 console.error(`Error generating ${type} mockup:`, e);
-                this.results[type] = { status: 'error', errorMessage: 'Pembuatan gagal.' };
+                this.results[type] = { status: 'error', errorMessage: parseAndFormatErrorMessage(e, 'Pembuatan Mockup') };
             } finally {
                 this.render();
             }
@@ -1005,7 +1265,7 @@ const OutfitPro = {
                     }
                     break;
                 case 'error':
-                    element.innerHTML = `<p class="pending-status-text">${result.errorMessage || 'Terjadi kesalahan.'}</p>`;
+                    element.innerHTML = `<p class="pending-status-text" title="${result.errorMessage || 'Terjadi kesalahan.'}">Pembuatan gagal.</p>`;
                     break;
             }
         };
@@ -1187,7 +1447,7 @@ const LogoLab = {
     brandBrief: '',
     logoType: 'Icon',
     logoStyle: 'Minimalist',
-    results: [] as { status: 'pending' | 'done' | 'error', url?: string, base64?: string }[],
+    results: [] as { status: 'pending' | 'done' | 'error', url?: string, base64?: string, errorMessage?: string }[],
     selectedLogoForRefinement: null as { url: string, base64: string } | null,
 
     // Dependencies
@@ -1276,11 +1536,11 @@ const LogoLab = {
 
         const generationPromises = this.results.map(async (_, index) => {
             try {
-                const prompt = `Buat konsep logo berdasarkan brief berikut: "${this.brandBrief}".
+                const prompt = `Buat konsep logo yang bersih dan modern berdasarkan brief berikut: "${this.brandBrief}".
                 - Jenis Logo: ${this.logoType}
                 - Gaya Desain: ${this.logoStyle}
-                - Palet Warna: ${this.colorsInput.value.trim() || 'ditentukan desainer'}
-                - **PENTING**: Hasilnya harus berupa logo bergaya vektor yang bersih, pada latar belakang putih polos. Hindari detail yang rumit. Ini untuk identitas merek.`;
+                - Palet Warna: ${this.colorsInput.value.trim() || 'pilihan desainer'}
+                - **PENTING**: Logo harus sederhana, mudah diingat, dan cocok untuk identitas merek. Sajikan dengan latar belakang putih polos. Hindari detail rumit atau teks yang tidak dapat dibaca.`;
                 
                 // FIX: Replaced generateImageWithImagen with generateImage
                 const imageUrl = await generateImage(prompt, this.getApiKey);
@@ -1291,7 +1551,7 @@ const LogoLab = {
                 };
             } catch (e: any) {
                 console.error(`Error generating logo ${index}:`, e);
-                this.results[index] = { status: 'error' };
+                this.results[index] = { status: 'error', errorMessage: parseAndFormatErrorMessage(e, 'Pembuatan Logo') };
             } finally {
                 this.render();
             }
@@ -1305,14 +1565,15 @@ const LogoLab = {
     async handleGenerateRefinement() {
         if (!this.selectedLogoForRefinement) return;
 
-        const prompt = this.refinePromptInput.value.trim();
-        if (!prompt) return;
+        const userPrompt = this.refinePromptInput.value.trim();
+        if (!userPrompt) return;
 
         this.refineGenerateButton.disabled = true;
         this.refinementResultsGrid.innerHTML = Array(2).fill('<div class="image-result-item"><div class="loading-clock"></div></div>').join('');
 
         const generationPromises = Array(2).fill(null).map(async () => {
             try {
+                const prompt = `Sempurnakan logo yang diberikan. Terapkan instruksi berikut: "${userPrompt}". Pertahankan konsep inti tetapi ubah sesuai permintaan. Hasilnya harus berupa logo yang bersih dengan latar belakang putih.`;
                 // FIX: The error on this line should be resolved by fixing the other import errors.
                 const response = await generateStyledImage(this.selectedLogoForRefinement!.base64, null, prompt, this.getApiKey);
                 const imagePart = response.candidates?.[0]?.content?.parts.find(p => p.inlineData);
@@ -1404,7 +1665,7 @@ const LogoLab = {
         }
     },
     
-    renderLogoItem(grid: HTMLElement, result: { status: 'pending' | 'done' | 'error', url?: string, base64?: string }) {
+    renderLogoItem(grid: HTMLElement, result: { status: 'pending' | 'done' | 'error', url?: string, base64?: string, errorMessage?: string }) {
         const wrapper = document.createElement('div');
         wrapper.className = 'image-result-wrapper';
 
@@ -1415,7 +1676,7 @@ const LogoLab = {
         if (result.status === 'pending') {
             itemHTML = `<div class="loading-clock"></div>`;
         } else if (result.status === 'error') {
-            itemHTML = `<span>Error</span>`;
+            itemHTML = `<span title="${result.errorMessage || 'Gagal membuat logo'}">Error</span>`;
         } else if (result.status === 'done' && result.url) {
             itemHTML = `<img src="${result.url}" alt="Generated logo concept">
             <div class="affiliate-result-item-overlay">
@@ -1505,6 +1766,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     if (document.querySelector('#ai-voice-studio-view')) {
         AiVoiceStudio.init(dependencies);
+    }
+    if (document.querySelector('#interior-designer-view')) {
+        InteriorDesignerAI.init(dependencies);
     }
 
 

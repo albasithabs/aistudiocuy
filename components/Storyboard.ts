@@ -5,9 +5,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { blobToDataUrl, delay, downloadFile, setupDragAndDrop, withRetry } from "../utils/helpers.js";
+import { blobToDataUrl, delay, downloadFile, setupDragAndDrop, withRetry } from "../utils/helpers.ts";
 // FIX: The missing functions are now implemented and exported from gemini.ts.
-import { generateStoryboard, generateImage, generateTTS, generateVideoContent } from "../utils/gemini.js";
+import { generateStoryboard, generateImage, generateTTS, generateVideoContent } from "../utils/gemini.ts";
 
 type StoryboardState = 'idle' | 'generating' | 'results';
 
