@@ -109,6 +109,8 @@ const AiVoiceStudio = {
     audioUrl: null as string | null,
     isLoading: false,
     currentAudioPlayer: null as HTMLAudioElement | null,
+    currentSamplePlayer: null as HTMLAudioElement | null,
+    lastSampleUrl: null as string | null,
 
     // Data
     actors: [
@@ -212,6 +214,16 @@ const AiVoiceStudio = {
         this.actorList.querySelectorAll('.sample-button').forEach(button => {
             button.addEventListener('click', async (e) => {
                 e.stopPropagation(); // Prevent card selection when clicking sample
+                
+                // Stop any currently playing sample
+                if (this.currentSamplePlayer) {
+                    this.currentSamplePlayer.pause();
+                    if (this.lastSampleUrl) {
+                        URL.revokeObjectURL(this.lastSampleUrl);
+                        this.lastSampleUrl = null;
+                    }
+                }
+
                 const btn = e.currentTarget as HTMLButtonElement;
                 const text = btn.dataset.sampleText!;
                 const voiceName = btn.dataset.voiceName!;
@@ -220,16 +232,29 @@ const AiVoiceStudio = {
 
                 try {
                     const url = await generateTTS(text, voiceName, this.getApiKey);
+                    this.lastSampleUrl = url;
                     const audio = new Audio(url);
+                    this.currentSamplePlayer = audio;
+
                     audio.play();
                     audio.onended = () => {
                          btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 0 24 24" width="18px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M10 16.5l6-4.5-6-4.5v9zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg> <span>Contoh</span>`;
                          btn.disabled = false;
+                         if (this.lastSampleUrl) {
+                            URL.revokeObjectURL(this.lastSampleUrl);
+                            this.lastSampleUrl = null;
+                         }
+                         this.currentSamplePlayer = null;
                     };
                 } catch (error) {
                     this.showNotification('Gagal memutar sampel.', 'error');
                     console.error('Sample playback failed:', error);
                     btn.innerHTML = `<span>Gagal</span>`;
+                    if (this.lastSampleUrl) {
+                        URL.revokeObjectURL(this.lastSampleUrl);
+                        this.lastSampleUrl = null;
+                    }
+                    this.currentSamplePlayer = null;
                     setTimeout(() => {
                         btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 0 24 24" width="18px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M10 16.5l6-4.5-6-4.5v9zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg> <span>Contoh</span>`;
                         btn.disabled = false;
@@ -1426,6 +1451,7 @@ const LogoLab = {
     briefInput: document.querySelector('#logo-lab-brief') as HTMLTextAreaElement,
     typeGroup: document.querySelector('#logo-lab-type-group') as HTMLDivElement,
     styleGroup: document.querySelector('#logo-lab-style-group') as HTMLDivElement,
+    dimensionalityGroup: document.querySelector('#logo-lab-dimensionality-group') as HTMLDivElement,
     colorsInput: document.querySelector('#logo-lab-colors') as HTMLInputElement,
 
     // Actions & Results
@@ -1447,6 +1473,7 @@ const LogoLab = {
     brandBrief: '',
     logoType: 'Icon',
     logoStyle: 'Minimalist',
+    logoDimensionality: '2D' as '2D' | '3D',
     results: [] as { status: 'pending' | 'done' | 'error', url?: string, base64?: string, errorMessage?: string }[],
     selectedLogoForRefinement: null as { url: string, base64: string } | null,
 
@@ -1473,6 +1500,7 @@ const LogoLab = {
 
         this.typeGroup.addEventListener('click', this.handleOptionClick.bind(this, 'logoType'));
         this.styleGroup.addEventListener('click', this.handleOptionClick.bind(this, 'logoStyle'));
+        this.dimensionalityGroup.addEventListener('click', this.handleOptionClick.bind(this, 'logoDimensionality'));
         
         this.resultsGrid.addEventListener('click', this.handleGridClick.bind(this));
         this.refinementResultsGrid.addEventListener('click', this.handleGridClick.bind(this)); // Also handle clicks on refined logos
@@ -1483,16 +1511,22 @@ const LogoLab = {
         });
     },
 
-    handleOptionClick(stateKey: 'logoType' | 'logoStyle', e: MouseEvent) {
+    handleOptionClick(stateKey: 'logoType' | 'logoStyle' | 'logoDimensionality', e: MouseEvent) {
         const target = e.target as HTMLElement;
         const button = target.closest('.toggle-button');
         if (button) {
             const value = (button as HTMLElement).dataset.value!;
             (this as any)[stateKey] = value;
             
-            const group = stateKey === 'logoType' ? this.typeGroup : this.styleGroup;
-            group.querySelectorAll('.toggle-button').forEach(btn => btn.classList.remove('active'));
-            button.classList.add('active');
+            let group: HTMLElement | null = null;
+            if (stateKey === 'logoType') group = this.typeGroup;
+            else if (stateKey === 'logoStyle') group = this.styleGroup;
+            else if (stateKey === 'logoDimensionality') group = this.dimensionalityGroup;
+
+            if (group) {
+                group.querySelectorAll('.toggle-button').forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+            }
         }
     },
 
@@ -1539,6 +1573,7 @@ const LogoLab = {
                 const prompt = `Buat konsep logo yang bersih dan modern berdasarkan brief berikut: "${this.brandBrief}".
                 - Jenis Logo: ${this.logoType}
                 - Gaya Desain: ${this.logoStyle}
+                - Dimensi: ${this.logoDimensionality === '3D' ? 'Desain 3D dengan bayangan dan kedalaman' : 'Desain 2D datar'}
                 - Palet Warna: ${this.colorsInput.value.trim() || 'pilihan desainer'}
                 - **PENTING**: Logo harus sederhana, mudah diingat, dan cocok untuk identitas merek. Sajikan dengan latar belakang putih polos. Hindari detail rumit atau teks yang tidak dapat dibaca.`;
                 
@@ -1562,6 +1597,54 @@ const LogoLab = {
         this.render();
     },
 
+    async handleMoreLikeThis(base64: string) {
+        this.state = 'generating-logos';
+        this.brandBrief = this.briefInput.value.trim(); // Ensure brief is up-to-date
+        this.refinementPanel.style.display = 'none'; // Hide refinement panel
+        this.selectedLogoForRefinement = null;
+    
+        this.results = Array(4).fill({ status: 'pending' });
+        this.render(); // Show the loading state for all 4 slots
+    
+        const generationPromises = this.results.map(async (_, index) => {
+            try {
+                const prompt = `Based on the provided reference logo image, generate a new, unique logo concept that is a creative variation but visually similar.
+                - Brand Brief: "${this.brandBrief}"
+                - Logo Type: ${this.logoType}
+                - Design Style: ${this.logoStyle}
+                - Dimensionality: ${this.logoDimensionality === '3D' ? '3D design with shadows and depth' : 'Flat 2D design'}
+                - Color Palette: ${this.colorsInput.value.trim() || 'designer\'s choice'}
+                - **PENTING**: The final logo must be clean, modern, suitable for a brand identity, and presented on a plain white background. Avoid complex details or unreadable text.`;
+                
+                const response = await generateStyledImage(base64, null, prompt, this.getApiKey);
+                const imagePart = response.candidates?.[0]?.content?.parts.find(p => p.inlineData);
+    
+                if (imagePart?.inlineData) {
+                    const imageUrl = `data:${imagePart.inlineData.mimeType};base64,${imagePart.inlineData.data}`;
+                    this.results[index] = { 
+                        status: 'done', 
+                        url: imageUrl,
+                        base64: imageUrl.split(',')[1] 
+                    };
+                } else {
+                    const textPart = response.candidates?.[0]?.content?.parts.find(p => p.text);
+                    throw new Error(textPart?.text || "No image data in response.");
+                }
+            } catch (e: any) {
+                console.error(`Error generating similar logo ${index}:`, e);
+                this.results[index] = { status: 'error', errorMessage: parseAndFormatErrorMessage(e, 'Pembuatan Logo Serupa') };
+            } finally {
+                // Re-render the grid to show the newly finished item (or error)
+                // Do this one by one for better UX
+                this.render(); 
+            }
+        });
+        
+        await Promise.all(generationPromises);
+        this.state = 'results';
+        this.render(); // Final render after all are done
+    },
+
     async handleGenerateRefinement() {
         if (!this.selectedLogoForRefinement) return;
 
@@ -1573,7 +1656,7 @@ const LogoLab = {
 
         const generationPromises = Array(2).fill(null).map(async () => {
             try {
-                const prompt = `Sempurnakan logo yang diberikan. Terapkan instruksi berikut: "${userPrompt}". Pertahankan konsep inti tetapi ubah sesuai permintaan. Hasilnya harus berupa logo yang bersih dengan latar belakang putih.`;
+                const prompt = `Sempurnakan logo yang diberikan dengan tetap mempertahankan gaya ${this.logoDimensionality}-nya. Terapkan instruksi berikut: "${userPrompt}". Pertahankan konsep inti tetapi ubah sesuai permintaan. Hasilnya harus berupa logo yang bersih dengan latar belakang putih.`;
                 // FIX: The error on this line should be resolved by fixing the other import errors.
                 const response = await generateStyledImage(this.selectedLogoForRefinement!.base64, null, prompt, this.getApiKey);
                 const imagePart = response.candidates?.[0]?.content?.parts.find(p => p.inlineData);
@@ -1609,15 +1692,41 @@ const LogoLab = {
         if (target.closest('.refine-btn')) {
             this.selectedLogoForRefinement = { url, base64 };
             this.refinementPanel.style.display = 'block';
-            // FIX: Fixed template literal syntax error
             this.refinePreview.innerHTML = `<img src="${url}" alt="Logo terpilih untuk penyempurnaan">`;
             this.refinePromptInput.value = '';
             this.refinementResultsGrid.innerHTML = '';
             this.refinePromptInput.focus();
         } else if (target.closest('.download-btn')) {
             downloadFile(url, 'logo.png');
+        } else if (target.closest('.more-like-this-btn')) {
+            this.handleMoreLikeThis(base64);
         } else if (target.closest('.image-result-item')) {
-            this.showPreviewModal([url], 0);
+            // Determine which grid was clicked to gather the correct list of images for the gallery view.
+            const isRefinementGrid = target.closest('#logo-lab-refinement-results');
+            
+            let allUrls: string[] = [];
+
+            if (isRefinementGrid) {
+                // For the refinement grid, get URLs directly from the DOM elements.
+                allUrls = Array.from(this.refinementResultsGrid.querySelectorAll('.image-result-item img'))
+                               .map(img => (img as HTMLImageElement).src)
+                               .filter(Boolean);
+            } else {
+                // For the main results grid, get URLs from the state.
+                allUrls = this.results
+                    .filter(r => r.status === 'done' && r.url)
+                    .map(r => r.url!);
+            }
+            
+            const startIndex = allUrls.indexOf(url);
+            
+            if (startIndex > -1) {
+                // Show the modal with all images from the clicked grid.
+                this.showPreviewModal(allUrls, startIndex);
+            } else {
+                // Fallback to showing only the clicked image if it's not found in the list.
+                this.showPreviewModal([url], 0);
+            }
         }
     },
 
@@ -1626,6 +1735,7 @@ const LogoLab = {
         this.brandBrief = '';
         this.logoType = 'Icon';
         this.logoStyle = 'Minimalist';
+        this.logoDimensionality = '2D';
         this.results = [];
         this.selectedLogoForRefinement = null;
         
@@ -1637,6 +1747,12 @@ const LogoLab = {
         this.briefInput.value = '';
         this.colorsInput.value = '';
         this.refinementPanel.style.display = 'none';
+
+        // Reset button groups to default
+        this.typeGroup.querySelector('[data-value="Icon"]')?.classList.add('active');
+        this.styleGroup.querySelector('[data-value="Minimalist"]')?.classList.add('active');
+        this.dimensionalityGroup.querySelector('[data-value="2D"]')?.classList.add('active');
+
 
         this.render();
     },
@@ -1680,10 +1796,13 @@ const LogoLab = {
         } else if (result.status === 'done' && result.url) {
             itemHTML = `<img src="${result.url}" alt="Generated logo concept">
             <div class="affiliate-result-item-overlay">
-                <button class="icon-button refine-btn" aria-label="Sempurnakan logo ini">
+                <button class="icon-button more-like-this-btn" title="Buatkan yang Mirip" aria-label="Buatkan yang Mirip">
+                    <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 0 24 24" width="20px" fill="currentColor"><path d="M14 2H4c-1.1 0-2 .9-2 2v10h2V4h10V2zm4 4H8c-1.1 0-2 .9-2 2v10h2V8h10V6zm-4 4H10c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2v-8c0-1.1-.9-2-2-2z"></path></svg>
+                </button>
+                <button class="icon-button refine-btn" title="Sempurnakan logo ini" aria-label="Sempurnakan logo ini">
                     <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 0 24 24" width="20px" fill="currentColor"><g><rect fill="none" height="24" width="24"/></g><g><path d="M19,9l1.25-2.75L23,5l-2.75-1.25L19,1l-1.25,2.75L15,5l2.75,1.25L19,9z M11.5,9.5L9,4L6.5,9.5L1,12l5.5,2.5L9,20l2.5-5.5 L17,12L11.5,9.5z M19,15l-1.25,2.75L15,19l2.75,1.25L19,23l1.25-2.75L23,19l-2.75-1.25L19,15z"/></g></svg>
                 </button>
-                <button class="icon-button download-btn" aria-label="Unduh logo ini">
+                <button class="icon-button download-btn" title="Unduh logo ini" aria-label="Unduh logo ini">
                     <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 0 24 24" width="20px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
                 </button>
             </div>`;
