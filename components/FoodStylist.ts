@@ -7,7 +7,7 @@
 
 // IMPROVEMENT: Imported withRetry for API resilience.
 import { blobToDataUrl, delay, downloadFile, parseAndFormatErrorMessage, setupDragAndDrop, withRetry } from "../utils/helpers.ts";
-import { generateStyledImage, generateStructuredTextFromImage, nutritionSchema } from "../utils/gemini.ts";
+import { generateImage, generateStyledImage, generateStructuredTextFromImage, nutritionSchema } from "../utils/gemini.ts";
 
 type FoodStylistState = 'idle' | 'processing' | 'results' | 'error';
 
@@ -41,6 +41,7 @@ export const FoodStylist = {
     nutritionContent: null as HTMLDivElement | null,
     nutritionCloseButton: null as HTMLButtonElement | null,
     toastContainer: null as HTMLDivElement | null, // IMPROVEMENT: Added for notifications
+    imageCountSelect: null as HTMLSelectElement | null,
 
     // Option Groups
     shotModeGroup: null as HTMLDivElement | null,
@@ -66,6 +67,7 @@ export const FoodStylist = {
     angle: '45-degree',
     mood: 'luxury',
     activeView: 'generator',
+    imageCount: 3,
 
     // Dependencies
     getApiKey: (() => '') as () => string,
@@ -90,6 +92,7 @@ export const FoodStylist = {
         this.statusText = this.view.querySelector('#food-stylist-status');
         this.progressWrapper = this.view.querySelector('#food-stylist-progress-wrapper');
         this.progressBar = this.view.querySelector('#food-stylist-progress-bar');
+        this.imageCountSelect = this.view.querySelector('#food-stylist-image-count-select');
         
         this.shotModeGroup = this.view.querySelector('#food-stylist-shot-mode-group');
         this.categoryGroup = this.view.querySelector('#food-stylist-category-group');
@@ -127,6 +130,12 @@ export const FoodStylist = {
         this.startOverButton?.addEventListener('click', this.handleStartOver.bind(this));
         this.downloadAllButton?.addEventListener('click', this.handleDownloadAll.bind(this));
         this.resultsGrid?.addEventListener('click', this.handleGridClick.bind(this));
+        this.imageCountSelect?.addEventListener('change', () => {
+            if (this.imageCountSelect) {
+                this.imageCount = parseInt(this.imageCountSelect.value, 10);
+                this.updateGenerateButton();
+            }
+        });
         
         // Option group listeners
         this.shotModeGroup?.addEventListener('click', (e) => this.handleOptionClick('shotMode', e));
@@ -180,6 +189,11 @@ export const FoodStylist = {
         const hasText = this.dishDescInput.value.trim().length > 0;
         const hasImage = !!this.sourceImage;
         this.generateButton.disabled = !hasText && !hasImage;
+
+        const span = this.generateButton.querySelector('span');
+        if (span) {
+            span.textContent = `Buat ${this.imageCount} Foto Makanan`;
+        }
     },
 
     render() {
@@ -272,7 +286,7 @@ export const FoodStylist = {
 
         this.state = 'processing';
         this.nutritionInfo = null;
-        this.results = PROMPT_PACK.map(prompt => ({ prompt, status: 'pending', url: undefined, errorMessage: undefined }));
+        this.results = PROMPT_PACK.slice(0, this.imageCount).map(prompt => ({ prompt, status: 'pending', url: undefined, errorMessage: undefined }));
         this.progressBar.style.width = '0%';
         this.render();
 
@@ -301,25 +315,42 @@ export const FoodStylist = {
                 
                 const imageBase64 = this.sourceImage ? this.sourceImage.base64 : null;
                 
-                // IMPROVEMENT: Wrap API call in withRetry for resilience.
-                // FIX: Added missing options object for withRetry call.
-                const response = await withRetry(() =>
-                    generateStyledImage(imageBase64!, null, fullPrompt, this.getApiKey),
-                    {
-                        retries: 2,
-                        delayMs: 1000,
-                        onRetry: (attempt, error) => console.warn(`FoodStylist generation attempt ${attempt} failed. Retrying...`, error)
-                    }
-                );
+                let imageUrl = '';
                 
-                const imagePart = response.candidates?.[0]?.content?.parts.find(p => p.inlineData);
+                if (imageBase64) {
+                    // Edit image if one is provided
+                    const response = await withRetry(() =>
+                        generateStyledImage(imageBase64, null, fullPrompt, this.getApiKey),
+                        {
+                            retries: 2,
+                            delayMs: 1000,
+                            onRetry: (attempt, error) => console.warn(`FoodStylist generation attempt ${attempt} failed. Retrying...`, error)
+                        }
+                    );
+                    const imagePart = response.candidates?.[0]?.content?.parts.find(p => p.inlineData);
+                    if (imagePart?.inlineData) {
+                        imageUrl = `data:${imagePart.inlineData.mimeType};base64,${imagePart.inlineData.data}`;
+                    } else {
+                        throw new Error("Tidak ada data gambar dalam respons.");
+                    }
+                } else {
+                    // Generate a new image from text if no image is provided
+                    imageUrl = await withRetry(() =>
+                        generateImage(fullPrompt, this.getApiKey),
+                        {
+                            retries: 2,
+                            delayMs: 1000,
+                            onRetry: (attempt, error) => console.warn(`FoodStylist text-to-image attempt ${attempt} failed. Retrying...`, error)
+                        }
+                    );
+                }
 
-                if (imagePart?.inlineData) {
-                    const imageUrl = `data:${imagePart.inlineData.mimeType};base64,${imagePart.inlineData.data}`;
+                if (imageUrl) {
                     this.results[index] = { ...result, status: 'done', url: imageUrl };
                 } else {
-                    throw new Error("Tidak ada data gambar dalam respons.");
+                    throw new Error("Gagal membuat URL gambar.");
                 }
+
             } catch (e: any) {
                 console.error(`Error generating image ${index}:`, e);
                 this.results[index] = { ...result, status: 'error', errorMessage: parseAndFormatErrorMessage(e, 'Pembuatan gambar') };
@@ -340,8 +371,6 @@ export const FoodStylist = {
         try {
             const prompt = "Analisis gambar makanan ini dan berikan perkiraan nutrisi. Jika bukan makanan, nyatakan demikian.";
             
-            // IMPROVEMENT: Wrap API call in withRetry.
-            // FIX: Added missing options object for withRetry call.
             const jsonString = await withRetry(() =>
                 generateStructuredTextFromImage(prompt, this.sourceImage!.base64, this.getApiKey, nutritionSchema),
                 {
@@ -355,7 +384,6 @@ export const FoodStylist = {
         } catch (e: any) {
             console.error("Nutrition analysis failed:", e);
             this.nutritionInfo = null;
-            // IMPROVEMENT: Use non-blocking notification for non-critical errors.
             this.showToast('Gagal menganalisis nutrisi.', 'error');
         }
     },
@@ -401,6 +429,12 @@ export const FoodStylist = {
         this.nutritionInfo = null;
         this.results = [];
         if (this.nutritionModal) this.nutritionModal.style.display = 'none';
+        
+        this.imageCount = 3;
+        if(this.imageCountSelect) {
+            this.imageCountSelect.value = '3';
+        }
+
         this.updateGenerateButton();
         this.render();
     },

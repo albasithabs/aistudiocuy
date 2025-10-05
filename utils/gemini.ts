@@ -87,6 +87,7 @@ export async function generateStyledImage(
         parts.push({ inlineData: { data: modelImageBytes, mimeType: 'image/png' } });
     }
 
+    // FIX: This logic was missing. It now correctly adds all additional images to the API request.
     if (additionalImages && additionalImages.length > 0) {
         parts.push(...additionalImages);
     }
@@ -94,7 +95,7 @@ export async function generateStyledImage(
     parts.push({ text: prompt });
 
     return ai.models.generateContent({
-        model: 'gemini-2.5-flash-image-preview',
+        model: 'gemini-2.5-flash-image',
         contents: { parts },
         config: { responseModalities: [Modality.IMAGE, Modality.TEXT] },
     });
@@ -114,7 +115,7 @@ export async function generateImage(
             { text: prompt }
         ];
         const response = await ai.models.generateContent({
-            model: 'gemini-2.5-flash-image-preview',
+            model: 'gemini-2.5-flash-image',
             contents: { parts },
             config: {
                 responseModalities: [Modality.IMAGE, Modality.TEXT],

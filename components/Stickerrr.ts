@@ -114,6 +114,7 @@ export const Stickerrr = {
     
     styleSelect: document.querySelector('#stickerrr-style-select') as HTMLSelectElement,
     themeSelect: document.querySelector('#stickerrr-theme-select') as HTMLSelectElement,
+    imageCountSelect: document.querySelector('#stickerrr-image-count-select') as HTMLSelectElement,
     autofillButton: document.querySelector('#stickerrr-autofill-button') as HTMLButtonElement,
     accessoryInput: document.querySelector('#stickerrr-accessory-input') as HTMLInputElement,
     instructionsInput: document.querySelector('#stickerrr-instructions-input') as HTMLTextAreaElement,
@@ -131,6 +132,7 @@ export const Stickerrr = {
     state: 'idle' as StickerrrState,
     sourceImage: null as { file: File, dataUrl: string, base64: string } | null,
     results: [] as StickerResult[],
+    imageCount: 3,
 
     // Dependencies
     getApiKey: (() => '') as () => string,
@@ -154,6 +156,10 @@ export const Stickerrr = {
         this.downloadAllButton.addEventListener('click', this.handleDownloadAll.bind(this));
         this.startOverButton.addEventListener('click', this.handleStartOver.bind(this));
         this.resultsGrid.addEventListener('click', this.handleGridClick.bind(this));
+        this.imageCountSelect.addEventListener('change', () => {
+            this.imageCount = parseInt(this.imageCountSelect.value, 10);
+            this.updateGenerateButtonText();
+        });
     },
 
     async handleUpload(e: Event) {
@@ -278,8 +284,8 @@ Pastikan hasil akhirnya adalah gambar tunggal yang bersih dan terlihat seperti s
         const customCaptions = this.captionInput.value.split(/[\n,]/).map(c => c.trim()).filter(Boolean);
 
         const prompts: string[] = [];
-        for (let i = 0; i < 10; i++) {
-            const packItem = themePack[i];
+        for (let i = 0; i < this.imageCount; i++) {
+            const packItem = themePack[i % themePack.length]; // Use modulo to prevent out of bounds
             const caption = customCaptions[i] || packItem.caption; // Use custom caption if available, otherwise use theme's default
             prompts.push(this.buildPrompt(packItem.expression, caption));
         }
@@ -309,7 +315,7 @@ Pastikan hasil akhirnya adalah gambar tunggal yang bersih dan terlihat seperti s
                     ];
                     
                     return ai.models.generateContent({
-                        model: 'gemini-2.5-flash-image-preview',
+                        model: 'gemini-2.5-flash-image',
                         contents: { parts },
                         config: {
                             responseModalities: [Modality.IMAGE, Modality.TEXT],
@@ -390,6 +396,8 @@ Pastikan hasil akhirnya adalah gambar tunggal yang bersih dan terlihat seperti s
         this.instructionsInput.value = '';
         this.captionInput.value = '';
         this.containerSelect.selectedIndex = 0;
+        this.imageCount = 3;
+        this.imageCountSelect.value = '3';
 
         this.render();
     },
@@ -407,6 +415,10 @@ Pastikan hasil akhirnya adalah gambar tunggal yang bersih dan terlihat seperti s
                 this.statusTextEl.textContent = 'Pembuatan stiker selesai.';
                 break;
         }
+    },
+
+    updateGenerateButtonText() {
+        this.generateButton.textContent = `Buat ${this.imageCount} Stiker`;
     },
     
     // IMPROVEMENT: Added a non-blocking notification system.
@@ -445,6 +457,7 @@ Pastikan hasil akhirnya adalah gambar tunggal yang bersih dan terlihat seperti s
 
         // Button states
         this.generateButton.disabled = !hasImage || this.state === 'processing';
+        this.updateGenerateButtonText();
 
         this.updateStatusText();
 

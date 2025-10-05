@@ -143,7 +143,14 @@ export const CreativeStudio = {
 
     // MixStyle Elements
     mixstyleSettings: document.querySelector('#affiliate-mixstyle-settings') as HTMLDivElement,
-    mixstyleAspectRatioGroup: document.querySelector('#affiliate-mixstyle-aspect-ratio-group') as HTMLDivElement,
+    mixstyleModelImageInput: document.querySelector('#affiliate-mixstyle-model-image-input') as HTMLInputElement,
+    mixstyleModelPreviewImage: document.querySelector('#affiliate-mixstyle-model-preview-image') as HTMLImageElement,
+    mixstyleInteractionGroup: document.querySelector('#affiliate-mixstyle-interaction-group') as HTMLDivElement,
+    mixstyleSettingGroup: document.querySelector('#affiliate-mixstyle-setting-group') as HTMLDivElement,
+
+    // Image Count Elements
+    imageCountContainer: document.querySelector('#affiliate-image-count-container') as HTMLDivElement,
+    imageCountSelect: document.querySelector('#affiliate-image-count-select') as HTMLSelectElement,
 
     // State
     state: 'idle' as AffiliateProState,
@@ -153,12 +160,14 @@ export const CreativeStudio = {
     isDiversityPackActive: false,
     isConsistentSet: true,
     productCategory: 'skincare' as ProductCategory,
+    mixstyleInteraction: 'holding the product naturally',
+    mixstyleSetting: 'clean, minimalist studio with soft lighting',
     sourceImage: null as string | null, // Base64 string
     modelImage: null as { file: File, dataUrl: string, base64: string } | null,
     sourceImageAspectRatio: null as string | null,
-    mixstyleAspectRatio: '9:16',
     customPrompt: '',
     imageResults: [] as ImageResult[],
+    imageCount: 3,
     
     // Dependencies
     getApiKey: (() => '') as () => string,
@@ -202,6 +211,12 @@ export const CreativeStudio = {
             });
         });
 
+        // Image Count Listener
+        this.imageCountSelect.addEventListener('change', () => {
+            this.imageCount = parseInt(this.imageCountSelect.value, 10);
+            this.updateGenerateButton();
+        });
+
         // LookBook V2 Listeners
         setupDragAndDrop(this.modelImageInput.closest('.file-drop-zone'), this.modelImageInput);
         this.modelImageInput.addEventListener('change', this.handleModelImageUpload.bind(this));
@@ -226,6 +241,26 @@ export const CreativeStudio = {
             });
         });
 
+        // MixStyle Listeners
+        setupDragAndDrop(this.mixstyleModelImageInput.closest('.file-drop-zone'), this.mixstyleModelImageInput);
+        this.mixstyleModelImageInput.addEventListener('change', this.handleModelImageUpload.bind(this));
+        this.mixstyleInteractionGroup.addEventListener('click', (e) => {
+            const button = (e.target as HTMLElement).closest('.toggle-button');
+            if(button) {
+                this.mixstyleInteractionGroup.querySelectorAll('.toggle-button').forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+                this.mixstyleInteraction = (button as HTMLElement).dataset.interaction || 'holding the product naturally';
+            }
+        });
+        this.mixstyleSettingGroup.addEventListener('click', (e) => {
+            const button = (e.target as HTMLElement).closest('.toggle-button');
+            if(button) {
+                this.mixstyleSettingGroup.querySelectorAll('.toggle-button').forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+                this.mixstyleSetting = (button as HTMLElement).dataset.setting || 'clean, minimalist studio with soft lighting';
+            }
+        });
+
         this.render();
         this.updateGenerateButton();
     },
@@ -244,6 +279,7 @@ export const CreativeStudio = {
             this.lookbookSettings.style.display = (isLookBook && this.state === 'image-uploaded') ? 'block' : 'none';
             this.categorySettings.style.display = (this.mode === 'ProductStyle' && this.state === 'image-uploaded') ? 'block' : 'none';
             this.mixstyleSettings.style.display = (isMixStyle && this.state === 'image-uploaded') ? 'block' : 'none';
+            this.imageCountContainer.style.display = this.state === 'image-uploaded' ? 'block' : 'none';
 
             switch (this.mode) {
                 case 'ProductStyle':
@@ -260,7 +296,7 @@ export const CreativeStudio = {
                     this.diversityPackGroup.style.opacity = this.modelImage ? '0.5' : '1';
                     break;
                 case 'MixStyle':
-                    this.subtitleEl.textContent = 'Hasilkan foto gaya hidup & interaksi langsung untuk produk Anda.';
+                    this.subtitleEl.textContent = 'Hasilkan foto gaya hidup dari model yang berinteraksi dengan produk Anda.';
                     this.fashionInfoMessage.style.display = 'none';
                     this.resultsGrid.style.setProperty('--product-shot-aspect-ratio', '9 / 16');
                     break;
@@ -367,21 +403,17 @@ export const CreativeStudio = {
             this.sourceImage = dataUrl.split(',')[1];
             
             const img = new Image();
-            // FIX: The onload handler MUST be set BEFORE setting the src.
-            // Otherwise, the image might load from cache before the handler is attached,
-            // and the onload event will never fire.
+            // FIX: Race condition. Set onload/onerror BEFORE setting src.
             img.onload = () => {
                 if (img.naturalWidth > 0 && img.naturalHeight > 0) {
                     this.sourceImageAspectRatio = `${img.naturalWidth} / ${img.naturalHeight}`;
                 }
-                // Now that we have all image info, update the state and render
                 this.state = 'image-uploaded';
                 this.updateGenerateButton();
                 this.render();
             };
             img.onerror = () => {
                 console.error('Error loading image for aspect ratio calculation.');
-                // Even if it fails, proceed without the aspect ratio
                 this.state = 'image-uploaded';
                 this.updateGenerateButton();
                 this.render();
@@ -394,22 +426,32 @@ export const CreativeStudio = {
     },
     
     async handleModelImageUpload(e: Event) {
-        const file = (e.target as HTMLInputElement).files?.[0];
-        if (file) {
+        const input = e.target as HTMLInputElement;
+        const file = input.files?.[0];
+
+        // Determine which preview image to use based on the current mode
+        let previewEl: HTMLImageElement | null = null;
+        if (this.mode === 'LookBook') {
+            previewEl = this.modelPreviewImage;
+        } else if (this.mode === 'MixStyle') {
+            previewEl = this.mixstyleModelPreviewImage;
+        }
+
+        if (file && previewEl) {
             const dataUrl = await blobToDataUrl(file);
             this.modelImage = {
                 file,
                 dataUrl,
                 base64: dataUrl.split(',')[1]
             };
-            this.modelPreviewImage.src = dataUrl;
-            this.modelPreviewImage.classList.remove('image-preview-hidden');
-        } else {
+            previewEl.src = dataUrl;
+            previewEl.classList.remove('image-preview-hidden');
+        } else if (previewEl) { // Handle clearing the input
             this.modelImage = null;
-            this.modelPreviewImage.src = '#';
-            this.modelPreviewImage.classList.add('image-preview-hidden');
+            previewEl.src = '#';
+            previewEl.classList.add('image-preview-hidden');
         }
-        this.render(); // Re-render to disable diversity pack
+        this.render(); // Re-render to update UI state (e.g., disable diversity pack in LookBook)
     },
     
     handleSceneSelection(e: MouseEvent) {
@@ -472,7 +514,7 @@ export const CreativeStudio = {
 
         return prompt.trim().replace(/\s+/g, ' ');
     },
-
+    
     async runGeneration(indexToRegen?: number) {
         if (typeof indexToRegen === 'number') {
             await this.regenerateSingle(indexToRegen);
@@ -493,14 +535,20 @@ export const CreativeStudio = {
 
     async runLookBookGeneration() {
         if (!this.sourceImage) return;
-        if (this.selectedPoses.size === 0) {
-            // IMPROVEMENT: Use the injected notification system instead of a blocking alert.
+        const selectedPosesArray = Array.from(this.selectedPoses);
+        if (selectedPosesArray.length === 0) {
             this.showNotification("Silakan pilih setidaknya satu pose untuk dibuat.", 'info');
             return;
         }
 
         const sessionID = this.isConsistentSet ? `SESSION-${Math.random().toString(36).substring(2, 10)}` : null;
-        const prompts = Array.from(this.selectedPoses).map(poseKey => this.buildLookBookPrompt(poseKey, sessionID));
+        
+        const prompts = Array.from({ length: this.imageCount }, (_, i) => {
+            // Cycle through selected poses
+            const poseKey = selectedPosesArray[i % selectedPosesArray.length];
+            return this.buildLookBookPrompt(poseKey, sessionID);
+        });
+
         this.state = 'generating';
         this.imageResults = prompts.map(prompt => ({ prompt, status: 'pending', imageUrl: null }));
         this.progressBar.style.width = '0%';
@@ -543,49 +591,29 @@ export const CreativeStudio = {
 
     async runMixStyleGeneration() {
         if (!this.sourceImage) return;
-
-        this.state = 'generating';
-        this.imageResults = Array(6).fill(null).map(() => ({ prompt: '', status: 'pending', imageUrl: null }));
-        this.progressBar.style.width = '0%';
-        this.render();
-        this.statusEl.innerText = 'Menganalisis produk...';
-
-        let productDescription = '';
-        try {
-            const analysisPrompt = `Analisis gambar dan berikan deskripsi singkat dan ringkas dari produk utama. Contoh: 'sebotol serum perawatan kulit berwarna putih', 'sepotong pizza pepperoni', 'ponsel pintar dengan casing biru'. Balas hanya dengan deskripsi produknya.`;
-            productDescription = await generateTextFromImage(analysisPrompt, this.sourceImage, this.getApiKey);
-        } catch (e: any) {
-            console.error("Product analysis failed:", e);
-            this.state = 'results-shown';
-            this.imageResults = this.imageResults.map(r => ({ ...r, status: 'error', errorMessage: 'Analisis produk gagal.' }));
-            this.render();
-            return;
-        }
+    
+        const interaction = this.mixstyleInteraction;
+        const setting = this.mixstyleSetting;
+    
+        const modelInstruction = this.modelImage 
+            ? "A model, perfectly matching the person in the provided model reference image, is interacting with the product from the product reference image. Model Integrity: The model's facial features, hair, and general appearance must be perfectly preserved from their reference image."
+            : "A photorealistic model, appropriate for the product and setting, is interacting with the product from the product reference image.";
+    
+        const basePrompt = `Create a high-quality, photorealistic lifestyle shot in a 9:16 aspect ratio. ${modelInstruction}
+- Interaction: The model is skillfully **${interaction}**.
+- Setting: The scene is a **${setting}**.
+- Product Integrity: The product's appearance, branding, and details must be perfectly preserved from its reference image.`;
         
-        this.statusEl.innerText = 'Membuat prompt...';
-
-        const lifestylePrompts = [
-            `Gambar gaya hidup fotorealistik. Sebuah ${productDescription} ditempatkan secara alami di atas meja modern yang bersih yang relevan dengan produk. Latar belakang sedikit kabur (bokeh) untuk menjaga fokus pada produk. Pencahayaannya lembut dan alami. Gambar akhir harus memiliki rasio aspek 9:16. Tampilan, logo, dan warna produk harus sama persis dengan gambar referensi yang diberikan.`,
-            `Bidikan gaya hidup editorial kelas atas. ${productDescription} adalah pusat perhatian dalam adegan bergaya yang membangkitkan perasaan mewah/nyaman/efisiensi (sesuai untuk produk). Gunakan alat peraga pelengkap tetapi jaga agar komposisinya minimalis. Gambar akhir harus memiliki rasio aspek 9:16. Produk harus cocok identik dengan gambar referensi.`,
-            `Buat foto 'in-situ' yang realistis dari ${productDescription} dalam lingkungan penggunaan alaminya (misalnya, di meja rias untuk perawatan kulit, di meja dapur untuk makanan). Adegan harus terlihat otentik dan tidak berpose. Gambar akhir harus memiliki rasio aspek 9:16. Pastikan produk adalah replika sempurna dari yang ada di gambar referensi.`
-        ];
-
-        const handsOnPrompts = [
-            `Gambar langsung fotorealistik. Sepasang tangan yang terawat baik berinteraksi dengan ${productDescription} (misalnya, membuka, menggunakan, memegangnya). Tangan harus dalam pose alami dan memiliki proporsi yang realistis. Produk adalah fokus yang jelas. Gambar akhir harus memiliki rasio aspek 9:16. Produk yang ditampilkan harus merupakan salinan persis dari gambar referensi.`,
-            `Bidikan close-up dan dinamis dari tangan yang menggunakan ${productDescription}. Aksi harus dibekukan dalam waktu (misalnya, setetes jatuh dari pipet, tombol ditekan). Pencahayaan harus dramatis, menyoroti interaksi. Gambar akhir harus memiliki rasio aspek 9:16. Produk harus identik dengan gambar referensi yang diberikan.`,
-            `Buat gambar Point-of-View (POV) yang realistis di mana pemirsa memegang atau menggunakan ${productDescription}. Produk harus tajam dan detail di latar depan. Gambar akhir harus memiliki rasio aspek 9:16. Tiru produk dari gambar referensi dengan sempurna.`
-        ];
-
-        const allPrompts = [...lifestylePrompts, ...handsOnPrompts];
+        const prompts = Array(this.imageCount).fill(basePrompt);
         
-        await this.runPromptBasedGeneration(allPrompts);
+        await this.runPromptBasedGeneration(prompts);
     },
 
     async runProductStyleGeneration() {
         if (!this.sourceImage || this.productCategory === 'fashion') return;
 
         if (this.customPrompt) {
-            const prompts = Array(6).fill(this.customPrompt);
+            const prompts = Array(this.imageCount).fill(this.customPrompt);
             await this.runPromptBasedGeneration(prompts);
             return;
         }
@@ -596,8 +624,8 @@ export const CreativeStudio = {
             return;
         }
 
-        // Create 6 unique prompts by combining themes and angles
-        const prompts = Array(6).fill('').map((_, i) => {
+        // Create unique prompts by combining themes and angles
+        const prompts = Array(this.imageCount).fill('').map((_, i) => {
             const theme = categoryData.themes[i % categoryData.themes.length];
             const angle = categoryData.angles[i % categoryData.angles.length];
             return `Bayangkan kembali foto produk ini sebagai ${angle} dengan penempatan objek ${theme}, menciptakan iklan yang dinamis dan profesional. Gambar akhir harus dalam rasio aspek vertikal 9:16.`;
@@ -815,9 +843,15 @@ export const CreativeStudio = {
         this.fileInput.value = '';
         this.customPromptInput.value = '';
         this.customPrompt = '';
+        this.modelImage = null; // Clear model for all modes
         
+        // Reset Image Count
+        this.imageCount = 3;
+        if (this.imageCountSelect) {
+            this.imageCountSelect.value = '3';
+        }
+
         // Reset LookBook V2 state
-        this.modelImage = null;
         this.modelImageInput.value = '';
         this.modelPreviewImage.src = '#';
         this.modelPreviewImage.classList.add('image-preview-hidden');
@@ -831,26 +865,43 @@ export const CreativeStudio = {
         this.poseControlGroup.querySelectorAll('.toggle-button').forEach(btn => btn.classList.add('active'));
 
         // Reset MixStyle state
-        this.mixstyleAspectRatio = '9:16';
-        this.mixstyleAspectRatioGroup.querySelectorAll('.toggle-button').forEach(btn => btn.classList.toggle('active', (btn as HTMLElement).dataset.ratio === '4:5'));
-
-        // Reset ProductStyle state
+        this.mixstyleInteraction = 'holding the product naturally';
+        this.mixstyleSetting = 'clean, minimalist studio with soft lighting';
+        if(this.mixstyleModelImageInput) this.mixstyleModelImageInput.value = '';
+        if(this.mixstyleModelPreviewImage) {
+            this.mixstyleModelPreviewImage.src = '#';
+            this.mixstyleModelPreviewImage.classList.add('image-preview-hidden');
+        }
+        if(this.mixstyleInteractionGroup) {
+            this.mixstyleInteractionGroup.querySelectorAll('.toggle-button').forEach(btn => btn.classList.toggle('active', (btn as HTMLElement).dataset.interaction === 'holding the product naturally'));
+        }
+        if(this.mixstyleSettingGroup) {
+            this.mixstyleSettingGroup.querySelectorAll('.toggle-button').forEach(btn => btn.classList.toggle('active', (btn as HTMLElement).dataset.setting === 'clean, minimalist studio with soft lighting'));
+        }
+        
+        // Reset Category state
         this.productCategory = 'skincare';
-        this.categoryButtons.forEach(btn => {
-            btn.classList.remove('active');
-            if((btn as HTMLElement).dataset.category === 'skincare') {
-                btn.classList.add('active');
-            }
-        });
+        this.categoryButtons.forEach(btn => btn.classList.toggle('active', (btn as HTMLElement).dataset.category === 'skincare'));
 
-        this.updateGenerateButton();
         this.render();
+        this.updateGenerateButton();
     },
 
     updateGenerateButton() {
-        const hasImage = !!this.sourceImage;
-        const isFashionModeConflict = this.mode === 'ProductStyle' && this.productCategory === 'fashion';
-        const hasPoses = this.mode !== 'LookBook' || this.selectedPoses.size > 0;
-        this.generateButton.disabled = !hasImage || isFashionModeConflict || !hasPoses;
+        let isReady = false;
+        if (this.state === 'image-uploaded' && this.sourceImage) {
+            if (this.mode === 'LookBook') {
+                isReady = this.selectedPoses.size > 0;
+            } else {
+                isReady = true;
+            }
+        }
+        this.generateButton.disabled = !isReady || this.state === 'generating';
+
+        const buttonText = this.mode === 'LookBook' 
+            ? `Buat ${this.imageCount} Pose`
+            : `Buat ${this.imageCount} Konsep`;
+        
+        this.generateButton.textContent = buttonText;
     },
 };
