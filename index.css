@@ -572,6 +572,9 @@ button svg {
     padding: 1rem;
     cursor: pointer;
     transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 }
 .actor-card:hover {
     border-color: var(--color-text-muted);
@@ -592,12 +595,29 @@ button svg {
     margin: 0;
     font-size: 1rem;
 }
+.actor-card-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.actor-play-button {
+    padding: 0.25rem;
+}
+.actor-play-button .loading-clock {
+    width: 20px;
+    height: 20px;
+    border-width: 2px;
+}
+.actor-card-meta {
+    margin-top: 0.5rem;
+}
 .actor-gender-tag {
     font-size: 0.7rem;
     padding: 0.2rem 0.5rem;
     border-radius: 10px;
     background-color: var(--color-primary);
     color: white;
+    display: inline-block;
 }
 #ai-voice-vibe-group {
     display: grid;
