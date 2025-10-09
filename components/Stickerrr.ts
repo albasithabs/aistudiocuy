@@ -5,13 +5,39 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { GoogleGenAI, Modality, Type } from '@google/genai';
-// IMPROVEMENT: Imported withRetry and parseAndFormatErrorMessage
 import { blobToDataUrl, delay, downloadFile, parseAndFormatErrorMessage, setupDragAndDrop, withRetry } from "../utils/helpers.ts";
-import { generateStructuredTextFromImage } from '../utils/gemini.ts';
+// --- FIX: Use a consistent API function and import withRetry ---
+import { generateStructuredTextFromImage, generateStyledImage } from '../utils/gemini.ts'; // Assuming generateStyledImage can handle this task
+
+const THEME_PACKS = {
+    'social-reactions': {
+        expressions: ["tertawa terbahak-bahak", "mengedipkan mata dengan genit", "menangis tersedu-sedu", "wajah berpikir dengan tangan di dagu", "mengacungkan jempol", "menggelengkan kepala tidak setuju", "merayakan dengan confetti", "wajah kaget dengan mata lebar", "menguap karena bosan", "mengirim ciuman"],
+        captions: ["LOL", "WINK", "HUHU", "HMMM", "OK!", "NOPE", "YAY!", "OMG", "...", "MUAH"]
+    },
+    'daily-feelings': {
+        expressions: ["wajah tersenyum bahagia", "wajah sedih dan murung", "wajah marah dengan uap keluar dari telinga", "wajah mengantuk dengan Zzz", "wajah jatuh cinta dengan mata hati", "wajah percaya diri dengan kacamata hitam", "wajah sakit dengan termometer", "wajah bingung dengan tanda tanya", "wajah puas minum kopi", "wajah lapar memikirkan makanan"],
+        captions: ["Happy!", "Sad...", "Grrr!", "Sleepy", "In Love", "Cool", "Sick", "Huh?", "Coffee Time", "Hungry"]
+    },
+    'mocking': {
+        expressions: ["menjulurkan lidah", "memutar mata", "wajah menyeringai licik", "berbisik di belakang tangan", "meniru seseorang dengan wajah konyol", "tertawa mengejek", "membuat wajah 'terserah'", "menunjuk dan tertawa", "wajah sombong", "wajah tidak terkesan"],
+        captions: ["Bleh!", "Oh, Please.", "Hehe...", "Psst...", "Duh!", "Ha Ha!", "Whatever", "Look!", "I Know.", "Meh."]
+    },
+    'angry': {
+        expressions: ["wajah merah karena marah", "berteriak dengan mulut terbuka lebar", "wajah cemberut dengan tangan disilangkan", "kepala berasap", "menatap tajam", "menggertakkan gigi", "menunjuk dengan marah", "menghentakkan kaki", "wajah frustrasi", "mengepalkan tangan"],
+        captions: ["SO MAD!", "ARGH!", "HMPH!", "FUMING", "...", "GRR", "YOU!", "STOMP", "UGH!", "ENOUGH!"]
+    },
+    'work-vibes': {
+        expressions: ["fokus mengetik di laptop", "minum banyak kopi", "stres dengan tumpukan kertas", "presentasi dengan percaya diri", "tertidur di meja", "mendapat ide cemerlang dengan bola lampu", "melihat jam menunggu pulang", "bekerja sama dengan tim", "merayakan deadline selesai", "pusing karena rapat"],
+        captions: ["In The Zone", "More Coffee", "Overload", "Nailed It!", "Done.", "Eureka!", "5 PM?", "Teamwork!", "Finished!", "Meetings..."]
+    },
+    'celebration': {
+        expressions: ["meledakkan popper confetti", "mengenakan topi pesta", "menari dengan gembira", "membuka hadiah dengan gembira", "bersulang dengan minuman", "memegang balon", "membuat permintaan di atas kue", "memberi selamat dengan tepuk tangan", "tersenyum lebar", "melompat kegirangan"],
+        captions: ["Hooray!", "Party Time!", "Dance!", "A Gift!", "Cheers!", "Celebrate!", "Wish Big!", "Congrats!", "So Happy!", "Yippee!"]
+    }
+};
+
 
 type StickerrrState = 'idle' | 'processing' | 'results';
-
 type StickerResult = {
     prompt: string;
     status: 'pending' | 'done' | 'error';
@@ -19,145 +45,114 @@ type StickerResult = {
     errorMessage?: string;
 };
 
-const THEME_PACKS: { [key: string]: { expression: string, caption: string }[] } = {
-    'social-reactions': [
-        { expression: 'laughing hysterically', caption: 'LOL' },
-        { expression: 'shocked with wide eyes', caption: 'OMG' },
-        { expression: 'giving a thumbs up', caption: 'Suka' },
-        { expression: 'facepalming in frustration', caption: 'Facepalm' },
-        { expression: 'winking and smiling slyly', caption: 'Hehe' },
-        { expression: 'crying with tears of joy', caption: 'Terharu' },
-        { expression: 'shrugging shoulders cluelessly', caption: 'Gak Tau' },
-        { expression: 'thinking with a finger on chin', caption: 'Hmm...' },
-        { expression: 'nodding in agreement enthusiastically', caption: 'Setuju!' },
-        { expression: 'rolling eyes in annoyance', caption: 'Ya Ampun' }
-    ],
-    'daily-feelings': [
-        { expression: 'smiling happily', caption: 'Senang' },
-        { expression: 'crying sadly', caption: 'Sedih' },
-        { expression: 'furious with steam coming out of ears', caption: 'Marah!' },
-        { expression: 'looking sleepy and yawning', caption: 'Ngantuk' },
-        { expression: 'excited with sparkling eyes', caption: 'Semangat!' },
-        { expression: 'feeling sick with a thermometer in mouth', caption: 'Sakit' },
-        { expression: 'blushing and feeling shy', caption: 'Malu' },
-        { expression: 'feeling loved with hearts floating around', caption: 'Sayang' },
-        { expression: 'confused with question marks', caption: 'Bingung' },
-        { expression: 'bored and sighing', caption: 'Bosan' }
-    ],
-    'mocking': [
-        { expression: 'sticking tongue out and making a funny face', caption: 'Wleee' },
-        { expression: 'rolling on the floor laughing at someone', caption: 'Ngakak' },
-        { expression: 'slow clapping sarcastically', caption: 'Hebat...' },
-        { expression: 'looking smug with a smirk', caption: 'Tuh Kan' },
-        { expression: 'pointing and laughing', caption: 'Hahaha!' },
-        { expression: 'shaking head in disbelief', caption: 'Payah' },
-        { expression: 'whistling innocently', caption: 'Gak Liat' },
-        { expression: 'making a "loser" sign on forehead', caption: 'Dasar!' },
-        { expression: 'peeking from a corner mischievously', caption: 'Cieee' },
-        { expression: 'looking unimpressed', caption: 'B Aja' }
-    ],
-    'angry': [
-        { expression: 'furious with red face and smoke from ears', caption: 'MARAH!' },
-        { expression: 'gritting teeth and clenching fists', caption: 'Grrr' },
-        { expression: 'shouting angrily with mouth wide open', caption: 'WOY!' },
-        { expression: 'pouting and looking sulky', caption: 'Kesel' },
-        { expression: 'giving a death glare, eyes narrowed', caption: 'Awas Ya' },
-        { expression: 'crossing arms and looking annoyed', caption: 'Huh!' },
-        { expression: 'flipping a table in anger', caption: 'CUKUP!' },
-        { expression: 'with a dark, stormy cloud overhead', caption: 'Bad Mood' },
-        { expression: 'about to explode like a bomb', caption: 'Sabar...' },
-        { expression: 'writing in a burn book furiously', caption: 'Catet!' }
-    ],
-    'work-vibes': [
-        { expression: 'focused and typing on a keyboard', caption: 'Fokus' },
-        { expression: 'celebrating a success with confetti', caption: 'Berhasil!' },
-        { expression: 'drinking coffee with a tired smile', caption: 'Butuh Kopi' },
-        { expression: 'overwhelmed with a pile of papers', caption: 'Deadline' },
-        { expression: 'giving a presentation confidently', caption: 'Presentasi' },
-        { expression: 'collaborating with a friendly look', caption: 'Kerja Tim' },
-        { expression: 'on the way, looking determined', caption: 'OTW' },
-        { expression: 'relaxing after work', caption: 'Pulang' },
-        { expression: 'having a brilliant idea with a lightbulb', caption: 'Ide!' },
-        { expression: 'saying "OK" with a professional nod', caption: 'Siap!' }
-    ],
-    'celebration': [
-        { expression: 'blowing a party horn with confetti', caption: 'Hore!' },
-        { expression: 'holding a birthday cake with candles', caption: 'HBD!' },
-        { expression: 'cheering with a trophy', caption: 'Selamat!' },
-        { expression: 'dancing joyfully', caption: 'Pesta!' },
-        { expression: 'giving a gift with a happy smile', caption: 'Untukmu' },
-        { expression: 'making a toast with a glass', caption: 'Cheers!' },
-        { expression: 'surprised by a gift', caption: 'Kejutan!' },
-        { expression: 'feeling festive with a party hat', caption: 'Rayakan' },
-        { expression: 'sending a flying kiss', caption: 'Terima Kasih' },
-        { expression: 'applauding enthusiastically', caption: 'Hebat!' }
-    ]
-};
-
-
 export const Stickerrr = {
-    // DOM Elements
-    view: document.querySelector('#stickerrr-view') as HTMLDivElement,
-    inputStateEl: document.querySelector('#stickerrr-input-state') as HTMLDivElement,
-    resultsStateEl: document.querySelector('#stickerrr-results-state') as HTMLDivElement,
-    statusContainerEl: document.querySelector('#stickerrr-status-container') as HTMLDivElement,
-    statusTextEl: document.querySelector('#stickerrr-status') as HTMLParagraphElement,
-    progressWrapper: document.querySelector('#stickerrr-progress-wrapper') as HTMLDivElement,
-    progressBar: document.querySelector('#stickerrr-progress-bar') as HTMLDivElement,
-    toastContainer: document.querySelector('#toast-container') as HTMLDivElement, // IMPROVEMENT: Added for notifications
+    // DOM Elements - Initialized to null for safe checking
+    view: null as HTMLDivElement | null,
+    inputStateEl: null as HTMLDivElement | null,
+    resultsStateEl: null as HTMLDivElement | null,
+    statusContainerEl: null as HTMLDivElement | null,
+    statusTextEl: null as HTMLParagraphElement | null,
+    progressWrapper: null as HTMLDivElement | null,
+    progressBar: null as HTMLDivElement | null,
+    fileInput: null as HTMLInputElement | null,
+    uploadLabel: null as HTMLSpanElement | null,
+    previewImage: null as HTMLImageElement | null,
+    optionsPanel: null as HTMLDivElement | null,
+    styleSelect: null as HTMLSelectElement | null,
+    themeSelect: null as HTMLSelectElement | null,
+    imageCountSelect: null as HTMLSelectElement | null,
+    autofillButton: null as HTMLButtonElement | null,
+    accessoryInput: null as HTMLInputElement | null,
+    instructionsInput: null as HTMLTextAreaElement | null,
+    captionInput: null as HTMLTextAreaElement | null,
+    containerSelect: null as HTMLSelectElement | null,
+    generateButton: null as HTMLButtonElement | null,
+    changePhotoButton: null as HTMLButtonElement | null,
+    resultsGrid: null as HTMLDivElement | null,
+    downloadAllButton: null as HTMLButtonElement | null,
+    startOverButton: null as HTMLButtonElement | null,
+    toastContainer: null as HTMLDivElement | null,
 
-    // Inputs
-    fileInput: document.querySelector('#stickerrr-file-input') as HTMLInputElement,
-    uploadLabel: document.querySelector('#stickerrr-upload-label') as HTMLSpanElement,
-    previewImage: document.querySelector('#stickerrr-preview-image') as HTMLImageElement,
-    optionsPanel: document.querySelector('#stickerrr-options-panel') as HTMLDivElement,
-    
-    styleSelect: document.querySelector('#stickerrr-style-select') as HTMLSelectElement,
-    themeSelect: document.querySelector('#stickerrr-theme-select') as HTMLSelectElement,
-    imageCountSelect: document.querySelector('#stickerrr-image-count-select') as HTMLSelectElement,
-    autofillButton: document.querySelector('#stickerrr-autofill-button') as HTMLButtonElement,
-    accessoryInput: document.querySelector('#stickerrr-accessory-input') as HTMLInputElement,
-    instructionsInput: document.querySelector('#stickerrr-instructions-input') as HTMLTextAreaElement,
-    captionInput: document.querySelector('#stickerrr-caption-input') as HTMLTextAreaElement,
-    containerSelect: document.querySelector('#stickerrr-container-select') as HTMLSelectElement,
-
-    // Actions & Results
-    generateButton: document.querySelector('#stickerrr-generate-button') as HTMLButtonElement,
-    changePhotoButton: document.querySelector('#stickerrr-change-photo-button') as HTMLButtonElement,
-    resultsGrid: document.querySelector('#stickerrr-results-grid') as HTMLDivElement,
-    downloadAllButton: document.querySelector('#stickerrr-download-all-button') as HTMLButtonElement,
-    startOverButton: document.querySelector('#stickerrr-start-over-button') as HTMLButtonElement,
-
-    // State
+    // State, Dependencies...
     state: 'idle' as StickerrrState,
     sourceImage: null as { file: File, dataUrl: string, base64: string } | null,
     results: [] as StickerResult[],
     imageCount: 3,
-
-    // Dependencies
     getApiKey: (() => '') as () => string,
     showPreviewModal: ((urls: (string | null)[], startIndex?: number) => {}) as (urls: (string | null)[], startIndex?: number) => void,
 
     init(dependencies: { getApiKey: () => string; showPreviewModal: (urls: (string | null)[], startIndex?: number) => void; }) {
-        if (!this.view) return;
+        if (!document.querySelector('#stickerrr-view')) return;
+        
         this.getApiKey = dependencies.getApiKey;
         this.showPreviewModal = dependencies.showPreviewModal;
+
+        this.queryDOMElements();
+        if (!this.validateDOMElements()) return;
+
         this.addEventListeners();
         this.render();
     },
 
+    queryDOMElements() {
+        this.view = document.querySelector('#stickerrr-view');
+        if (!this.view) return;
+        this.inputStateEl = this.view.querySelector('#stickerrr-input-state');
+        this.resultsStateEl = this.view.querySelector('#stickerrr-results-state');
+        this.statusContainerEl = this.view.querySelector('#stickerrr-status-container');
+        this.statusTextEl = this.view.querySelector('#stickerrr-status');
+        this.progressWrapper = this.view.querySelector('#stickerrr-progress-wrapper');
+        this.progressBar = this.view.querySelector('#stickerrr-progress-bar');
+        this.fileInput = this.view.querySelector('#stickerrr-file-input');
+        this.uploadLabel = this.view.querySelector('#stickerrr-upload-label');
+        this.previewImage = this.view.querySelector('#stickerrr-preview-image');
+        this.optionsPanel = this.view.querySelector('#stickerrr-options-panel');
+        this.styleSelect = this.view.querySelector('#stickerrr-style-select');
+        this.themeSelect = this.view.querySelector('#stickerrr-theme-select');
+        this.imageCountSelect = this.view.querySelector('#stickerrr-image-count-select');
+        this.autofillButton = this.view.querySelector('#stickerrr-autofill-button');
+        this.accessoryInput = this.view.querySelector('#stickerrr-accessory-input');
+        this.instructionsInput = this.view.querySelector('#stickerrr-instructions-input');
+        this.captionInput = this.view.querySelector('#stickerrr-caption-input');
+        this.containerSelect = this.view.querySelector('#stickerrr-container-select');
+        this.generateButton = this.view.querySelector('#stickerrr-generate-button');
+        this.changePhotoButton = this.view.querySelector('#stickerrr-change-photo-button');
+        this.resultsGrid = this.view.querySelector('#stickerrr-results-grid');
+        this.downloadAllButton = this.view.querySelector('#stickerrr-download-all-button');
+        this.startOverButton = this.view.querySelector('#stickerrr-start-over-button');
+        this.toastContainer = document.querySelector('#toast-container');
+    },
+
+    validateDOMElements(): boolean {
+        const requiredElements = [
+            this.view, this.inputStateEl, this.resultsStateEl, this.statusContainerEl,
+            this.statusTextEl, this.progressWrapper, this.progressBar, this.fileInput,
+            this.uploadLabel, this.previewImage, this.optionsPanel, this.styleSelect,
+            this.themeSelect, this.imageCountSelect, this.autofillButton, this.accessoryInput,
+            this.instructionsInput, this.captionInput, this.containerSelect, this.generateButton,
+            this.changePhotoButton, this.resultsGrid, this.downloadAllButton, this.startOverButton
+        ];
+        // Note: toastContainer is global, checked separately in showToast
+        if (requiredElements.some(el => !el)) {
+            console.error("Stickerrr initialization failed: One or more required elements are missing from the DOM.");
+            return false;
+        }
+        return true;
+    },
+
     addEventListeners() {
-        const dropZone = this.fileInput.closest('.file-drop-zone') as HTMLElement;
-        setupDragAndDrop(dropZone, this.fileInput);
-        this.fileInput.addEventListener('change', this.handleUpload.bind(this));
-        this.changePhotoButton.addEventListener('click', () => this.fileInput.click());
-        this.autofillButton.addEventListener('click', this.handleAutofill.bind(this));
-        this.generateButton.addEventListener('click', this.handleGenerate.bind(this));
-        this.downloadAllButton.addEventListener('click', this.handleDownloadAll.bind(this));
-        this.startOverButton.addEventListener('click', this.handleStartOver.bind(this));
-        this.resultsGrid.addEventListener('click', this.handleGridClick.bind(this));
-        this.imageCountSelect.addEventListener('change', () => {
-            this.imageCount = parseInt(this.imageCountSelect.value, 10);
+        // Now we can safely use ! because validation passed
+        const dropZone = this.fileInput!.closest('.file-drop-zone') as HTMLElement;
+        setupDragAndDrop(dropZone, this.fileInput!);
+        this.fileInput!.addEventListener('change', this.handleUpload.bind(this));
+        this.changePhotoButton!.addEventListener('click', () => this.fileInput!.click());
+        this.autofillButton!.addEventListener('click', this.handleAutofill.bind(this));
+        this.generateButton!.addEventListener('click', this.handleGenerate.bind(this));
+        this.downloadAllButton!.addEventListener('click', this.handleDownloadAll.bind(this));
+        this.startOverButton!.addEventListener('click', this.handleStartOver.bind(this));
+        this.resultsGrid!.addEventListener('click', this.handleGridClick.bind(this));
+        this.imageCountSelect!.addEventListener('change', () => {
+            this.imageCount = parseInt(this.imageCountSelect!.value, 10);
             this.updateGenerateButtonText();
         });
     },
@@ -169,14 +164,12 @@ export const Stickerrr = {
         try {
             const dataUrl = await blobToDataUrl(file);
             this.sourceImage = {
-                file,
-                dataUrl,
-                base64: dataUrl.split(',')[1],
+                file, dataUrl,
+                base64: dataUrl.substring(dataUrl.indexOf(',') + 1), // More robust parsing
             };
             this.render();
         } catch (error) {
             console.error('Error processing sticker image:', error);
-            // IMPROVEMENT: Use non-blocking toast notification instead of alert.
             this.showToast('Gagal memproses gambar.', 'error');
         }
     },
@@ -184,92 +177,63 @@ export const Stickerrr = {
     async handleAutofill() {
         if (!this.sourceImage) return;
 
-        this.autofillButton.disabled = true;
-        const originalButtonHTML = this.autofillButton.innerHTML;
-        this.autofillButton.innerHTML = `<div class="loading-clock" style="width:18px; height:18px; margin: 0 auto;"></div>`;
+        this.autofillButton!.disabled = true;
+        const originalButtonHTML = this.autofillButton!.innerHTML;
+        this.autofillButton!.innerHTML = `<div class="loading-clock" style="width:18px; height:18px; margin: 0 auto;"></div>`;
 
         try {
-            const prompt = `Analisis gambar ini. Berdasarkan orang, ekspresi, dan lingkungan di dalamnya, buat saran untuk stiker. Buat satu saran aksesori, satu instruksi kustom, dan daftar tepat 10 caption stiker yang singkat, jenaka, dan relevan dalam Bahasa Indonesia.`;
-            
+            const prompt = `Analisis gambar ini dan berikan deskripsi singkat untuk digunakan dalam stiker. Fokus pada:
+- Aksesori utama yang dikenakan oleh subjek (jika ada).
+- Instruksi singkat untuk meningkatkan gaya (seperti "tambahkan sedikit kilau").
+- Hasilkan 10 caption satu kata atau frasa pendek yang cocok dengan subjek dan gaya.`;
             const autofillSchema = {
-                type: Type.OBJECT,
+                type: 'OBJECT',
                 properties: {
-                    accessory: { 
-                        type: Type.STRING,
-                        description: 'Satu saran aksesori yang kreatif dan lucu berdasarkan konten gambar. Contoh: "memakai topi koki", "dengan kacamata hitam futuristik". Jaga agar tetap pendek.'
-                    },
-                    instructions: {
-                        type: Type.STRING,
-                        description: 'Satu instruksi kreatif untuk modifikasi gaya. Contoh: "ubah bajunya jadi piyama", "tambahkan efek api di sekelilingnya". Jaga agar tetap pendek.'
-                    },
-                    captions: {
-                        type: Type.ARRAY,
-                        items: { type: Type.STRING },
-                        description: 'Sebuah array berisi tepat 10 caption stiker yang singkat, jenaka, dan relevan secara kontekstual dalam Bahasa Indonesia. Caption harus berhubungan dengan orang dan lingkungan di dalam foto.'
-                    }
+                    accessory: { type: 'STRING', description: "Aksesori utama yang terlihat, jika ada (misal: kacamata hitam, topi)." },
+                    instructions: { type: 'STRING', description: "Saran singkat untuk peningkatan gaya (misal: tambahkan efek percikan api)." },
+                    captions: { type: 'ARRAY', items: { type: 'STRING' }, description: "Daftar 10 caption singkat dan relevan." }
                 }
             };
             
-            // IMPROVEMENT: Wrap API call in withRetry for resilience.
-            // FIX: Added missing options object for withRetry call.
             const jsonResponse = await withRetry(() =>
-                generateStructuredTextFromImage(prompt, this.sourceImage!.base64, this.getApiKey, autofillSchema),
-                {
-                    retries: 2,
-                    delayMs: 1000,
-                    onRetry: (attempt, error) => console.warn(`Stickerrr autofill attempt ${attempt} failed. Retrying...`, error)
-                }
+                generateStructuredTextFromImage(prompt, this.sourceImage!.base64, this.getApiKey, autofillSchema as any),
+                { retries: 2, delayMs: 1000, onRetry: () => {} }
             );
             const data = JSON.parse(jsonResponse);
 
-            if (data.accessory) {
-                this.accessoryInput.value = data.accessory;
-            }
-            if (data.instructions) {
-                this.instructionsInput.value = data.instructions;
-            }
+            if (data.accessory) this.accessoryInput!.value = data.accessory;
+            if (data.instructions) this.instructionsInput!.value = data.instructions;
             if (data.captions && Array.isArray(data.captions)) {
-                this.captionInput.value = data.captions.join('\n');
+                this.captionInput!.value = data.captions.join('\n');
             }
-
         } catch (e) {
             console.error('Autofill failed:', e);
-            // IMPROVEMENT: Use non-blocking toast notification.
             this.showToast('Gagal mengisi otomatis. Silakan coba lagi.', 'error');
         } finally {
-            this.autofillButton.disabled = false;
-            this.autofillButton.innerHTML = originalButtonHTML;
+            this.autofillButton!.disabled = false;
+            this.autofillButton!.innerHTML = originalButtonHTML;
         }
     },
 
     buildPrompt(expression: string, caption: string): string {
-        const style = this.styleSelect.value;
-        const accessory = this.accessoryInput.value.trim();
-        const instructions = this.instructionsInput.value.trim();
-        const container = this.containerSelect.value;
+        const style = this.styleSelect?.value || "Gaya Stiker Kartun 3D";
+        const accessory = this.accessoryInput?.value.trim();
+        const instructions = this.instructionsInput?.value.trim();
+        const container = this.containerSelect?.value.trim();
 
-        let prompt = `Tugas: Ubah foto yang diberikan menjadi stiker digital.
-Langkah-langkah:
-1. **Isolasi Subjek**: Identifikasi dan isolasi subjek utama (orang) dari latar belakang foto.
-2. **Gambar Ulang**: Gambar ulang subjek yang diisolasi dengan gaya **${style}**. Pertahankan kemiripan karakter dari foto asli.
-3. **Ekspresi & Pose**: Ubah ekspresi dan pose subjek menjadi **${expression}**.`;
-
-        if (accessory) {
-            prompt += `\n4. **Aksesori**: ${accessory}.`;
-        }
-
-        if (instructions) {
-            prompt += `\n5. **Instruksi Kustom**: ${instructions}.`;
-        }
-
-        if (caption && container !== 'None') {
-            prompt += `\n6. **Teks**: Tambahkan teks "${caption}" di dalam sebuah **${container}** yang terintegrasi dengan baik dengan stiker.`;
-        } else if (caption) {
-             prompt += `\n6. **Teks**: Tambahkan teks "${caption}" dengan gaya yang sesuai dengan stiker, tanpa wadah.`;
-        }
+        let prompt = `Buat stiker dari subjek dalam gambar. Gaya stiker: ${style}. Ekspresi subjek: ${expression}.`;
+        if (accessory) prompt += ` Subjek harus memakai ${accessory}.`;
+        if (instructions) prompt += ` Instruksi tambahan: ${instructions}.`;
         
-        prompt += `\n7. **Finishing**: Berikan stiker hasil akhir latar belakang transparan (penting!), dan tambahkan garis batas putih tebal di sekeliling subjek (efek die-cut).
-Pastikan hasil akhirnya adalah gambar tunggal yang bersih dan terlihat seperti stiker digital profesional.`;
+        prompt += ` Stiker harus memiliki garis tepi putih tebal dan sedikit bayangan jatuh untuk efek terkelupas. Latar belakang harus transparan.`;
+
+        if (caption) {
+            if (container && container !== 'None') {
+                prompt += ` Sertakan teks "${caption}" di dalam ${container}.`;
+            } else {
+                prompt += ` Sertakan teks "${caption}" dalam font yang tebal dan menyenangkan di bawah stiker.`;
+            }
+        }
         
         return prompt;
     },
@@ -279,19 +243,19 @@ Pastikan hasil akhirnya adalah gambar tunggal yang bersih dan terlihat seperti s
 
         this.state = 'processing';
         
-        const theme = this.themeSelect.value;
-        const themePack = THEME_PACKS[theme] || THEME_PACKS['social-reactions'];
-        const customCaptions = this.captionInput.value.split(/[\n,]/).map(c => c.trim()).filter(Boolean);
+        const themeKey = this.themeSelect!.value as keyof typeof THEME_PACKS;
+        const selectedTheme = THEME_PACKS[themeKey];
+        const customCaptions = this.captionInput!.value.split('\n').map(c => c.trim()).filter(Boolean);
 
         const prompts: string[] = [];
         for (let i = 0; i < this.imageCount; i++) {
-            const packItem = themePack[i % themePack.length]; // Use modulo to prevent out of bounds
-            const caption = customCaptions[i] || packItem.caption; // Use custom caption if available, otherwise use theme's default
-            prompts.push(this.buildPrompt(packItem.expression, caption));
+            const expression = selectedTheme.expressions[i % selectedTheme.expressions.length];
+            const caption = customCaptions[i] || selectedTheme.captions[i % selectedTheme.captions.length];
+            prompts.push(this.buildPrompt(expression, caption));
         }
 
         this.results = prompts.map(prompt => ({ prompt, status: 'pending', imageUrl: null }));
-        this.progressBar.style.width = '0%';
+        this.progressBar!.style.width = '0%';
         this.render();
 
         let completedJobs = 0;
@@ -299,37 +263,22 @@ Pastikan hasil akhirnya adalah gambar tunggal yang bersih dan terlihat seperti s
         const updateProgress = () => {
             completedJobs++;
             const progress = (completedJobs / totalJobs) * 100;
-            this.progressBar.style.width = `${progress}%`;
+            if (this.progressBar) this.progressBar.style.width = `${progress}%`;
             this.updateStatusText();
         };
 
         const generationPromises = this.results.map(async (result, index) => {
             try {
-                // IMPROVEMENT: Wrap the core API call in withRetry.
-                // FIX: Added missing options object for withRetry call.
-                const response = await withRetry(async () => {
-                    const ai = new GoogleGenAI({ apiKey: this.getApiKey() });
-                    const parts = [
-                        { inlineData: { data: this.sourceImage!.base64, mimeType: this.sourceImage!.file.type } },
-                        { text: result.prompt }
-                    ];
-                    
-                    return ai.models.generateContent({
-                        model: 'gemini-2.5-flash-image',
-                        contents: { parts },
-                        config: {
-                            responseModalities: [Modality.IMAGE, Modality.TEXT],
-                        },
-                    });
-                },
-                {
-                    retries: 2,
-                    delayMs: 1000,
-                    onRetry: (attempt, error) => console.warn(`Stickerrr generation attempt ${attempt} for index ${index} failed. Retrying...`, error)
-                });
+                const response = await withRetry(() => 
+                    generateStyledImage(this.sourceImage!.base64, null, result.prompt, this.getApiKey),
+                    {
+                        retries: 2,
+                        delayMs: 1000,
+                        onRetry: (attempt, error) => console.warn(`Stickerrr generation attempt ${attempt} failed. Retrying...`, error)
+                    }
+                );
 
                 const imagePart = response.candidates?.[0]?.content?.parts.find(p => p.inlineData);
-
                 if (imagePart?.inlineData) {
                     const imageUrl = `data:${imagePart.inlineData.mimeType};base64,${imagePart.inlineData.data}`;
                     this.results[index] = { ...result, status: 'done', imageUrl };
@@ -347,38 +296,28 @@ Pastikan hasil akhirnya adalah gambar tunggal yang bersih dan terlihat seperti s
             }
         });
 
-        await Promise.all(generationPromises);
+        await Promise.allSettled(generationPromises);
         this.state = 'results';
         this.render();
     },
 
     handleGridClick(e: MouseEvent) {
-        const target = e.target as HTMLElement;
-        const item = target.closest('.image-result-item');
+        const item = (e.target as HTMLElement).closest('.image-result-item');
         if (!item) return;
-
         const index = parseInt((item as HTMLElement).dataset.index!, 10);
-        
-        const clickedResult = this.results[index];
-        if (clickedResult.status !== 'done' || !clickedResult.imageUrl) return;
-
-        const urls = this.results
-            .filter(r => r.status === 'done' && r.imageUrl)
-            .map(r => r.imageUrl!);
-        
-        const startIndex = urls.indexOf(clickedResult.imageUrl);
-
-        if (startIndex > -1) {
-            this.showPreviewModal(urls, startIndex);
+        const result = this.results[index];
+        if (result?.url) {
+            const urls = this.results.map(r => r.imageUrl).filter((url): url is string => !!url);
+            const startIndex = urls.indexOf(result.url);
+            if (startIndex > -1) this.showPreviewModal(urls, startIndex);
         }
     },
 
     async handleDownloadAll() {
-        for (let i = 0; i < this.results.length; i++) {
-            const result = this.results[i];
-            if (result.status === 'done' && result.imageUrl) {
+        for (const [i, result] of this.results.entries()) {
+            if (result.imageUrl) {
                 downloadFile(result.imageUrl, `sticker_${i + 1}.png`);
-                await delay(300);
+                await delay(200);
             }
         }
     },
@@ -387,114 +326,70 @@ Pastikan hasil akhirnya adalah gambar tunggal yang bersih dan terlihat seperti s
         this.state = 'idle';
         this.sourceImage = null;
         this.results = [];
-        this.fileInput.value = '';
-        
-        // Reset form fields
-        this.styleSelect.selectedIndex = 0;
-        this.themeSelect.selectedIndex = 0;
-        this.accessoryInput.value = '';
-        this.instructionsInput.value = '';
-        this.captionInput.value = '';
-        this.containerSelect.selectedIndex = 0;
-        this.imageCount = 3;
-        this.imageCountSelect.value = '3';
-
+        this.fileInput!.value = '';
+        this.accessoryInput!.value = '';
+        this.instructionsInput!.value = '';
+        this.captionInput!.value = '';
         this.render();
     },
 
     updateStatusText() {
-        switch (this.state) {
-            case 'idle':
-                this.statusTextEl.textContent = 'Unggah foto untuk memulai.';
-                break;
-            case 'processing':
-                const doneCount = this.results.filter(r => r.status !== 'pending').length;
-                this.statusTextEl.textContent = `Membuat stiker... (${doneCount}/${this.results.length})`;
-                break;
-            case 'results':
-                this.statusTextEl.textContent = 'Pembuatan stiker selesai.';
-                break;
+        if (!this.statusTextEl) return;
+        if (this.state === 'processing') {
+            const doneCount = this.results.filter(r => r.status !== 'pending').length;
+            this.statusTextEl.textContent = `Membuat Stiker... (${doneCount}/${this.results.length})`;
+        } else if (this.state === 'results') {
+            this.statusTextEl.textContent = 'Paket stiker Anda sudah siap!';
         }
     },
 
     updateGenerateButtonText() {
-        this.generateButton.textContent = `Buat ${this.imageCount} Stiker`;
-    },
-    
-    // IMPROVEMENT: Added a non-blocking notification system.
-    showToast(message: string, type: 'success' | 'error' = 'success') {
-        if (!this.toastContainer) {
-            console.warn('Toast container not found. Cannot show notification.');
-            return;
+        if (this.generateButton) {
+            this.generateButton.textContent = `Buat ${this.imageCount} Stiker`;
         }
+    },
+
+    showToast(message: string, type: 'success' | 'error' = 'success') {
+        if (!this.toastContainer) return;
         const toast = document.createElement('div');
         toast.className = `toast-notification ${type}`;
         toast.textContent = message;
         this.toastContainer.appendChild(toast);
-        setTimeout(() => {
-            toast.remove();
-        }, 3000);
+        setTimeout(() => toast.remove(), 3000);
     },
-
+    
     render() {
         const hasImage = !!this.sourceImage;
+        this.inputStateEl!.style.display = ['idle', 'processing'].includes(this.state) ? 'block' : 'none';
+        this.resultsStateEl!.style.display = this.state === 'results' ? 'block' : 'none';
+        this.statusContainerEl!.style.display = this.state === 'processing' ? 'flex' : 'none';
         
-        // Input state visibility
-        this.inputStateEl.style.display = (this.state === 'idle' || this.state === 'processing') ? 'block' : 'none';
-        this.optionsPanel.style.display = hasImage ? 'block' : 'none';
-        this.uploadLabel.style.display = hasImage ? 'none' : 'block';
-        this.previewImage.style.display = hasImage ? 'block' : 'none';
+        this.previewImage!.style.display = hasImage ? 'block' : 'none';
+        this.uploadLabel!.style.display = hasImage ? 'none' : 'block';
+        this.optionsPanel!.style.display = hasImage ? 'block' : 'none';
+        this.generateButton!.disabled = !hasImage || this.state === 'processing';
+        
         if (hasImage) {
-            this.previewImage.src = this.sourceImage!.dataUrl;
+            this.previewImage!.src = this.sourceImage!.dataUrl;
         }
 
-        // Results state visibility
-        this.resultsStateEl.style.display = (this.state === 'processing' || this.state === 'results') ? 'block' : 'none';
-        
-        // Status container visibility
-        this.statusContainerEl.style.display = (this.state !== 'idle') ? 'flex' : 'none';
-        this.progressWrapper.style.display = this.state === 'processing' ? 'block' : 'none';
-
-        // Button states
-        this.generateButton.disabled = !hasImage || this.state === 'processing';
-        this.updateGenerateButtonText();
-
-        this.updateStatusText();
-
         if (this.state === 'processing' || this.state === 'results') {
-            this.resultsGrid.innerHTML = ''; // Clear previous
+            this.resultsGrid!.innerHTML = '';
             this.results.forEach((result, index) => {
-                const wrapper = document.createElement('div');
-                wrapper.className = 'image-result-wrapper';
-
                 const item = document.createElement('div');
                 item.className = 'image-result-item';
                 item.dataset.index = String(index);
-                item.style.backgroundColor = 'var(--color-surface-2)';
-
-                let itemHTML = '';
-
                 if (result.status === 'pending') {
-                    itemHTML = `<div class="loading-clock"></div>`;
+                    item.innerHTML = '<div class="loading-clock"></div>';
                 } else if (result.status === 'error') {
-                    itemHTML = `<span>Error</span>`;
-                } else if (result.status === 'done' && result.imageUrl) {
-                    itemHTML = `<img src="${result.imageUrl}" alt="Generated sticker ${index + 1}" style="object-fit: contain; padding: 5%;">`;
+                    item.innerHTML = `<p class="pending-status-text" title="${result.errorMessage}">Gagal</p>`;
+                } else if (result.imageUrl) {
+                    item.innerHTML = `<img src="${result.imageUrl}" alt="Generated Sticker ${index + 1}">`;
                 }
-                
-                // Add overlay for preview
-                if (result.imageUrl) {
-                    itemHTML += `<div class="affiliate-result-item-overlay">
-                        <button class="icon-button" aria-label="Preview">
-                           <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 0 24 24" width="20px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5C21.27 7.61 17 4.5 12 4.5zm0 10c-2.48 0-4.5-2.02-4.5-4.5S9.52 5.5 12 5.5s4.5 2.02 4.5 4.5-2.02 4.5-4.5 4.5zm0-7C10.62 7.5 9.5 8.62 9.5 10s1.12 2.5 2.5 2.5 2.5-1.12 2.5-2.5S13.38 7.5 12 7.5z"/></svg>
-                        </button>
-                    </div>`;
-                }
-
-                item.innerHTML = itemHTML;
-                wrapper.appendChild(item);
-                this.resultsGrid.appendChild(wrapper);
+                this.resultsGrid!.appendChild(item);
             });
         }
+        this.updateStatusText();
+        this.updateGenerateButtonText();
     }
 };

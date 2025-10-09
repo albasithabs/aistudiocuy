@@ -6,7 +6,7 @@
  */
 
 import { CreativeStudio } from './components/ProductShotPro.ts';
-import { Storyboard } from './components/Storyboard.ts';
+import { AdStudio } from './components/AdStudio.ts';
 import { RetouchAndColorizer } from './components/RetouchAndColorizer.ts';
 import { FoodStylist } from './components/FoodStylist.ts';
 import { Stickerrr } from './components/Stickerrr.ts';
@@ -16,13 +16,13 @@ import { InteriorDesigner } from './components/InteriorDesigner.ts';
 import { LogoLab } from './components/LogoLab.ts';
 import { ModelCreative } from './components/ModelCreative.ts';
 import { OutfitPro } from './components/OutfitPro.ts';
+import { PosterPro } from './components/PosterX.ts';
 
 import { delay, downloadFile, parseAndFormatErrorMessage } from './utils/helpers.ts';
 import { validateApiKey } from './utils/gemini.ts';
 
 // === DOM Elements ===
 const appContainer = document.querySelector('.app-container') as HTMLDivElement;
-const appTitle = document.querySelector('.app-header h1') as HTMLHeadingElement;
 // Image Preview Modal
 const imagePreviewModal = document.querySelector('#image-preview-modal') as HTMLDivElement;
 const modalImageContainer = document.querySelector('#modal-image-container') as HTMLDivElement;
@@ -43,6 +43,8 @@ const sidebar = document.getElementById('sidebar') as HTMLElement;
 const sidebarToggleButton = document.getElementById('sidebar-toggle') as HTMLButtonElement;
 const sidebarOverlay = document.getElementById('sidebar-overlay') as HTMLDivElement;
 const sidebarLinks = document.querySelectorAll('.sidebar-link');
+// Header
+const featureGuideButton = document.querySelector('#feature-guide-button') as HTMLButtonElement;
 // API Key Modal
 const premiumKeyButton = document.querySelector('#premium-key-button') as HTMLButtonElement;
 const apiKeyStatusIndicator = document.querySelector('#api-key-status-indicator') as HTMLSpanElement;
@@ -58,7 +60,7 @@ const themeToggle = document.querySelector('#theme-toggle') as HTMLInputElement;
 const toastContainer = document.querySelector('#toast-container') as HTMLDivElement;
 
 // === App State ===
-let currentView = 'ai-voice-studio-view';
+let currentView = 'ad-studio-view';
 let premiumApiKey = localStorage.getItem('gemini_api_key') || '';
 let currentModalImages: (string | null)[] = [];
 let currentModalIndex = 0;
@@ -101,9 +103,8 @@ function switchView(viewId: string) {
 
     const activeLink = document.querySelector(`.sidebar-link[data-view="${viewId}"]`);
     if (activeLink) {
-        const title = activeLink.querySelector('span')?.textContent || 'AI Studio';
-        appTitle.textContent = title;
-        document.title = `${title} - AI Creative Studio`;
+        const title = activeLink.querySelector('span')?.textContent || 'FLUXIO';
+        document.title = `${title} - FLUXIO`;
     }
 
     currentView = viewId;
@@ -122,6 +123,12 @@ function showPreviewModal(imageUrls: (string | null)[], startIndex = 0) {
 }
 
 function updateModalContent() {
+    // BUG FIX: Pause the currently playing video before switching to the next item.
+    // This prevents multiple audio tracks from playing simultaneously.
+    if (modalImageElement instanceof HTMLVideoElement && !modalImageElement.paused) {
+        modalImageElement.pause();
+    }
+
     const url = currentModalImages[currentModalIndex];
     const isVideo = url.startsWith('blob:') || url.endsWith('.mp4');
 
@@ -198,6 +205,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     sidebarToggleButton.addEventListener('click', () => document.body.classList.toggle('sidebar-open'));
     sidebarOverlay.addEventListener('click', () => document.body.classList.remove('sidebar-open'));
+
+    // Header Actions
+    featureGuideButton.addEventListener('click', () => switchView('feature-guide-view'));
 
     // API Key Modal
     premiumKeyButton.addEventListener('click', () => apiKeyModal.style.display = 'flex');
@@ -304,7 +314,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Initialize all feature modules
     CreativeStudio.init(dependencies);
-    Storyboard.init(dependencies);
+    AdStudio.init(dependencies);
     RetouchAndColorizer.init(dependencies);
     FoodStylist.init(dependencies);
     Stickerrr.init(dependencies);
@@ -314,7 +324,8 @@ document.addEventListener('DOMContentLoaded', () => {
     LogoLab.init(dependencies);
     ModelCreative.init(dependencies);
     OutfitPro.init(dependencies);
+    PosterPro.init(dependencies);
 
     // --- Final setup ---
-    switchView('ai-voice-studio-view');
+    switchView('ad-studio-view');
 });

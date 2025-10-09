@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Creative Studio</title>
+    <title>FLUXIO</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Josefin+Sans:wght@400;500;700&display=swap" rel="stylesheet">
@@ -25,14 +25,11 @@
     </button>
     <div id="sidebar-overlay"></div>
     <nav class="sidebar" id="sidebar">
-        <div class="sidebar-header">
-            <h3>AI Studio</h3>
-        </div>
         <ul class="sidebar-menu">
             <li>
-                <a href="#" class="sidebar-link" data-view="storyboard-view">
+                <a href="#" class="sidebar-link" data-view="ad-studio-view">
                     <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M4 8H8V4H4V8ZM10 20H14V16H10V20ZM4 20H8V16H4V20ZM4 14H8V10H4V14ZM10 14H14V10H10V14ZM16 8H20V4H16V8ZM10 8H14V4H10V8ZM16 14H20V10H16V14ZM16 20H20V16H16V20Z"/></svg>
-                    <span>Affiliate Pro</span>
+                    <span>Ad Studio</span>
                 </a>
             </li>
             <li>
@@ -43,7 +40,7 @@
             </li>
             <li>
                 <a href="#" class="sidebar-link" data-view="interior-designer-view">
-                    <svg xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><g><rect fill="none" height="24" width="24"/></g><g><path d="M19,7h-2V5h2V7z M19,13h-2v-2h2V13z M19,19h-2v-2h2V19z M15,13h-2v-2h2V13z M15,19h-2v-2h2V19z M11,19H9v-2h2V19z M7,13H5v-2h2V13z M15,7h-2V5h2V7z M11,7H9V5h2V7z M7,7H5V5h2V7z M5,3h14c1.1,0,2,0.9,2,2v14c0,1.1-0.9,2-2,2H5c-1.1,0-2-0.9,2-2V5 C3,3.9,3.9,3,5,3z M5,19h14V5H5V19z"/></g></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><g><rect fill="none" height="24" width="24"/></g><g><path d="M19,7h-2V5h2V7z M19,13h-2v-2h2V13z M19,19h-2v-2h2V19z M15,13h-2v-2h2V13z M15,19h-2v-2h2V19z M11,19H9v-2h2V19z M7,13H5v-2h2V13z M15,7h-2V5h2V7z M11,7H9V5h2V7z M7,7H5V5h2V7z M5,3h14c1.1,0,2,0.9,2,2v14c0 1.1-0.9,2-2,2H5c-1.1,0-2-0.9,2-2V5 C3,3.9,3.9,3,5,3z M5,19h14V5H5V19z"/></g></svg>
                     <span>Desainer Interior</span>
                 </a>
             </li>
@@ -69,6 +66,12 @@
                 <a href="#" class="sidebar-link" data-view="outfit-pro-view">
                     <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><g><rect fill="none" height="24" width="24"/></g><g><g><path d="M21.6,18.2l-2.78-3.9c-0.12-0.17-0.33-0.26-0.54-0.24l-2.19,0.22c-0.23,0.02-0.44-0.07-0.58-0.24l-2.5-3 c-0.21-0.25-0.58-0.25-0.79,0l-2.5,3C9.56,14.23,9.35,14.32,9.12,14.29L6.93,14.07c-0.21-0.02-0.42,0.07-0.54,0.24l-2.78,3.9 C3.3,18.7,3.6,19.2,4,19.2h16C20.4,19.2,20.7,18.7,21.6,18.2z"/><path d="M12,11.5c1.1,0,2-0.9,2-2s-0.9-2-2-2s-2,0.9-2,2S10.9,11.5,12,11.5z"/><path d="M14,4c0-1.1-0.9-2-2-2S10,2.9,10,4s0.9,2,2,2S14,5.1,14,4z"/></g></g></svg>
                     <span>Outfit Pro</span>
+                </a>
+            </li>
+            <li>
+                <a href="#" class="sidebar-link" data-view="poster-pro-view">
+                    <svg xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><g><rect fill="none" height="24" width="24"/></g><g><path d="M20,2H4C2.9,2,2,2.9,2,4v16c0,1.1,0.9,2,2,2h16c1.1,0,2-0.9,2-2V4C22,2.9,21.1,2,20,2z M9.5,16.5v-2.25L5.75,18L2,14.25 l3.5-3.5l2.25,2.25L9.5,11.25L8,9.75l-5,5L2,13.25l5-5l1.5,1.5l1.75-1.75L8,6.25l1.5,1.5L12,5.25L13.5,4l4.75,4.75l-2.25,2.25 l1.75,1.75l1.5-1.5l1.25,1.25l-5,5l-1.5-1.5L9.5,16.5z"/></g></svg>
+                    <span>Poster Pro</span>
                 </a>
             </li>
             <li>
@@ -100,9 +103,12 @@
     <div class="main-wrapper">
         <div class="app-container">
             <header class="app-header">
-                <h1>Creative Studio</h1>
+                <h1>FLUXIO</h1>
                 <p>Studio Fotografi Produk AI Anda</p>
                 <div class="header-actions">
+                    <button id="feature-guide-button" class="icon-button" title="Panduan Fitur">
+                        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M20 2H4c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 4h5v8l-2.5-1.5L6 12V4z"/></svg>
+                    </button>
                     <button id="premium-key-button" class="premium-key-button">
                         <span>Kunci Premium</span>
                         <span id="api-key-status-indicator"></span>
@@ -118,6 +124,155 @@
             </header>
 
             <main class="main-content">
+                <div id="feature-guide-view" class="view">
+                    <div class="feature-guide-container">
+                        <h2 class="feature-guide-title">Panduan Fitur</h2>
+                        <div class="feature-grid">
+                            <!-- Card 1: Ad Studio -->
+                            <div class="feature-card">
+                                <div class="feature-card-header">
+                                    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M21 3H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h5v2h8v-2h5c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 14H3V5h18v12zM7 15h10v-2H7v2zm3-4h4V9H10v2z"/></svg>
+                                    <h3>Ad Studio</h3>
+                                </div>
+                                <p>Ubah deskripsi produk menjadi konsep iklan video yang menarik.</p>
+                                <h4>Cara Penggunaan:</h4>
+                                <ol>
+                                    <li>Unggah gambar produk Anda (opsional).</li>
+                                    <li>Tulis deskripsi produk dan target audiens.</li>
+                                    <li>Pilih arahan kreatif dan format video.</li>
+                                    <li>Klik 'Buat Konsep Iklan' untuk storyboard lengkap.</li>
+                                </ol>
+                            </div>
+
+                            <!-- Card 2: Creative Studio -->
+                            <div class="feature-card">
+                                <div class="feature-card-header">
+                                    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
+                                    <h3>Creative Studio</h3>
+                                </div>
+                                <p>Hasilkan foto produk profesional dengan beragam model dan suasana AI.</p>
+                                <h4>Cara Penggunaan:</h4>
+                                <ol>
+                                    <li>Unggah gambar produk Anda.</li>
+                                    <li>Pilih mode: Konsep Visual, Peraga Virtual, atau Scene Pro.</li>
+                                    <li>Atur opsi seperti suasana, pose, atau interaksi.</li>
+                                    <li>Klik 'Buat' untuk melihat hasilnya.</li>
+                                </ol>
+                            </div>
+
+                            <!-- Card 3: Interior Designer -->
+                            <div class="feature-card">
+                                <div class="feature-card-header">
+                                    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M12 3L2 12h3v8h6v-6h2v6h6v-8h3L12 3zm5 15h-2v-6H9v6H7v-7.81l5-4.5 5 4.5V18z"/><path d="M7 10.19V18h2v-6h6v6h2v-7.81l-5-4.5z" opacity=".3"/></svg>
+                                    <h3>Desainer Interior</h3>
+                                </div>
+                                <p>Desain ulang ruangan apa pun secara instan dengan berbagai gaya interior.</p>
+                                <h4>Cara Penggunaan:</h4>
+                                <ol>
+                                    <li>Unggah foto ruangan Anda.</li>
+                                    <li>Pilih jenis ruangan dan gaya desain yang diinginkan.</li>
+                                    <li>Berikan instruksi kustom (opsional).</li>
+                                    <li>Klik 'Desain Ulang Ruangan' untuk transformasinya.</li>
+                                </ol>
+                            </div>
+
+                            <!-- Card 4: Food Lens -->
+                            <div class="feature-card">
+                                <div class="feature-card-header">
+                                     <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6-4c1.66 0 3 1.34 3 3v2H9V6c0-1.66 1.34-3 3-3zm6 14H6V10h12v8z"/><path d="M12 13c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>
+                                    <h3>Food Lens</h3>
+                                </div>
+                                <p>Buat foto makanan yang menggugah selera seperti seorang profesional.</p>
+                                <h4>Cara Penggunaan:</h4>
+                                <ol>
+                                    <li>Deskripsikan hidangan atau unggah gambar referensi.</li>
+                                    <li>Pilih mode, kategori, gaya plating, dan sudut pengambilan.</li>
+                                    <li>Pilih jumlah gambar yang diinginkan.</li>
+                                    <li>Klik 'Buat Foto Makanan' untuk hasil yang lezat.</li>
+                                </ol>
+                            </div>
+
+                            <!-- Card 5: Logo Lab -->
+                            <div class="feature-card">
+                                <div class="feature-card-header">
+                                    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><g><rect fill="none" height="24" width="24"/></g><g><g><path d="M9.5,6.5C9.5,5.67,8.83,5,8,5S6.5,5.67,6.5,6.5S7.17,8,8,8S9.5,7.33,9.5,6.5z"/><path d="M14,19.5c-3.03,0-5.5-2.47-5.5-5.5s2.47-5.5,5.5-5.5s5.5,2.47,5.5,5.5S17.03,19.5,14,19.5z M14,10.5 c-2.21,0-4,1.79-4,4s1.79,4,4,4s4-1.79,4-4S16.21,10.5,14,10.5z"/><path d="M12.5,11.75C12.5,10.51,11.49,9.5,10.25,9.5S8,10.51,8,11.75c0,0.83,0.45,1.55,1.12,1.93C7.54,14.54,6.5,16.16,6.5,18H4 c0-3.87,3.13-7,7-7c0.78,0,1.52,0.13,2.2,0.36C12.87,12.83,12.5,12.33,12.5,11.75z"/><path d="M14,14.5c-1.1,0-2,0.9-2,2s0.9,2,2,2s2-0.9,2-2S15.1,14.5,14,14.5z"/></g></g></svg>
+                                    <h3>Logo Lab</h3>
+                                </div>
+                                <p>Hasilkan konsep logo yang unik untuk merek atau bisnis Anda.</p>
+                                <h4>Cara Penggunaan:</h4>
+                                <ol>
+                                    <li>Masukkan informasi bisnis Anda (nama, deskripsi).</li>
+                                    <li>Pilih jenis, gaya, dan palet warna logo yang Anda sukai.</li>
+                                    <li>AI akan menghasilkan ringkasan merek untuk Anda.</li>
+                                    <li>Klik 'Buat Logo' untuk melihat beberapa konsep.</li>
+                                </ol>
+                            </div>
+
+                             <!-- Card 6: Outfit Pro -->
+                            <div class="feature-card">
+                                <div class="feature-card-header">
+                                    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M7 21H3V8h4v13zM12 21h-4V4h4v17zM17 21h-4V12h4v9zM22 21h-4V8h4v13z"/></svg>
+                                    <h3>Outfit Pro</h3>
+                                </div>
+                                <p>Buat mockup flat lay dan try-on model dari item fesyen Anda.</p>
+                                <h4>Cara Penggunaan:</h4>
+                                <ol>
+                                    <li>Unggah satu atau lebih gambar item pakaian.</li>
+                                    <li>AI akan secara otomatis menggabungkannya.</li>
+                                    <li>Klik 'Buat Mockup' untuk menghasilkan flat lay dan model try-on.</li>
+                                </ol>
+                            </div>
+
+                             <!-- Card 7: Poster Pro -->
+                            <div class="feature-card">
+                                <div class="feature-card-header">
+                                    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><g><rect fill="none" height="24" width="24"/></g><g><path d="M20,2H4C2.9,2,2,2.9,2,4v16c0,1.1,0.9,2,2,2h16c1.1,0,2-0.9,2-2V4C22,2.9,21.1,2,20,2z M9.5,16.5v-2.25L5.75,18L2,14.25 l3.5-3.5l2.25,2.25L9.5,11.25L8,9.75l-5,5L2,13.25l5-5l1.5,1.5l1.75-1.75L8,6.25l1.5,1.5L12,5.25L13.5,4l4.75,4.75l-2.25,2.25 l1.75,1.75l1.5-1.5l1.25,1.25l-5,5l-1.5-1.5L9.5,16.5z"/></g></svg>
+                                    <h3>Poster Pro</h3>
+                                </div>
+                                <p>Generator iklan profesional dengan teks dan efek dekoratif.</p>
+                                <h4>Cara Penggunaan:</h4>
+                                <ol>
+                                    <li>Unggah foto utama Anda.</li>
+                                    <li>Tulis headline, sub-headline, dan teks CTA.</li>
+                                    <li>Pilih gaya visual, rasio aspek, dan elemen dekoratif.</li>
+                                    <li>Klik 'Buat Poster' untuk beberapa variasi desain.</li>
+                                </ol>
+                            </div>
+
+                             <!-- Card 8: Retouch & Colorizer -->
+                            <div class="feature-card">
+                                <div class="feature-card-header">
+                                    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><g><rect fill="none" height="24" width="24"/></g><g><path d="M19,9l1.25-2.75L23,5l-2.75-1.25L19,1l-1.25,2.75L15,5l2.75,1.25L19,9z M11.5,9.5L9,4L6.5,9.5L1,12l5.5,2.5L9,20l2.5-5.5 L17,12L11.5,9.5z M19,15l-1.25,2.75L15,19l2.75,1.25L19,23l1.25-2.75L23,19l-2.75-1.25L19,15z"/></g></svg>
+                                    <h3>Retouch & Warnai</h3>
+                                </div>
+                                <p>Pulihkan dan warnai foto lama, pudar, atau rusak secara otomatis.</p>
+                                <h4>Cara Penggunaan:</h4>
+                                <ol>
+                                    <li>Unggah foto hitam putih, sepia, atau rusak.</li>
+                                    <li>AI akan secara otomatis menganalisis dan memprosesnya.</li>
+                                    <li>Lihat perbandingan sebelum dan sesudah secara berdampingan.</li>
+                                    <li>Unduh foto Anda yang telah dipulihkan.</li>
+                                </ol>
+                            </div>
+
+                            <!-- Card 9: Photo Studio -->
+                            <div class="feature-card">
+                                <div class="feature-card-header">
+                                    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M14.12 4H9.88L8.05 6H4v12h16V6h-4.05l-1.83-2zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z" opacity=".3"/><path d="M4 4h5.88l1.83-2h4.58l1.83-2H22v16H2V4h2zm0 2v12h16V6h-4.05l-1.83-2H9.88L8.05 6H4zm8 11c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.65 0-3 1.35-3 3s1.35 3 3 3 3-1.35 3-3-1.35-3-3-3z"/></svg>
+                                    <h3>Studio Foto</h3>
+                                </div>
+                                <p>Buat sesi foto profesional dengan berbagai pose dan gaya.</p>
+                                <h4>Cara Penggunaan:</h4>
+                                <ol>
+                                    <li>Unggah satu atau lebih gambar subjek.</li>
+                                    <li>Pilih variasi ekspresi, pencahayaan, dan latar belakang.</li>
+                                    <li>Tentukan jumlah gambar yang akan dibuat.</li>
+                                    <li>Klik 'Mulai Sesi Foto' untuk mendapatkan set gambar yang beragam.</li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <div id="ai-voice-studio-view" class="view active">
                     <div class="card-container">
                         <div class="content-container">
@@ -375,62 +530,62 @@
                         </div>
                     </div>
                 </div>
-                <div id="storyboard-view" class="view">
+                <div id="ad-studio-view" class="view">
                     <div class="card-container">
                         <div class="content-container">
                             <!-- Input State -->
-                            <div id="storyboard-input-state">
-                                <h2>Affiliate Pro</h2>
-                                <p class="modal-subtitle" style="margin-top: 0.5rem; margin-bottom: 1rem;">Buat storyboard iklan dari deskripsi produk Anda.</p>
+                            <div id="ad-studio-input-state">
+                                <h2>Ad Studio</h2>
+                                <p class="modal-subtitle" style="margin-top: 0.5rem; margin-bottom: 1rem;">Buat konsep iklan video dari deskripsi produk Anda.</p>
 
                                 <div class="input-group">
                                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                                        <label for="storyboard-product-image" class="storyboard-section-header">1. Unggah Produk (Opsional)</label>
-                                        <div id="storyboard-character-lock-container" class="theme-switcher" style="display: none; align-items: center; gap: 0.5rem; font-size: 0.9rem;">
+                                        <label for="ad-studio-product-image" class="storyboard-section-header">1. Unggah Produk (Opsional)</label>
+                                        <div id="ad-studio-character-lock-container" class="theme-switcher" style="display: none; align-items: center; gap: 0.5rem; font-size: 0.9rem;">
                                             <span>Kunci Karakter</span>
-                                            <input type="checkbox" id="storyboard-character-lock-toggle" aria-label="Toggle character lock">
-                                            <label for="storyboard-character-lock-toggle" class="slider-label" style="width: 40px; height: 22px;"></label>
+                                            <input type="checkbox" id="ad-studio-character-lock-toggle" aria-label="Toggle character lock">
+                                            <label for="ad-studio-character-lock-toggle" class="slider-label" style="width: 40px; height: 22px;"></label>
                                         </div>
                                     </div>
                                     <div class="file-input-wrapper">
-                                        <label class="file-drop-zone" for="storyboard-product-image" role="button">
-                                            <span id="storyboard-product-image-label">Klik atau seret & jatuhkan</span>
-                                            <img id="storyboard-product-image-preview" src="#" alt="Pratinjau produk" class="image-preview-hidden">
-                                            <input id="storyboard-product-image" type="file" accept="image/*">
+                                        <label class="file-drop-zone" for="ad-studio-product-image" role="button">
+                                            <span id="ad-studio-product-image-label">Klik atau seret & jatuhkan</span>
+                                            <img id="ad-studio-product-image-preview" src="#" alt="Pratinjau produk" class="image-preview-hidden">
+                                            <input id="ad-studio-product-image" type="file" accept="image/*">
                                         </label>
-                                        <button id="storyboard-clear-product-image" class="icon-button clear-upload-button" style="display: none;" aria-label="Hapus gambar produk">
+                                        <button id="ad-studio-clear-product-image" class="icon-button clear-upload-button" style="display: none;" aria-label="Hapus gambar produk">
                                             <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 0 24 24" width="20px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"></path><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"></path></svg>
                                         </button>
                                     </div>
                                 </div>
 
                                 <div class="input-group">
-                                    <label for="storyboard-product-desc" class="storyboard-section-header">2. Deskripsi & Merek</label>
-                                    <textarea id="storyboard-product-desc" rows="3" placeholder="contoh: Jam tangan pintar tahan air..."></textarea>
+                                    <label for="ad-studio-product-desc" class="storyboard-section-header">2. Deskripsi & Merek</label>
+                                    <textarea id="ad-studio-product-desc" rows="3" placeholder="contoh: Jam tangan pintar tahan air..."></textarea>
                                     <div class="storyboard-inline-inputs">
-                                        <input type="text" id="storyboard-brand-name" placeholder="Nama Merek (Opsional)">
-                                        <input type="text" id="storyboard-target-audience" placeholder="Target Audiens (pisahkan dengan koma)">
+                                        <input type="text" id="ad-studio-brand-name" placeholder="Nama Merek (Opsional)">
+                                        <input type="text" id="ad-studio-target-audience" placeholder="Target Audiens (pisahkan dengan koma)">
                                     </div>
                                 </div>
 
                                 <div class="input-group">
-                                    <label for="storyboard-cta-input" class="storyboard-section-header">3. Call to Action</label>
+                                    <label for="ad-studio-cta-input" class="storyboard-section-header">3. Call to Action</label>
                                      <p class="help-text">Tambahkan CTA otomatis di adegan terakhir.</p>
-                                    <input type="text" id="storyboard-cta-input" placeholder="mis. “Beli Sekarang di ingfo.ai”">
+                                    <input type="text" id="ad-studio-cta-input" placeholder="mis. “Beli Sekarang di ingfo.ai”">
                                 </div>
 
                                 <div class="input-group">
                                     <label class="storyboard-section-header">4. Arahan Kreatif & Audio</label>
                                     <p class="help-text">Atur gaya narasi dan suara untuk iklan Anda.</p>
                                     <label style="margin-top: 1rem; margin-bottom: 0.5rem; font-weight: normal;">Gaya Narasi</label>
-                                    <div id="storyboard-narrative-style-group" class="creative-options-group">
+                                    <div id="ad-studio-narrative-style-group" class="creative-options-group">
                                         <button class="creative-option-button toggle-button active" data-value="Dramatic">🎭 Dramatis</button>
                                         <button class="creative-option-button toggle-button" data-value="Fun/Trendy">🎉 Seru/Trendi</button>
                                         <button class="creative-option-button toggle-button" data-value="Educational">🎓 Edukatif</button>
                                         <button class="creative-option-button toggle-button" data-value="Minimalist">✨ Minimalis</button>
                                     </div>
                                     <label style="margin-top: 1rem; margin-bottom: 0.5rem; font-weight: normal;">Gaya Suara</label>
-                                    <div id="storyboard-voice-style-group" class="creative-options-group">
+                                    <div id="ad-studio-voice-style-group" class="creative-options-group">
                                         <button class="creative-option-button toggle-button active" data-value="natural">Alami</button>
                                         <button class="creative-option-button toggle-button" data-value="formal">Formal</button>
                                         <button class="creative-option-button toggle-button" data-value="friendly">Ramah</button>
@@ -442,14 +597,14 @@
                                     <label class="storyboard-section-header">5. Format & Panjang Video</label>
                                     <p class="help-text">Pilih jumlah adegan dan rasio aspek untuk video Anda.</p>
                                     <label style="margin-top: 1rem; margin-bottom: 0.5rem; font-weight: normal;">Jumlah Adegan</label>
-                                    <div id="storyboard-scene-count-group" class="creative-options-group">
+                                    <div id="ad-studio-scene-count-group" class="creative-options-group">
                                         <button class="creative-option-button toggle-button" data-value="3">3</button>
                                         <button class="creative-option-button toggle-button active" data-value="6">6</button>
                                         <button class="creative-option-button toggle-button" data-value="9">9</button>
                                         <button class="creative-option-button toggle-button" data-value="12">12</button>
                                     </div>
                                     <label style="margin-top: 1rem; margin-bottom: 0.5rem; font-weight: normal;">Rasio Aspek</label>
-                                    <div id="storyboard-aspect-ratio-group" class="creative-options-group">
+                                    <div id="ad-studio-aspect-ratio-group" class="creative-options-group">
                                         <button class="creative-option-button" data-value="9:16">9:16 (Story/Reels)</button>
                                         <button class="creative-option-button" data-value="1:1">1:1 (Feed)</button>
                                         <button class="creative-option-button active" data-value="16:9">16:9 (YouTube)</button>
@@ -459,45 +614,45 @@
                                 <div class="input-group">
                                     <label class="storyboard-section-header">6. Model Video</label>
                                     <p class="help-text">Pilih model AI untuk membuat video.</p>
-                                    <div id="storyboard-video-model-group" class="creative-options-group">
+                                    <div id="ad-studio-video-model-group" class="creative-options-group">
                                         <button class="creative-option-button toggle-button" data-value="veo-3.0-fast-generate-001">Veo 3 (Cepat)</button>
                                         <button class="creative-option-button toggle-button active" data-value="veo-2.0-generate-001">Veo 2 (Kualitas)</button>
                                     </div>
                                 </div>
 
-                                <button id="storyboard-generate-button" style="margin-top: 1rem;">
+                                <button id="ad-studio-generate-button" style="margin-top: 1rem;">
                                     <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 0 24 24" width="20px" fill="currentColor"><path d="M0 0h24v24H0z" fill="none"/><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
-                                    <span>Buat Storyboard</span>
+                                    <span>Buat Konsep Iklan</span>
                                 </button>
                             </div>
 
                             <!-- Results State -->
-                            <div id="storyboard-results-state" style="display: none;">
+                            <div id="ad-studio-results-state" style="display: none;">
                                 <div class="storyboard-results-header">
-                                    <h2>Hasil Affiliate Pro</h2>
-                                    <div id="storyboard-export-actions" class="button-group">
-                                        <button id="storyboard-download-all-videos" class="secondary-button" title="Unduh Semua Video" style="display: none;"><svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 0 24 24" width="18px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-5 5-5-5h3V9h4v4h3z"/></svg></button>
-                                        <button id="storyboard-export-srt" class="secondary-button" title="Unduh Subtitle (.srt)"><svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 0 24 24" width="18px" fill="currentColor"><g><rect fill="none" height="24" width="24"/></g><g><path d="M4,17h16v-2H4V17z M4,5v2h16V5H4z M4,11h16V9H4V11z"/></g></svg></svg></button>
-                                        <button id="storyboard-export-json" class="secondary-button" title="Unduh JSON"><svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 0 24 24" width="18px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/></svg></svg></button>
-                                        <button id="storyboard-export-txt" class="secondary-button" title="Unduh Naskah (.txt)"><svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 0 24 24" width="18px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zM6 20V4h7v5h5v11H6z"/></svg></svg></button>
-                                        <button id="storyboard-copy-prompts" class="secondary-button" title="Salin Prompt"><svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 0 24 24" width="18px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0 -1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg></svg></button>
-                                        <button id="storyboard-start-over-button" class="secondary-button" title="Mulai Lagi"><svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 0 24 24" width="18px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M12.5 8c-2.65 0-5.05.99-6.9 2.6L2 7v9h9l-3.62-3.62c1.39-1.16 3.16-1.88 5.12-1.88 3.54 0 6.55 2.31 7.6 5.5l2.37-.78C21.08 11.03 17.15 8 12.5 8z"/></svg></svg></button>
+                                    <h2>Hasil Konsep Iklan</h2>
+                                    <div id="ad-studio-export-actions" class="button-group">
+                                        <button id="ad-studio-download-all-videos" class="secondary-button" title="Unduh Semua Video" style="display: none;"><svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 0 24 24" width="18px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-5 5-5-5h3V9h4v4h3z"/></svg></button>
+                                        <button id="ad-studio-export-srt" class="secondary-button" title="Unduh Subtitle (.srt)"><svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 0 24 24" width="18px" fill="currentColor"><g><rect fill="none" height="24" width="24"/></g><g><path d="M4,17h16v-2H4V17z M4,5v2h16V5H4z M4,11h16V9H4V11z"/></g></svg></svg></button>
+                                        <button id="ad-studio-export-json" class="secondary-button" title="Unduh JSON"><svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 0 24 24" width="18px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/></svg></svg></button>
+                                        <button id="ad-studio-export-txt" class="secondary-button" title="Unduh Naskah (.txt)"><svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 0 24 24" width="18px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zM6 20V4h7v5h5v11H6z"/></svg></svg></button>
+                                        <button id="ad-studio-copy-prompts" class="secondary-button" title="Salin Prompt"><svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 0 24 24" width="18px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0 -1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg></svg></button>
+                                        <button id="ad-studio-start-over-button" class="secondary-button" title="Mulai Lagi"><svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 0 24 24" width="18px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M12.5 8c-2.65 0-5.05.99-6.9 2.6L2 7v9h9l-3.62-3.62c1.39-1.16 3.16-1.88 5.12-1.88 3.54 0 6.55 2.31 7.6 5.5l2.37-.78C21.08 11.03 17.15 8 12.5 8z"/></svg></svg></button>
                                     </div>
                                 </div>
-                                <div id="storyboard-campaign-tabs"></div>
+                                <div id="ad-studio-campaign-tabs"></div>
                                 <div class="storyboard-results-content">
-                                    <div id="storyboard-results-placeholder" class="storyboard-results-placeholder">
+                                    <div id="ad-studio-results-placeholder" class="storyboard-results-placeholder">
                                         <div class="loading-clock"></div>
                                         <p style="margin-top: 1rem;">AI sedang meracik ide brilian...</p>
                                     </div>
-                                    <div id="storyboard-hook-suggestions-container" style="display:none;"></div>
-                                    <div id="storyboard-scene-grid"></div>
+                                    <div id="ad-studio-hook-suggestions-container" style="display:none;"></div>
+                                    <div id="ad-studio-scene-grid"></div>
                                 </div>
                             </div>
                             
                             <!-- Shared Status Container -->
-                             <div id="storyboard-status-container" class="status-container">
-                                <p id="storyboard-status"></p>
+                             <div id="ad-studio-status-container" class="status-container">
+                                <p id="ad-studio-status"></p>
                              </div>
                         </div>
                     </div>
@@ -1000,6 +1155,142 @@
                         </div>
                     </div>
                 </div>
+                <div id="poster-pro-view" class="view">
+                    <div class="card-container">
+                        <div class="content-container">
+                            <!-- Input State -->
+                            <div id="poster-pro-input-state">
+                                <h2>Poster Pro</h2>
+                                <p class="modal-subtitle" style="margin-top: 0.5rem; margin-bottom: 2rem;">Generator Iklan Profesional dengan Efek Dekoratif</p>
+                                
+                                <div class="poster-pro-layout">
+                                    <div class="poster-pro-left-col">
+                                        <div class="input-group">
+                                            <label for="poster-pro-file-input">1. Unggah Foto Utama</label>
+                                            <label class="file-drop-zone" for="poster-pro-file-input" style="min-height: 180px;" role="button">
+                                                <img id="poster-pro-preview-image" src="#" alt="Pratinjau Poster" style="display: none; max-height: 160px; width: auto; border-radius: 8px;">
+                                                <span id="poster-pro-upload-label">Klik atau seret & jatuhkan</span>
+                                                <input id="poster-pro-file-input" type="file" accept="image/*" style="display: none;">
+                                            </label>
+                                        </div>
+                                        <div class="input-group">
+                                            <label for="poster-pro-logo-input">1.1. Unggah Logo (Opsional, PNG)</label>
+                                            <label class="file-drop-zone" for="poster-pro-logo-input" style="min-height: 100px;" role="button">
+                                                <img id="poster-pro-logo-preview-image" src="#" alt="Pratinjau Logo" style="display: none; max-height: 80px; width: auto;">
+                                                <span id="poster-pro-logo-upload-label">Klik atau seret & jatuhkan logo</span>
+                                                <input id="poster-pro-logo-input" type="file" accept="image/png" style="display: none;">
+                                            </label>
+                                        </div>
+                                        <div class="input-group">
+                                            <label for="poster-pro-headline-input">2. Headline</label>
+                                            <input type="text" id="poster-pro-headline-input" placeholder="BOBA SEGER, HAPPY SEHARIAN!">
+                                        </div>
+                                        <div class="input-group">
+                                            <label for="poster-pro-subheadline-input">3. Sub-Headline / Promo</label>
+                                            <textarea id="poster-pro-subheadline-input" rows="2" placeholder="Cobain sekarang – Beli 2 Gratis 1!"></textarea>
+                                        </div>
+                                        <div class="input-group">
+                                            <label for="poster-pro-cta-input">4. Teks Tombol CTA</label>
+                                            <input type="text" id="poster-pro-cta-input" placeholder="Pesan Sekarang">
+                                        </div>
+                                    </div>
+
+                                    <div class="poster-pro-right-col">
+                                        <div class="input-group">
+                                            <label>5. Tipografi</label>
+                                            <div id="poster-pro-font-style-group" class="button-group" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.5rem; margin-bottom: 0.5rem;">
+                                                <button class="toggle-button" data-value="serif font">Serif</button>
+                                                <button class="toggle-button active" data-value="sans-serif font">Sans-Serif</button>
+                                                <button class="toggle-button" data-value="script font">Script</button>
+                                            </div>
+                                            <div id="poster-pro-font-weight-group" class="button-group" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.5rem;">
+                                                <button class="toggle-button" data-value="light">Ringan</button>
+                                                <button class="toggle-button active" data-value="regular">Reguler</button>
+                                                <button class="toggle-button" data-value="bold">Tebal</button>
+                                            </div>
+                                        </div>
+                                
+                                        <div class="input-group">
+                                            <label>6. Posisi Teks</label>
+                                            <div id="poster-pro-text-position-group" class="button-group" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 0.5rem;">
+                                                <button class="toggle-button" data-value="on the left side">Kiri</button>
+                                                <button class="toggle-button active" data-value="centered">Tengah</button>
+                                                <button class="toggle-button" data-value="on the right side">Kanan</button>
+                                                <button class="toggle-button" data-value="at the bottom">Bawah</button>
+                                            </div>
+                                        </div>
+                                
+                                        <div class="input-group">
+                                            <label for="poster-pro-color-palette-input">7. Palet Warna</label>
+                                            <div style="display: flex; gap: 0.5rem;">
+                                                <input type="text" id="poster-pro-color-palette-input" placeholder="mis. warna bumi yang hangat, neon cerah">
+                                                <button id="poster-pro-extract-color-button" class="secondary-button" style="padding: 0.5rem;" title="Ekstrak warna dari gambar">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 0 24 24" width="20px" fill="currentColor"><g><rect fill="none" height="24" width="24"></g><g><path d="M17.08,3.56C16.69,3.17,16.3,3,15.91,3s-0.78,0.17-1.07,0.46l-2.07,2.07C12.96,5.2,13,4.86,13,4.5C13,3.67,12.33,3,11.5,3 S10,3.67,10,4.5c0,0.36,0.04,0.7,0.11,1.03L5.46,10.18C5.17,10.47,5,10.86,5,11.25c0,0.78,0.62,1.4,1.39,1.4c0.39,0,0.78-0.17,1.07-0.46 l4.65-4.65c0.33,0.07,0.67,0.11,1.03,0.11c0.83,0,1.5-0.67,1.5-1.5c0-0.36-0.04-0.7-0.11-1.03l2.07-2.07 C17.83,4.34,17.83,3.95,17.08,3.56z M7.25,12.04c-0.23,0.23-0.53,0.35-0.85,0.35s-0.62-0.12-0.85-0.35c-0.47-0.47-0.47-1.23,0-1.7 l5.3-5.3c0.09,0.23,0.21,0.44,0.35,0.62l-4.24,4.24C7.54,10.2,7.38,10.6,7.38,11c0,0.4,0.16,0.79,0.44,1.06 C7.54,11.77,7.4,11.9,7.25,12.04z"/><path d="M19.7,13.04c-0.23-0.23-0.53-0.35-0.85-0.35s-0.62,0.12-0.85,0.35l-1.9,1.9c-0.23-0.09-0.44-0.21-0.62-0.35l1.5-1.5 c0.47-0.47,0.47-1.23,0-1.7c-0.47-0.47-1.23-0.47-1.7,0l-1.5,1.5c-0.14-0.18-0.26-0.39-0.35-0.62l1.9-1.9 c0.47-0.47,0.47-1.23,0-1.7c-0.47-0.47-1.23-0.47-1.7,0l-1.9,1.9c-0.09-0.23-0.21-0.44-0.35-0.62l1.5-1.5c0.47-0.47,0.47-1.23,0-1.7 c-0.47-0.47-1.23-0.47-1.7,0l-1.5,1.5c-0.14-0.18-0.26-0.39-0.35-0.62l5.3-5.3c0.09,0.23,0.21,0.44,0.35,0.62l-5.3,5.3 C11.02,12.37,11,12.77,11,13.17c0,1.3,0.81,2.4,1.91,2.83l-1.55,1.55c-0.47,0.47-0.47,1.23,0,1.7c0.23,0.23,0.53,0.35,0.85,0.35 s0.62-0.12,0.85-0.35l1.55-1.55C15.1,19.19,16.2,20,17.5,20c1.38,0,2.5-1.12,2.5-2.5c0-0.4-0.1-0.77-0.27-1.09l1.9-1.9 C22.1,14.05,22.1,13.51,21.63,13.04L19.7,13.04z M17.5,18c-0.83,0-1.5-0.67-1.5-1.5s0.67-1.5,1.5-1.5s1.5,0.67,1.5,1.5 S18.33,18,17.5,18z"/></g></svg>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="input-group">
+                                            <label>8. Kategori Template</label>
+                                            <div id="poster-pro-category-group" class="button-group" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 0.5rem;">
+                                                <button class="toggle-button active" data-value="Makanan & Minuman">Makanan & Minuman</button>
+                                                <button class="toggle-button" data-value="Fashion">Fashion</button>
+                                                <button class="toggle-button" data-value="Rental">Rental</button>
+                                                <button class="toggle-button" data-value="Lifestyle">Lifestyle</button>
+                                            </div>
+                                        </div>
+                                        <div class="input-group">
+                                            <label for="poster-pro-style-select">9. Gaya Visual</label>
+                                            <select id="poster-pro-style-select">
+                                                <option value="Fun & Colorful">Fun & Colorful</option>
+                                                <option value="Minimalist">Minimalis</option>
+                                                <option value="Luxury">Luxury</option>
+                                                <option value="Dramatic">Dramatic</option>
+                                            </select>
+                                        </div>
+                                        <div class="input-group">
+                                            <label>10. Rasio Aspek</label>
+                                            <div id="poster-pro-aspect-ratio-group" class="button-group" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 0.5rem;">
+                                                <button class="toggle-button active" data-value="9:16">9:16 (Story)</button>
+                                                <button class="toggle-button" data-value="4:5">4:5 (Feed)</button>
+                                                <button class="toggle-button" data-value="1:1">1:1 (Square)</button>
+                                                <button class="toggle-button" data-value="16:9">16:9 (Wide)</button>
+                                            </div>
+                                        </div>
+                                        <div class="input-group">
+                                            <label>11. Elemen Dekoratif (Pilih beberapa)</label>
+                                            <div id="poster-pro-elements-group">
+                                                <button class="toggle-button" data-element="water splash">Splash</button>
+                                                <button class="toggle-button" data-element="bubbles">Bubble</button>
+                                                <button class="toggle-button" data-element="fire effects">Api</button>
+                                                <button class="toggle-button" data-element="dramatic smoke">Asap</button>
+                                                <button class="toggle-button" data-element="flying chili peppers">Cabai</button>
+                                                <button class="toggle-button" data-element="tropical leaves">Daun Tropis</button>
+                                            </div>
+                                        </div>
+                                        <div class="input-group">
+                                            <label for="poster-pro-custom-prompt">12. Custom Prompt (Opsional)</label>
+                                            <textarea id="poster-pro-custom-prompt" rows="3" placeholder="contoh: tambahkan logo 'Pobud' di pojok kiri bawah"></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="button-group" style="margin-top: 1rem;">
+                                    <button id="poster-pro-generate-button" style="background-color: #f5a623; color: black; font-weight: bold;">Buat Poster</button>
+                                    <button id="poster-pro-change-photo-button" class="secondary-button">Ganti Foto</button>
+                                </div>
+                            </div>
+                            <!-- Results State -->
+                            <div id="poster-pro-results-state" style="display: none;">
+                                <h2>Your Poster is Ready!</h2>
+                                <div id="poster-pro-results-grid" class="studio-results-grid" style="grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));">
+                                    <!-- Results will be populated by JS -->
+                                </div>
+                                <div class="button-group" style="margin-top: 2rem; justify-content: center;">
+                                    <button id="poster-pro-start-over-button" class="secondary-button">Mulai Lagi</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <div id="retouch-view" class="view">
                     <div class="card-container">
                         <div class="content-container" style="align-items: center;">
@@ -1336,7 +1627,7 @@
                 </div>
                 <div class="modal-zoom-controls" style="display: flex; align-items: center; gap: 0.5rem;">
                     <button id="modal-zoom-out-button" class="icon-button" aria-label="Perkecil"><svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 0 24 24" width="20px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M19 13H5v-2h14v2z"/></svg></button>
-                    <button id="modal-zoom-in-button" class="icon-button" aria-label="Perbesar"><svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 0 24 24" width="20px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg></button>
+                    <button id="modal-zoom-in-button" class="icon-button" aria-label="Perbesar"><svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 0 24 24" width="20px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M19 13H5v-2h14v2z"/></svg></button>
                     <button id="modal-zoom-reset-button" class="icon-button" aria-label="Reset Zoom"><svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 0 24 24" width="20px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M5 13h14v-2H5v2zm-2 4h14v-2H3v2zM7 7v2h14V7H7z"/></svg></button>
                 </div>
                 <button id="modal-download-edited-button" class="secondary-button">

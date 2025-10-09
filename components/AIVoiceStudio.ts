@@ -22,18 +22,12 @@ export const AIVoiceStudio = {
 
     // === State ===
     voiceActors: [
-        { name: 'Zephyr', gender: 'Pria' },
-        { name: 'Puck', gender: 'Pria' },
-        { name: 'Charon', gender: 'Pria' },
-        { name: 'Fenrir', gender: 'Pria' },
-        { name: 'Gacrux', gender: 'Pria' },
-        { name: 'Orus', gender: 'Pria' },
-        { name: 'Kore', gender: 'Wanita' },
-        { name: 'Leda', gender: 'Wanita' },
-        { name: 'Aoede', gender: 'Wanita' },
-        { name: 'Callirrhoe', gender: 'Wanita' },
-        { name: 'Despina', gender: 'Wanita' },
-        { name: 'Erinome', gender: 'Wanita' },
+        { name: 'Zephyr', gender: 'Pria' }, { name: 'Puck', gender: 'Pria' },
+        { name: 'Charon', gender: 'Pria' }, { name: 'Fenrir', gender: 'Pria' },
+        { name: 'Gacrux', gender: 'Pria' }, { name: 'Orus', gender: 'Pria' },
+        { name: 'Kore', gender: 'Wanita' }, { name: 'Leda', gender: 'Wanita' },
+        { name: 'Aoede', gender: 'Wanita' }, { name: 'Callirrhoe', gender: 'Wanita' },
+        { name: 'Despina', gender: 'Wanita' }, { name: 'Erinome', gender: 'Wanita' },
     ],
     selectedActor: null as string | null,
     currentVoiceAudio: null as HTMLAudioElement | null,
@@ -47,6 +41,18 @@ export const AIVoiceStudio = {
     getApiKey: (() => '') as () => string,
 
     init(dependencies: { getApiKey: () => string }) {
+        // --- FIX: Robustly check for all critical elements on initialization ---
+        const requiredElements = [
+            this.aiVoiceScriptInput, this.aiVoiceCharCount, this.aiVoiceResultContainer,
+            this.aiVoiceGenderFilter, this.aiVoiceActorList, this.aiVoiceVibeGroup,
+            this.aiVoiceSpeedSlider, this.aiVoiceSpeedLabel, this.aiVoiceGenerateButton,
+        ];
+
+        if (requiredElements.some(el => !el)) {
+            console.error("AI Voice Studio initialization failed: One or more required elements are missing from the DOM.");
+            return;
+        }
+
         this.getApiKey = dependencies.getApiKey;
         this.addEventListeners();
         this.renderVoiceActors();
@@ -60,8 +66,7 @@ export const AIVoiceStudio = {
         });
 
         this.aiVoiceGenderFilter.addEventListener('click', (e) => {
-            const target = e.target as HTMLElement;
-            const button = target.closest('.toggle-button');
+            const button = (e.target as HTMLElement).closest('.toggle-button');
             if (button) {
                 this.aiVoiceGenderFilter.querySelectorAll('.toggle-button').forEach(btn => btn.classList.remove('active'));
                 button.classList.add('active');
@@ -84,16 +89,19 @@ export const AIVoiceStudio = {
             }
             
             if (card) {
-                this.aiVoiceActorList.querySelectorAll('.actor-card').forEach(c => c.classList.remove('active'));
+                this.aiVoiceActorList.querySelectorAll('.actor-card').forEach(c => {
+                    c.classList.remove('active');
+                    c.setAttribute('aria-selected', 'false'); // A11y improvement
+                });
                 card.classList.add('active');
+                card.setAttribute('aria-selected', 'true'); // A11y improvement
                 this.selectedActor = (card as HTMLElement).dataset.name || null;
                 this.updateVoiceGenerateButton();
             }
         });
 
         this.aiVoiceVibeGroup.addEventListener('click', (e) => {
-            const target = e.target as HTMLElement;
-            const button = target.closest('.toggle-button');
+            const button = (e.target as HTMLElement).closest('.toggle-button');
             if (button) {
                 this.aiVoiceVibeGroup.querySelectorAll('.toggle-button').forEach(btn => btn.classList.remove('active'));
                 button.classList.add('active');
@@ -101,7 +109,12 @@ export const AIVoiceStudio = {
         });
 
         this.aiVoiceSpeedSlider.addEventListener('input', () => {
-            this.aiVoiceSpeedLabel.textContent = `${parseFloat(this.aiVoiceSpeedSlider.value).toFixed(2)}x`;
+            const speed = parseFloat(this.aiVoiceSpeedSlider.value);
+            this.aiVoiceSpeedLabel.textContent = `${speed.toFixed(2)}x`;
+            // --- FIX: Apply speed change to the currently loaded audio ---
+            if (this.currentVoiceAudio) {
+                this.currentVoiceAudio.playbackRate = speed;
+            }
         });
 
         this.aiVoiceGenerateButton.addEventListener('click', this.handleGenerateVoiceOver.bind(this));
@@ -111,14 +124,22 @@ export const AIVoiceStudio = {
         this.aiVoiceActorList.innerHTML = '';
         const filteredActors = filter === 'Semua' ? this.voiceActors : this.voiceActors.filter(actor => actor.gender === filter);
         
+        // This logic is already good, keeping it.
+        if (this.selectedActor && !filteredActors.some(actor => actor.name === this.selectedActor)) {
+            this.selectedActor = null;
+            this.updateVoiceGenerateButton();
+        }
+
         filteredActors.forEach(actor => {
             const card = document.createElement('div');
             card.className = 'actor-card';
             card.dataset.name = actor.name;
+            card.setAttribute('role', 'option'); // A11y improvement
+            card.setAttribute('aria-selected', 'false'); // A11y improvement
 
-            const isSelected = this.selectedActor === actor.name;
-            if (isSelected) {
+            if (this.selectedActor === actor.name) {
                 card.classList.add('active');
+                card.setAttribute('aria-selected', 'true');
             }
 
             const isPlaying = this.currentlyPlayingActor === actor.name;
@@ -128,8 +149,8 @@ export const AIVoiceStudio = {
                     <h4>${actor.name}</h4>
                     <div class="actor-card-actions">
                          <button class="icon-button actor-play-button" data-actor-name="${actor.name}" title="Pratinjau Suara">
-                            ${isPlaying ? this.stopIconSVG : this.playIconSVG}
-                        </button>
+                             ${isPlaying ? this.stopIconSVG : this.playIconSVG}
+                         </button>
                     </div>
                 </div>
                 <div class="actor-card-meta">
@@ -141,23 +162,20 @@ export const AIVoiceStudio = {
     },
 
     async handlePreviewVoice(actorName: string, buttonEl: HTMLButtonElement) {
-        // Stop any currently playing sample and reset its button
         if (this.currentSampleAudio) {
             this.currentSampleAudio.pause();
-            this.currentSampleAudio = null;
             const oldButton = this.aiVoiceActorList.querySelector(`[data-actor-name="${this.currentlyPlayingActor}"]`);
             if (oldButton) {
                 oldButton.innerHTML = this.playIconSVG;
             }
         }
     
-        // If the clicked actor was the one playing, we just stop it and we're done.
         if (this.currentlyPlayingActor === actorName) {
+            this.currentSampleAudio = null;
             this.currentlyPlayingActor = null;
             return;
         }
     
-        // --- Start playing the new one ---
         this.currentlyPlayingActor = actorName;
         buttonEl.disabled = true;
         buttonEl.innerHTML = `<div class="loading-clock"></div>`;
@@ -173,11 +191,15 @@ export const AIVoiceStudio = {
             buttonEl.innerHTML = this.stopIconSVG;
             this.currentSampleAudio = new Audio(sampleUrl);
             this.currentSampleAudio.play();
-            this.currentSampleAudio.addEventListener('ended', () => {
+            
+            const onEnded = () => {
                 buttonEl.innerHTML = this.playIconSVG;
-                this.currentlyPlayingActor = null;
-                this.currentSampleAudio = null;
-            }, { once: true });
+                if (this.currentlyPlayingActor === actorName) {
+                    this.currentlyPlayingActor = null;
+                    this.currentSampleAudio = null;
+                }
+            };
+            this.currentSampleAudio.addEventListener('ended', onEnded, { once: true });
     
         } catch (e) {
             console.error(`Failed to play voice sample for ${actorName}:`, e);
@@ -222,10 +244,8 @@ export const AIVoiceStudio = {
 
             this.currentVoiceAudio = new Audio(audioUrl);
             this.currentVoiceAudio.controls = true;
-            
-            // Adjust playback speed
             this.currentVoiceAudio.playbackRate = parseFloat(this.aiVoiceSpeedSlider.value);
-
+            
             this.aiVoiceResultContainer.innerHTML = '';
             this.aiVoiceResultContainer.appendChild(this.currentVoiceAudio);
             this.currentVoiceAudio.play();
@@ -235,9 +255,8 @@ export const AIVoiceStudio = {
             const errorMessage = parseAndFormatErrorMessage(e, 'Pembuatan suara');
             this.aiVoiceResultContainer.innerHTML = `<p class="pending-status-text" style="color: #dc3545;">${errorMessage}</p>`;
         } finally {
-            this.aiVoiceGenerateButton.disabled = false;
             this.aiVoiceGenerateButton.innerHTML = 'Generate Voice Over';
-            this.updateVoiceGenerateButton();
+            this.updateVoiceGenerateButton(); // Re-enables the button if conditions are met
         }
     }
 };

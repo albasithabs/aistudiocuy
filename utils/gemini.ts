@@ -35,13 +35,14 @@ export async function validateApiKey(apiKey: string): Promise<boolean> {
     }
 }
 
+// FIX: Added optional aspectRatio parameter to support video generation with specific aspect ratios, resolving the argument mismatch error.
 export async function generateVideoContent(
     prompt: string,
     imageBytes: string,
     model: string,
     getApiKey: () => string,
     updateStatus: (message: string, step?: number) => void,
-    aspectRatio?: string
+    aspectRatio?: string
 ): Promise<string> {
   const ai = new GoogleGenAI({apiKey: getApiKey()});
   const videoGenConfig: any = { numberOfVideos: 1 };
@@ -104,48 +105,30 @@ export async function generateStyledImage(
 export async function generateImage(
     prompt: string,
     getApiKey: () => string,
-    consistencyImageBytes: string | null = null
+    aspectRatio?: string
 ): Promise<string> {
     const ai = new GoogleGenAI({ apiKey: getApiKey() });
 
-    if (consistencyImageBytes) {
-        // This is an image-to-image task for consistency
-        const parts = [
-            { inlineData: { data: consistencyImageBytes, mimeType: 'image/png' } },
-            { text: prompt }
-        ];
-        const response = await ai.models.generateContent({
-            model: 'gemini-2.5-flash-image',
-            contents: { parts },
-            config: {
-                responseModalities: [Modality.IMAGE, Modality.TEXT],
-            },
-        });
-        const imagePart = response.candidates?.[0]?.content?.parts.find(p => p.inlineData);
-        if (imagePart?.inlineData) {
-            return `data:${imagePart.inlineData.mimeType};base64,${imagePart.inlineData.data}`;
-        } else {
-            const textPart = response.candidates?.[0]?.content?.parts.find(p => p.text);
-            throw new Error(textPart?.text || "No image data in response.");
-        }
-    } else {
-        // This is a text-to-image task, use Imagen
-        const response = await ai.models.generateImages({
-            model: 'imagen-4.0-generate-001',
-            prompt: prompt,
-            config: {
-                numberOfImages: 1,
-                outputMimeType: 'image/png',
-            },
-        });
-        // IMPROVEMENT: Added a check to prevent crashing if no images are returned.
-        if (response.generatedImages && response.generatedImages.length > 0) {
-            const base64ImageBytes: string = response.generatedImages[0].image.imageBytes;
-            return `data:image/png;base64,${base64ImageBytes}`;
-        } else {
-            throw new Error("The image generation request was blocked or failed to return an image.");
-        }
-    }
+    // This is a text-to-image task, use Imagen
+    const imageGenConfig: any = {
+        numberOfImages: 1,
+        outputMimeType: 'image/png',
+    };
+    if (aspectRatio) {
+        imageGenConfig.aspectRatio = aspectRatio;
+    }
+    const response = await ai.models.generateImages({
+        model: 'imagen-4.0-generate-001',
+        prompt: prompt,
+        config: imageGenConfig,
+    });
+    // IMPROVEMENT: Added a check to prevent crashing if no images are returned.
+    if (response.generatedImages && response.generatedImages.length > 0) {
+        const base64ImageBytes: string = response.generatedImages[0].image.imageBytes;
+        return `data:image/png;base64,${base64ImageBytes}`;
+    } else {
+        throw new Error("The image generation request was blocked or failed to return an image.");
+    }
 }
 
 export async function generateText(prompt: string, getApiKey: () => string, schema?: any): Promise<string> {
@@ -310,12 +293,14 @@ export async function generateTTS(textToSpeak: string, voiceName: string, getApi
         const base64Pcm = audioPart.inlineData.data;
         const mimeType = audioPart.inlineData.mimeType;
         
-        // Ensure the response is audio and convert it to a playable WAV format.
-        // Assumes pcmToWavUrl helper exists and works correctly.
         if (mimeType.startsWith('audio/')) {
-            // The API returns raw PCM data which needs a WAV header to be playable.
-            // We assume a 24000 sample rate as that's standard for this model.
-            return pcmToWavUrl(base64Pcm, 24000);
+            // IMPROVEMENT: Dynamically parse sample rate from MIME type for future-proofing.
+            let sampleRate = 24000; // Default sample rate
+            const rateMatch = mimeType.match(/rate=(\d+)/);
+            if (rateMatch && rateMatch[1]) {
+                sampleRate = parseInt(rateMatch[1], 10);
+            }
+            return pcmToWavUrl(base64Pcm, sampleRate);
         } else {
              throw new Error(`Unexpected MIME type received for audio: ${mimeType}`);
         }

@@ -5,21 +5,22 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { blobToDataUrl, downloadFile, parseAndFormatErrorMessage } from "../utils/helpers.ts";
+// --- FIX: Import withGenericRetry ---
+import { blobToDataUrl, downloadFile, parseAndFormatErrorMessage, withGenericRetry } from "../utils/helpers.ts";
 import { generateStyledImage } from "../utils/gemini.ts";
 
 type RetouchState = 'idle' | 'processing' | 'results' | 'error';
 
 export const RetouchAndColorizer = {
-    // DOM Elements
-    idleStateEl: document.querySelector('#retouch-idle-state') as HTMLDivElement,
-    activeStateEl: document.querySelector('#retouch-active-state') as HTMLDivElement,
-    fileInput: document.querySelector('#retouch-file-input') as HTMLInputElement,
-    originalImage: document.querySelector('#retouch-original-image') as HTMLImageElement,
-    originalImageBox: document.querySelector('#retouch-original-image')?.closest('.retouch-image-box') as HTMLDivElement,
-    resultBox: document.querySelector('#retouch-result-box') as HTMLDivElement,
-    downloadButton: document.querySelector('#retouch-download-button') as HTMLButtonElement,
-    startOverButton: document.querySelector('#retouch-start-over-button') as HTMLButtonElement,
+    // DOM Elements - Initialized to null for safe checking
+    idleStateEl: null as HTMLDivElement | null,
+    activeStateEl: null as HTMLDivElement | null,
+    fileInput: null as HTMLInputElement | null,
+    originalImage: null as HTMLImageElement | null,
+    originalImageBox: null as HTMLDivElement | null,
+    resultBox: null as HTMLDivElement | null,
+    downloadButton: null as HTMLButtonElement | null,
+    startOverButton: null as HTMLButtonElement | null,
 
     // State
     state: 'idle' as RetouchState,
@@ -34,46 +35,71 @@ export const RetouchAndColorizer = {
     init(dependencies: { getApiKey: () => string; showPreviewModal: (urls: (string | null)[], startIndex?: number) => void; }) {
         this.getApiKey = dependencies.getApiKey;
         this.showPreviewModal = dependencies.showPreviewModal;
+
+        this.queryDOMElements();
+        // --- FIX: Add validation after querying elements ---
+        if (!this.validateDOMElements()) return;
+
         this.addEventListeners();
         this.render();
     },
 
-    addEventListeners() {
-        this.fileInput.addEventListener('change', this.handleUpload.bind(this));
-        // The label's `for` attribute handles the click, so no JS listener is needed here.
-        // This fixes the "double-click" bug.
-        this.downloadButton.addEventListener('click', this.handleDownload.bind(this));
-        this.startOverButton.addEventListener('click', this.handleStartOver.bind(this));
-        
-        // Add click listeners for image preview modal
-        if (this.originalImageBox) {
-            this.originalImageBox.addEventListener('click', () => this.handleImageClick(0));
+    queryDOMElements() {
+        this.idleStateEl = document.querySelector('#retouch-idle-state');
+        this.activeStateEl = document.querySelector('#retouch-active-state');
+        this.fileInput = document.querySelector('#retouch-file-input');
+        this.originalImage = document.querySelector('#retouch-original-image');
+        this.originalImageBox = document.querySelector('#retouch-original-image')?.closest('.retouch-image-box');
+        this.resultBox = document.querySelector('#retouch-result-box');
+        this.downloadButton = document.querySelector('#retouch-download-button');
+        this.startOverButton = document.querySelector('#retouch-start-over-button');
+    },
+
+    validateDOMElements(): boolean {
+        const requiredElements = [
+            this.idleStateEl, this.activeStateEl, this.fileInput, this.originalImage,
+            this.originalImageBox, this.resultBox, this.downloadButton, this.startOverButton
+        ];
+        if (requiredElements.some(el => !el)) {
+            console.error("RetouchAndColorizer initialization failed: One or more required elements are missing from the DOM.");
+            return false;
         }
-        this.resultBox.addEventListener('click', () => this.handleImageClick(1));
+        return true;
+    },
+
+    addEventListeners() {
+        // Now we can safely use ! because validation passed
+        this.fileInput!.addEventListener('change', this.handleUpload.bind(this));
+        this.downloadButton!.addEventListener('click', this.handleDownload.bind(this));
+        this.startOverButton!.addEventListener('click', this.handleStartOver.bind(this));
+        
+        this.originalImageBox!.addEventListener('click', () => this.handleImageClick(0));
+        this.resultBox!.addEventListener('click', () => this.handleImageClick(1));
     },
 
     render() {
-        this.idleStateEl.style.display = this.state === 'idle' ? 'flex' : 'none';
-        this.activeStateEl.style.display = this.state !== 'idle' ? 'block' : 'none';
+        // With validation, we know these elements exist.
+        this.idleStateEl!.style.display = this.state === 'idle' ? 'flex' : 'none';
+        this.activeStateEl!.style.display = this.state !== 'idle' ? 'block' : 'none';
         
         if (this.state !== 'idle' && this.sourceImage) {
-            this.originalImage.src = this.sourceImage.dataUrl;
+            this.originalImage!.src = this.sourceImage.dataUrl;
         }
 
         switch(this.state) {
             case 'processing':
-                this.resultBox.innerHTML = '<div class="loading-clock"></div>';
-                this.downloadButton.disabled = true;
+                this.resultBox!.innerHTML = '<div class="loading-clock"></div>';
+                this.downloadButton!.disabled = true;
                 break;
             case 'results':
                 if (this.resultImageUrl) {
-                    this.resultBox.innerHTML = `<img src="${this.resultImageUrl}" alt="Retouched and colorized image" />`;
-                    this.downloadButton.disabled = false;
+                    this.resultBox!.innerHTML = `<img src="${this.resultImageUrl}" alt="Retouched and colorized image" />`;
+                    this.downloadButton!.disabled = false;
                 }
                 break;
             case 'error':
-                this.resultBox.innerHTML = `<p class="pending-status-text" style="padding: 1rem;">${this.errorMessage}</p>`;
-                this.downloadButton.disabled = true;
+                this.resultBox!.innerHTML = `<p class="pending-status-text" style="padding: 1rem;">${this.errorMessage}</p>`;
+                this.downloadButton!.disabled = true;
                 break;
         }
     },
@@ -86,7 +112,7 @@ export const RetouchAndColorizer = {
             const dataUrl = await blobToDataUrl(file);
             this.sourceImage = {
                 dataUrl,
-                base64: dataUrl.split(',')[1],
+                base64: dataUrl.substring(dataUrl.indexOf(',') + 1), // More robust parsing
             };
             this.state = 'processing';
             this.render();
@@ -104,7 +130,13 @@ export const RetouchAndColorizer = {
         const prompt = "Tolong pulihkan, tingkatkan, dan warnai foto ini secara realistis. Perbaiki kerusakan apa pun seperti goresan, sobekan, atau pudar. Tingkatkan kejernihan, ketajaman, dan rentang dinamis secara keseluruhan. Jika hitam putih, tambahkan warna yang alami dan sesuai secara historis.";
 
         try {
-            const response = await generateStyledImage(this.sourceImage.base64, null, prompt, this.getApiKey);
+            // --- FIX: Wrap API call in withGenericRetry for resilience ---
+            // FIX: Added missing options object to withGenericRetry call.
+            const response = await withGenericRetry(() => 
+                generateStyledImage(this.sourceImage!.base64, null, prompt, this.getApiKey),
+                { retries: 2, delayMs: 1000, onRetry: () => {} }
+            );
+            
             const imagePart = response.candidates?.[0]?.content?.parts.find(p => p.inlineData);
 
             if (imagePart?.inlineData) {
@@ -127,15 +159,10 @@ export const RetouchAndColorizer = {
         if (!this.sourceImage) return;
     
         if (this.state === 'results' && this.resultImageUrl) {
-            // If results are ready, show both images in the modal
             const urls = [this.sourceImage.dataUrl, this.resultImageUrl];
             this.showPreviewModal(urls, startIndex);
-        } else {
-            // If results are not ready (or failed), only show the original image
-            // and ignore clicks on the empty/loading result box
-            if (startIndex === 0) {
-                this.showPreviewModal([this.sourceImage.dataUrl], 0);
-            }
+        } else if (startIndex === 0) {
+            this.showPreviewModal([this.sourceImage.dataUrl], 0);
         }
     },
 
@@ -150,7 +177,7 @@ export const RetouchAndColorizer = {
         this.sourceImage = null;
         this.resultImageUrl = null;
         this.errorMessage = '';
-        this.fileInput.value = ''; // Reset file input
+        if (this.fileInput) this.fileInput.value = '';
         this.render();
     },
 };
