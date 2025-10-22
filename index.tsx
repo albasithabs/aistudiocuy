@@ -140,17 +140,10 @@ function updateModalContent() {
     modalImageContainer.innerHTML = '<div class="loading-clock"></div>';
 
     // FIX: Race condition. Set onload/onloadeddata BEFORE setting src.
-    if (isVideo) {
-        modalImageElement.onloadeddata = () => {
-            modalImageContainer.innerHTML = '';
-            modalImageContainer.appendChild(modalImageElement);
-        };
-    } else {
-        modalImageElement.onload = () => {
-            modalImageContainer.innerHTML = '';
-            modalImageContainer.appendChild(modalImageElement);
-        };
-    }
+    modalImageElement.onload = modalImageElement.onloadeddata = () => {
+       modalImageContainer.innerHTML = '';
+       modalImageContainer.appendChild(modalImageElement);
+    };
 
     modalImageElement.src = url;
     if (isVideo) {

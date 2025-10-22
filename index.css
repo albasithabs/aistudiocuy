@@ -983,15 +983,4 @@ input[type="range"]::-moz-range-thumb {
     flex-grow: 1;
     font-size: 0.8rem;
     padding: 0.5rem;
-    background-color: rgba(25, 118, 210, 0.1);
-    border: 1px solid rgba(25, 118, 210, 0.3);
-    color: var(--color-primary);
-    border-radius: 4px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.poster-pro-result-actions button:hover {
-    background-color: rgba(25, 118, 210, 0.2);
-    border-color: var(--color-primary);
-}
+    background-color: rgba(25
