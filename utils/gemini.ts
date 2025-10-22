@@ -137,9 +137,9 @@ export async function generateTTS(options: { text: string, voiceName: string, sp
                     prebuiltVoiceConfig: {
                         voiceName,
                     },
-                    // FIX: `speakingRate` is not a direct property of `speechConfig`. Moved it inside `voiceConfig`.
-                    speakingRate: speakingRate,
                 },
+                // FIX: `speakingRate` should be at speechConfig level, not inside voiceConfig.
+                speakingRate: speakingRate,
             },
         },
     });
