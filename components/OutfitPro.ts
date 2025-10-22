@@ -5,11 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-// FIX: Import `GenerateContentResponse` for proper typing.
-import { GenerateContentResponse } from "@google/genai";
-// --- FIX: Import withRetry ---
-import { blobToDataUrl, downloadFile, parseAndFormatErrorMessage, setupDragAndDrop, withRetry } from "../utils/helpers.ts";
-// FIX: Added missing import that is now available in gemini.ts.
+import { blobToDataUrl, downloadFile, parseAndFormatErrorMessage, setupDragAndDrop } from "../utils/helpers.ts";
 import { generateStyledImage } from "../utils/gemini.ts";
 
 type OutfitProState = 'idle' | 'processing' | 'results' | 'error';
@@ -17,19 +13,26 @@ type OutfitProState = 'idle' | 'processing' | 'results' | 'error';
 export const OutfitPro = {
     // DOM Elements
     view: document.querySelector('#outfit-pro-view') as HTMLDivElement,
-    inputStateEl: null as HTMLDivElement | null, resultsStateEl: null as HTMLDivElement | null,
-    fileInput: null as HTMLInputElement | null, previewContainer: null as HTMLDivElement | null,
-    generateButton: null as HTMLButtonElement | null, startOverButton: null as HTMLButtonElement | null,
-    statusContainer: null as HTMLDivElement | null, statusText: null as HTMLParagraphElement | null,
+    inputStateEl: null as HTMLDivElement | null,
+    resultsStateEl: null as HTMLDivElement | null,
+    fileInput: null as HTMLInputElement | null,
+    previewContainer: null as HTMLDivElement | null,
+    generateButton: null as HTMLButtonElement | null,
+    startOverButton: null as HTMLButtonElement | null,
+    statusContainer: null as HTMLDivElement | null,
+    statusText: null as HTMLParagraphElement | null,
     
     // Results
-    flatlayBox: null as HTMLDivElement | null, modelBox: null as HTMLDivElement | null,
-    downloadFlatlayButton: null as HTMLButtonElement | null, downloadModelButton: null as HTMLButtonElement | null,
+    flatlayBox: null as HTMLDivElement | null,
+    modelBox: null as HTMLDivElement | null,
+    downloadFlatlayButton: null as HTMLButtonElement | null,
+    downloadModelButton: null as HTMLButtonElement | null,
     
     // State
     state: 'idle' as OutfitProState,
     garmentImages: [] as { file: File, base64: string }[],
-    flatlayResultUrl: null as string | null, modelResultUrl: null as string | null,
+    flatlayResultUrl: null as string | null,
+    modelResultUrl: null as string | null,
 
     // Dependencies
     getApiKey: (() => '') as () => string,
@@ -42,9 +45,6 @@ export const OutfitPro = {
         this.showPreviewModal = dependencies.showPreviewModal;
 
         this.queryDOMElements();
-        // --- FIX: Add validation after querying elements ---
-        if (!this.validateDOMElements()) return;
-
         this.addEventListeners();
         this.render();
     },
@@ -62,20 +62,6 @@ export const OutfitPro = {
         this.modelBox = this.view.querySelector('#outfit-pro-model-box');
         this.downloadFlatlayButton = this.view.querySelector('#outfit-pro-download-flatlay-button');
         this.downloadModelButton = this.view.querySelector('#outfit-pro-download-model-button');
-    },
-    
-    // --- FIX: New validation method ---
-    validateDOMElements(): boolean {
-        const requiredElements = [
-            this.inputStateEl, this.resultsStateEl, this.fileInput, this.previewContainer,
-            this.generateButton, this.startOverButton, this.statusContainer, this.statusText,
-            this.flatlayBox, this.modelBox, this.downloadFlatlayButton, this.downloadModelButton
-        ];
-        if (requiredElements.some(el => !el)) {
-            console.error("Outfit Pro initialization failed: One or more required elements are missing from the DOM.");
-            return false;
-        }
-        return true;
     },
 
     addEventListeners() {
@@ -95,7 +81,7 @@ export const OutfitPro = {
     },
 
     render() {
-        if (!this.inputStateEl || !this.resultsStateEl || !this.statusContainer || !this.generateButton || !this.downloadFlatlayButton || !this.downloadModelButton || !this.statusText || !this.flatlayBox || !this.modelBox) return;
+        if (!this.inputStateEl || !this.resultsStateEl || !this.statusContainer || !this.generateButton) return;
 
         this.inputStateEl.style.display = this.state === 'idle' ? 'block' : 'none';
         this.resultsStateEl.style.display = (this.state !== 'idle') ? 'block' : 'none';
@@ -103,11 +89,10 @@ export const OutfitPro = {
 
         this.generateButton.disabled = this.garmentImages.length === 0 || this.state === 'processing';
 
-        if (this.state === 'processing') {
+        if (this.state === 'processing' && this.statusText) {
             this.statusText.textContent = 'AI sedang menata pakaian Anda...';
-            // --- FIX: Safely access elements after validation ---
-            this.flatlayBox.innerHTML = '<div class="loading-clock"></div>';
-            this.modelBox.innerHTML = '<div class="loading-clock"></div>';
+            this.flatlayBox!.innerHTML = '<div class="loading-clock"></div>';
+            this.modelBox!.innerHTML = '<div class="loading-clock"></div>';
         }
         
         if (this.state === 'results' || this.state === 'error') {
@@ -115,8 +100,8 @@ export const OutfitPro = {
             this.displayResult(this.modelBox, this.modelResultUrl, 'Model try-on');
         }
         
-        this.downloadFlatlayButton.disabled = !this.flatlayResultUrl;
-        this.downloadModelButton.disabled = !this.modelResultUrl;
+        this.downloadFlatlayButton!.disabled = !this.flatlayResultUrl;
+        this.downloadModelButton!.disabled = !this.modelResultUrl;
     },
     
     displayResult(box: HTMLDivElement | null, url: string | null, alt: string) {
@@ -132,11 +117,13 @@ export const OutfitPro = {
         const files = (e.target as HTMLInputElement).files;
         if (!files) return;
 
+        // Don't clear on every upload, append instead
+        // this.handleStartOver(); 
+
         for (const file of Array.from(files)) {
             if (this.garmentImages.length >= 10) break;
             const dataUrl = await blobToDataUrl(file);
-            // --- FIX: More robust Base64 parsing ---
-            this.garmentImages.push({ file, base64: dataUrl.substring(dataUrl.indexOf(',') + 1) });
+            this.garmentImages.push({ file, base64: dataUrl.split(',')[1] });
 
             const item = document.createElement('div');
             item.className = 'multi-image-preview-item';
@@ -166,21 +153,18 @@ export const OutfitPro = {
             inlineData: { data: img.base64, mimeType: img.file.type }
         }));
         
+        // The helper function needs a main image and additional images.
+        // We'll use the first uploaded image as the "main" one for the API call structure.
         const mainImageBase64 = imageParts.shift()!.inlineData.data;
-        const additionalImages = imageParts;
+        const additionalImages = imageParts; // The rest are the additional images.
 
         const flatlayPrompt = `Buat komposisi flat lay fotografi produk profesional dari item pakaian yang disediakan. Atur secara artistik di atas latar belakang kain linen berwarna netral yang bersih.`;
         const modelPrompt = `Buat gambar fotorealistik seluruh tubuh dari model fesyen yang mengenakan pakaian yang terdiri dari item-item yang disediakan. Model harus berada dalam suasana studio yang terang dengan latar belakang abu-abu muda.`;
 
         try {
-            // --- FIX: Wrap API calls in withRetry for resilience ---
             const [flatlayResponse, modelResponse] = await Promise.all([
-                // FIX: Added missing options object to withRetry call.
-                // FIX: Typed the response to avoid property access errors.
-                withRetry(() => generateStyledImage(mainImageBase64, null, flatlayPrompt, this.getApiKey, additionalImages), { retries: 2, delayMs: 1000, onRetry: (attempt, err) => console.warn(`Attempt ${attempt} failed for flatlay. Retrying...`, err) }) as Promise<GenerateContentResponse>,
-                // FIX: Added missing options object to withRetry call.
-                // FIX: Typed the response to avoid property access errors.
-                withRetry(() => generateStyledImage(mainImageBase64, null, modelPrompt, this.getApiKey, additionalImages), { retries: 2, delayMs: 1000, onRetry: (attempt, err) => console.warn(`Attempt ${attempt} failed for model. Retrying...`, err) }) as Promise<GenerateContentResponse>
+                generateStyledImage(mainImageBase64, null, flatlayPrompt, this.getApiKey, additionalImages),
+                generateStyledImage(mainImageBase64, null, modelPrompt, this.getApiKey, additionalImages)
             ]);
 
             const flatlayPart = flatlayResponse.candidates?.[0]?.content?.parts.find(p => p.inlineData);
@@ -197,7 +181,8 @@ export const OutfitPro = {
 
         } catch (e: any) {
             console.error("Error generating Outfit Pro mockups:", e);
-            this.state = 'error';
+            this.state = 'error'; // Use a distinct error state
+            // Set results to null on error to show the failure message
             this.flatlayResultUrl = null;
             this.modelResultUrl = null;
         } finally {

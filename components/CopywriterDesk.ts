@@ -225,7 +225,7 @@ export const CopywriterDesk = {
             };
             
             const jsonString = await withRetry(
-                () => generateStructuredTextFromImage(prompt, this.sourceImage!.base64, this.getApiKey, schema),
+                () => generateStructuredTextFromImage(prompt, this.sourceImage!.base64, this.getApiKey(), schema),
                 {
                     retries: 2,
                     delayMs: 1000,
@@ -324,7 +324,7 @@ export const CopywriterDesk = {
             };
 
             const jsonString = await withRetry(
-                () => generateText(prompt, this.getApiKey, schema),
+                () => generateText(prompt, this.getApiKey(), schema),
                 {
                     retries: 2,
                     delayMs: 1000,

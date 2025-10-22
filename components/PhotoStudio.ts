@@ -6,10 +6,8 @@
  */
 
 import { blobToDataUrl, downloadFile, setupDragAndDrop, delay, parseAndFormatErrorMessage, withRetry } from "../utils/helpers.ts";
-// FIX: Added missing imports that are now available in gemini.ts.
 import { generateStyledImage, generateStructuredTextFromImage } from "../utils/gemini.ts";
-// FIX: Import `GenerateContentResponse` and `Type` for proper typing.
-import { GenerateContentResponse, Type } from "@google/genai";
+import { Type } from "@google/genai";
 
 
 const MAX_SUBJECT_IMAGES = 10;
@@ -295,7 +293,7 @@ export const PhotoStudio = {
                     },
                 },
             };
-            const jsonString = await generateStructuredTextFromImage(prompt, this.studioSubjectImages[0].base64, this.getApiKey, schema);
+            const jsonString = await generateStructuredTextFromImage(prompt, this.studioSubjectImages[0].base64, this.getApiKey(), schema);
             this.studioInspirationConcepts = JSON.parse(jsonString);
             this.wizardContent!.style.display = 'none';
             this.inspirationContainer!.style.display = 'block';
@@ -405,9 +403,8 @@ export const PhotoStudio = {
             try {
                 // Add variation to each prompt
                 const variedPrompt = `${result.prompt} Variasi foto #${index + 1}.`;
-                // FIX: Type the response to avoid property access errors.
-                const response: GenerateContentResponse = await withRetry(() => 
-                    generateStyledImage(mainImage.base64, null, variedPrompt, this.getApiKey, additionalImages),
+                const response = await withRetry(() => 
+                    generateStyledImage(mainImage.base64, null, variedPrompt, this.getApiKey(), additionalImages),
                     { retries: 2, delayMs: 1000, onRetry: (attempt, err) => console.warn(`Attempt ${attempt} failed for Photo Studio. Retrying...`, err) }
                 );
 
@@ -415,7 +412,6 @@ export const PhotoStudio = {
                 if (imagePart?.inlineData) {
                     this.studioResults[index] = { ...result, status: 'done', url: `data:${imagePart.inlineData.mimeType};base64,${imagePart.inlineData.data}` };
                 } else {
-                    // FIX: Correctly access the text part from the response.
                     throw new Error(response.candidates?.[0]?.content?.parts.find(p => p.text)?.text || "Tidak ada data gambar dalam respons.");
                 }
             } catch (e: any) {
@@ -471,8 +467,7 @@ export const PhotoStudio = {
         this.refineGenerateBtn!.innerHTML = `<div class="loading-clock" style="width: 18px; height: 18px; border-width: 2px;"></div>`;
 
         try {
-            // FIX: Type the response to avoid property access errors.
-            const response: GenerateContentResponse = await withRetry(() => generateStyledImage(originalImageBase64, null, prompt, this.getApiKey), { retries: 2, delayMs: 1000, onRetry: (attempt, err) => console.warn(`Attempt ${attempt} failed for refine. Retrying...`, err) });
+            const response = await withRetry(() => generateStyledImage(originalImageBase64, null, prompt, this.getApiKey()), { retries: 2, delayMs: 1000, onRetry: (attempt, err) => console.warn(`Attempt ${attempt} failed for refine. Retrying...`, err) });
             const imagePart = response.candidates?.[0]?.content?.parts.find(p => p.inlineData);
             if (imagePart?.inlineData) {
                 const newUrl = `data:${imagePart.inlineData.mimeType};base64,${imagePart.inlineData.data}`;

@@ -5,9 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-// --- FIX: Import withRetry ---
-import { downloadFile, parseAndFormatErrorMessage, withRetry } from "../utils/helpers.ts";
-// FIX: Added missing import that is now available in gemini.ts.
+import { downloadFile, parseAndFormatErrorMessage } from "../utils/helpers.ts";
 import { generateImage } from "../utils/gemini.ts";
 
 type ModelCreativeState = 'idle' | 'processing' | 'results' | 'error';
@@ -60,25 +58,8 @@ export const ModelCreative = {
         this.hairInput = this.view.querySelector('#model-creative-hair');
         this.bodyInput = this.view.querySelector('#model-creative-body');
 
-        // --- FIX: Validate that all critical elements were found ---
-        if (!this.validateDOMElements()) return;
-
         this.addEventListeners();
         this.render();
-    },
-
-    // --- FIX: New validation method ---
-    validateDOMElements(): boolean {
-        const requiredElements = [
-            this.inputStateEl, this.resultsStateEl, this.resultBox, this.generateButton,
-            this.downloadButton, this.startOverButton, this.genderSelect, this.raceSelect,
-            this.ageSelect, this.skinInput, this.hairInput, this.bodyInput
-        ];
-        if (requiredElements.some(el => !el)) {
-            console.error("Model Creative initialization failed: One or more required elements are missing from the DOM.");
-            return false;
-        }
-        return true;
     },
 
     addEventListeners() {
@@ -138,12 +119,7 @@ export const ModelCreative = {
         const prompt = this.buildPrompt();
 
         try {
-            // --- FIX: Wrap API call in withRetry for resilience ---
-            const imageUrl = await withRetry(() => generateImage(prompt, this.getApiKey), {
-                retries: 2,
-                delayMs: 1000,
-                onRetry: (attempt, error) => console.warn(`Model Creative generation attempt ${attempt} failed. Retrying...`, error)
-            });
+            const imageUrl = await generateImage(prompt, this.getApiKey);
             if (!imageUrl) throw new Error("API tidak mengembalikan gambar.");
             
             this.resultImageUrl = imageUrl;
@@ -163,6 +139,8 @@ export const ModelCreative = {
             this.showPreviewModal([this.resultImageUrl], 0);
         }
     },
+
+
 
     handleDownload() {
         if (this.resultImageUrl) {

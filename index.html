@@ -33,12 +33,6 @@
                 </a>
             </li>
             <li>
-                <a href="#" class="sidebar-link" data-view="copywriter-desk-view">
-                    <svg xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><g><rect fill="none" height="24" width="24"/></g><g><g><path d="M3,17.25V21h3.75L17.81,9.94l-3.75-3.75L3,17.25z M20.71,7.04c0.39-0.39,0.39-1.02,0-1.41l-2.34-2.34 c-0.39-0.39-1.02-0.39-1.41,0l-1.83,1.83l3.75,3.75L20.71,7.04z"/></g></g></svg>
-                    <span>Copywriter's Desk</span>
-                </a>
-            </li>
-            <li>
                 <a href="#" class="sidebar-link" data-view="affiliate-pro-view">
                     <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><circle cx="12" cy="12" r="3.2"/><path d="M9 2L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9zm3 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/></svg>
                     <span>Creative Studio</span>
@@ -46,7 +40,7 @@
             </li>
             <li>
                 <a href="#" class="sidebar-link" data-view="interior-designer-view">
-                    <svg xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><g><rect fill="none" height="24" width="24"/></g><g><path d="M19,7h-2V5h2V7z M19,13h-2v-2h2V13z M19,19h-2v-2h2V19z M15,13h-2v-2h2V13z M15,19h-2v-2h2V19z M11,19H9v-2h2V19z M7,13H5v-2h2V13z M15,7h-2V5h2V7z M11,7H9V5h2V7z M7,7H5V5h2V7z M5,3h14c1.1,0,2,0.9,2,2v14c0 1.1-0.9,2-2,2H5c-1.1,0-2-0.9,2-2V5 C3,3.9,3.9,3,5,3z M5,19h14V5H5V19z"/></g></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><g><rect fill="none" height="24" width="24"/></g><g><path d="M19,7h-2V5h2V7z M19,13h-2v-2h2V13z M19,19h-2v-2h2V19z M15,13h-2v-2h2V13z M15,19h-2v-2h2V19z M11,19H9v-2h2V19z M7,13H5v-2h2V13z M15,7h-2V5h2V7z M11,7H9V5h2V7z M7,7H5V5h2V7z M5,3h14c1.1,0,2,0.9,2,2v14c0,1.1-0.9,2-2,2H5c-1.1,0-2-0.9,2-2V5 C3,3.9,3.9,3,5,3z M5,19h14V5H5V19z"/></g></svg>
                     <span>Desainer Interior</span>
                 </a>
             </li>
@@ -279,116 +273,6 @@
                         </div>
                     </div>
                 </div>
-                <div id="copywriter-desk-view" class="view">
-                    <div class="card-container">
-                        <div class="content-container">
-                            <!-- Input State -->
-                            <div id="copywriter-input-state">
-                                <h2>Copywriter's Desk</h2>
-                                <p class="modal-subtitle" style="margin-top: 0.5rem; margin-bottom: 2rem;">Hasilkan teks pemasaran yang menarik untuk berbagai kebutuhan.</p>
-                                
-                                <div class="input-group">
-                                    <label for="copywriter-file-input">1. Unggah Gambar Produk (Opsional)</label>
-                                    <div class="file-input-wrapper">
-                                        <label class="file-drop-zone" for="copywriter-file-input" role="button">
-                                            <span id="copywriter-upload-label">Klik atau seret & jatuhkan gambar</span>
-                                            <img id="copywriter-preview-image" src="#" alt="Pratinjau produk" class="image-preview-hidden">
-                                            <input id="copywriter-file-input" type="file" accept="image/*">
-                                        </label>
-                                        <button id="copywriter-clear-image-button" class="icon-button clear-upload-button" style="display: none;" aria-label="Hapus gambar">
-                                            <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 0 24 24" width="20px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"></path><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"></path></svg>
-                                        </button>
-                                    </div>
-                                    <div style="display: flex; justify-content: flex-end; margin-top: 0.5rem;">
-                                        <button id="copywriter-suggest-button" class="secondary-button" style="font-size: 0.8rem; padding: 0.4rem 0.8rem;" disabled>
-                                            <svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 0 24 24" width="18px" fill="currentColor"><g><rect fill="none" height="24" width="24"/></g><g><path d="M19,9l1.25-2.75L23,5l-2.75-1.25L19,1l-1.25,2.75L15,5l2.75,1.25L19,9z M11.5,9.5L9,4L6.5,9.5L1,12l5.5,2.5L9,20l2.5-5.5 L17,12L11.5,9.5z M19,15l-1.25,2.75L15,19l2.75,1.25L19,23l1.25-2.75L23,19l-2.75-1.25L19,15z"/></g></svg>
-                                            <span>Beri Saran dengan AI</span>
-                                        </button>
-                                    </div>
-                                </div>
-                                
-                                <div class="input-group">
-                                    <label>2. Pilih Format Teks</label>
-                                    <div id="copywriter-format-group" class="button-group" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.5rem;">
-                                        <button class="toggle-button active" data-value="Instagram Caption">Caption Instagram</button>
-                                        <button class="toggle-button" data-value="Product Description">Deskripsi Produk</button>
-                                        <button class="toggle-button" data-value="Email Newsletter">Email Newsletter</button>
-                                        <button class="toggle-button" data-value="Ad Headline">Judul Iklan</button>
-                                    </div>
-                                </div>
-
-                                <div class="input-group">
-                                    <label for="copywriter-product-name">3. Nama Produk / Layanan</label>
-                                    <input type="text" id="copywriter-product-name" placeholder="cth: Kopi Susu Gula Aren 'Senja'">
-                                </div>
-
-                                <div class="input-group">
-                                    <label for="copywriter-product-desc">4. Deskripsi Singkat</label>
-                                    <textarea id="copywriter-product-desc" rows="4" placeholder="Jelaskan produk, fitur utama, dan keunggulannya..."></textarea>
-                                </div>
-
-                                <div class="input-group">
-                                    <label for="copywriter-audience">5. Target Audiens</label>
-                                    <input type="text" id="copywriter-audience" placeholder="cth: pekerja kantoran usia 25-35, mahasiswa">
-                                </div>
-                                
-                                <div class="input-group">
-                                    <label for="copywriter-pain-point">6. Masalah Pelanggan (Opsional)</label>
-                                    <textarea id="copywriter-pain-point" rows="2" placeholder="Apa masalah/kesulitan yang dihadapi target audiens Anda? cth: Rambut lepek di siang hari, sulit menemukan camilan sehat"></textarea>
-                                    <p class="help-text">Menjelaskan masalah akan membantu AI menulis kalimat pembuka yang lebih menarik.</p>
-                                </div>
-                                
-                                <div class="input-group">
-                                    <label for="copywriter-framework">7. Kerangka Penulisan</label>
-                                    <select id="copywriter-framework">
-                                        <option value="Standard">Standar (Fleksibel)</option>
-                                        <option value="AIDA">AIDA (Attention, Interest, Desire, Action)</option>
-                                        <option value="PAS">PAS (Problem, Agitate, Solution)</option>
-                                        <option value="BAB">Before-After-Bridge</option>
-                                    </select>
-                                    <p class="help-text">Pilih model penulisan untuk menstrukturkan teks Anda.</p>
-                                </div>
-
-                                <div class="input-group">
-                                    <label>8. Nada Suara (Tone of Voice)</label>
-                                    <div id="copywriter-tone-group" class="button-group" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 0.5rem;">
-                                        <button class="toggle-button active" data-value="Profesional">Profesional</button>
-                                        <button class="toggle-button" data-value="Ceria & Ramah">Ceria</button>
-                                        <button class="toggle-button" data-value="Meyakinkan & Persuasif">Meyakinkan</button>
-                                        <button class="toggle-button" data-value="Mewah & Eksklusif">Mewah</button>
-                                        <button class="toggle-button" data-value="Santai & Kasual">Santai</button>
-                                    </div>
-                                </div>
-                                 <div class="input-group">
-                                    <label for="copywriter-keywords">9. Kata Kunci (Opsional)</label>
-                                    <input type="text" id="copywriter-keywords" placeholder="Pisahkan dengan koma, cth: kopi, promo, semangat pagi">
-                                </div>
-
-                                <button id="copywriter-generate-button" style="margin-top: 1rem;" disabled>
-                                    <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 0 24 24" width="20px" fill="currentColor"><g><rect fill="none" height="24" width="24"/></g><g><path d="M19,9l1.25-2.75L23,5l-2.75-1.25L19,1l-1.25,2.75L15,5l2.75,1.25L19,9z M11.5,9.5L9,4L6.5,9.5L1,12l5.5,2.5L9,20l2.5-5.5 L17,12L11.5,9.5z M19,15l-1.25,2.75L15,19l2.75,1.25L19,23l1.25-2.75L23,19l-2.75-1.25L19,15z"/></g></svg>
-                                    <span>Buat Teks Iklan</span>
-                                </button>
-                            </div>
-
-                            <!-- Results State -->
-                            <div id="copywriter-results-state" style="display: none;">
-                                <h2>Hasil Teks Iklan Anda</h2>
-                                <div id="copywriter-results-grid" style="display: flex; flex-direction: column; gap: 1rem; margin-top: 1.5rem;">
-                                    <!-- Results will be populated by JS -->
-                                </div>
-                                <div class="button-group" style="margin-top: 2rem; justify-content: center;">
-                                    <button id="copywriter-start-over-button" class="secondary-button">Mulai Lagi</button>
-                                </div>
-                            </div>
-
-                            <!-- Shared Status Container -->
-                            <div id="copywriter-status-container" class="status-container" style="display:none;">
-                                <div class="loading-clock"></div>
-                                <p id="copywriter-status" style="margin-left: 1rem;"></p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
                 <div id="ai-voice-studio-view" class="view active">
                     <div class="card-container">
                         <div class="content-container">
@@ -417,67 +301,39 @@
                                 <!-- Right Column -->
                                 <div class="ai-voice-studio-right-col">
                                     <div class="input-group">
-                                        <label>2. Pilih Mode Suara</label>
-                                        <div id="ai-voice-mode-filter" class="button-group">
-                                            <button class="toggle-button active" data-mode="single">Narasi Tunggal</button>
-                                            <button class="toggle-button" data-mode="multi">Percakapan</button>
+                                        <label>2. Pilih Aktor Suara</label>
+                                        <div id="ai-voice-gender-filter" class="button-group">
+                                            <button class="toggle-button" data-filter="Semua">Semua</button>
+                                            <button class="toggle-button active" data-filter="Pria">Pria</button>
+                                            <button class="toggle-button" data-filter="Wanita">Wanita</button>
+                                        </div>
+                                        <div id="ai-voice-actor-list">
+                                            <!-- Actor cards will be populated by JS -->
                                         </div>
                                     </div>
-
-                                    <div id="ai-voice-single-speaker-controls">
-                                        <div class="input-group">
-                                            <label>3. Pilih Aktor Suara</label>
-                                            <div id="ai-voice-gender-filter" class="button-group">
-                                                <button class="toggle-button" data-filter="Semua">Semua</button>
-                                                <button class="toggle-button active" data-filter="Pria">Pria</button>
-                                                <button class="toggle-button" data-filter="Wanita">Wanita</button>
-                                            </div>
-                                            <div id="ai-voice-actor-list">
-                                                <!-- Actor cards will be populated by JS -->
-                                            </div>
-                                        </div>
-                                        <div class="input-group">
-                                            <label>4. Pilih Vibe Suara</label>
-                                            <div id="ai-voice-vibe-group">
-                                                <button class="vibe-button toggle-button active" data-vibe="Promosi">Promosi</button>
-                                                <button class="vibe-button toggle-button" data-vibe="Ceria">Ceria</button>
-                                                <button class="vibe-button toggle-button" data-vibe="Tegas">Tegas</button>
-                                                <button class="vibe-button toggle-button" data-vibe="Tenang">Tenang</button>
-                                                <button class="vibe-button toggle-button" data-vibe="Sedih">Sedih</button>
-                                                <button class="vibe-button toggle-button" data-vibe="Pencerita">Pencerita</button>
-                                                <button class="vibe-button toggle-button" data-vibe="Profesional">Profesional</button>
-                                                <button class="vibe-button toggle-button" data-vibe="Bisikan">Bisikan</button>
-                                                <button class="vibe-button toggle-button" data-vibe="Energik">Energik</button>
-                                                <button class="vibe-button toggle-button" data-vibe="Berwibawa">Berwibawa</button>
-                                            </div>
-                                        </div>
-                                        <div class="input-group">
-                                            <label for="ai-voice-speed-slider">5. Kontrol Kecepatan Suara (<span id="ai-voice-speed-label">1.00x</span>)</label>
-                                            <div class="speed-slider-container">
-                                                <span>Lambat</span>
-                                                <input type="range" id="ai-voice-speed-slider" min="0.5" max="2.0" step="0.05" value="1.0">
-                                                <span>Cepat</span>
-                                            </div>
+                                    <div class="input-group">
+                                        <label>3. Pilih Vibe Suara</label>
+                                        <div id="ai-voice-vibe-group">
+                                            <button class="vibe-button toggle-button active" data-vibe="Promosi">Promosi</button>
+                                            <button class="vibe-button toggle-button" data-vibe="Ceria">Ceria</button>
+                                            <button class="vibe-button toggle-button" data-vibe="Tegas">Tegas</button>
+                                            <button class="vibe-button toggle-button" data-vibe="Tenang">Tenang</button>
+                                            <button class="vibe-button toggle-button" data-vibe="Sedih">Sedih</button>
+                                            <button class="vibe-button toggle-button" data-vibe="Pencerita">Pencerita</button>
+                                            <button class="vibe-button toggle-button" data-vibe="Profesional">Profesional</button>
+                                            <button class="vibe-button toggle-button" data-vibe="Bisikan">Bisikan</button>
+                                            <button class="vibe-button toggle-button" data-vibe="Energik">Energik</button>
+                                            <button class="vibe-button toggle-button" data-vibe="Berwibawa">Berwibawa</button>
                                         </div>
                                     </div>
-
-                                    <div id="ai-voice-multi-speaker-controls" style="display: none;">
-                                        <div class="input-group">
-                                            <label>3. Atur Pembicara (2 Diperlukan)</label>
-                                            <div id="ai-voice-speaker-config-container">
-                                                <div class="speaker-config-item">
-                                                    <input type="text" id="ai-voice-speaker-1-name" placeholder="Nama Pembicara 1 (cth: Joe)">
-                                                    <select id="ai-voice-speaker-1-voice" aria-label="Pilih suara untuk pembicara 1"></select>
-                                                </div>
-                                                <div class="speaker-config-item">
-                                                    <input type="text" id="ai-voice-speaker-2-name" placeholder="Nama Pembicara 2 (cth: Jane)">
-                                                    <select id="ai-voice-speaker-2-voice" aria-label="Pilih suara untuk pembicara 2"></select>
-                                                </div>
-                                            </div>
-                                            <p class="help-text">Pastikan nama pembicara cocok dengan yang ada di naskah Anda (cth: "Joe: Halo di sana!"). Vibe dan kecepatan tidak tersedia dalam mode ini.</p>
+                                    <div class="input-group">
+                                        <label for="ai-voice-speed-slider">4. Kontrol Kecepatan Suara (<span id="ai-voice-speed-label">1.00x</span>)</label>
+                                        <div class="speed-slider-container">
+                                            <span>Lambat</span>
+                                            <input type="range" id="ai-voice-speed-slider" min="0.5" max="2.0" step="0.05" value="1.0">
+                                            <span>Cepat</span>
                                         </div>
                                     </div>
-
                                     <button id="ai-voice-generate-button" class="affiliate-generate-button" disabled>Generate Voice Over</button>
                                 </div>
                             </div>
@@ -806,7 +662,10 @@
                         <div class="content-container">
                             <div class="food-lens-header">
                                 <h2>Food Lens</h2>
-                                <p class="modal-subtitle" style="margin-top: 0.5rem; margin-bottom: 2rem;">Buat foto makanan yang menggugah selera seperti seorang profesional.</p>
+                                <div class="button-group" style="margin-bottom: 2rem;">
+                                    <button id="food-lens-generator-tab" class="toggle-button active">Generator</button>
+                                    <button id="food-lens-collection-tab" class="toggle-button">Koleksi Saya</button>
+                                </div>
                             </div>
 
                             <div id="food-lens-generator-view">
@@ -1313,21 +1172,6 @@
                                                 <span id="poster-pro-upload-label">Klik atau seret & jatuhkan</span>
                                                 <input id="poster-pro-file-input" type="file" accept="image/*" style="display: none;">
                                             </label>
-                                            <div id="poster-pro-remove-bg-container" class="input-group" style="display: none; justify-content: space-between; align-items: center; margin-top: 1rem; margin-bottom: 0;">
-                                                <label for="poster-pro-remove-bg-toggle" style="margin-bottom: 0;">Hapus Latar Belakang</label>
-                                                <div class="theme-switcher">
-                                                    <input type="checkbox" id="poster-pro-remove-bg-toggle" aria-label="Toggle Background Removal">
-                                                    <label for="poster-pro-remove-bg-toggle" class="slider-label" style="width: 40px; height: 22px;"></label>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="input-group">
-                                            <label for="poster-pro-logo-input">1.1. Unggah Logo (Opsional, PNG)</label>
-                                            <label class="file-drop-zone" for="poster-pro-logo-input" style="min-height: 100px;" role="button">
-                                                <img id="poster-pro-logo-preview-image" src="#" alt="Pratinjau Logo" style="display: none; max-height: 80px; width: auto;">
-                                                <span id="poster-pro-logo-upload-label">Klik atau seret & jatuhkan logo</span>
-                                                <input id="poster-pro-logo-input" type="file" accept="image/png" style="display: none;">
-                                            </label>
                                         </div>
                                         <div class="input-group">
                                             <label for="poster-pro-headline-input">2. Headline</label>
@@ -1345,78 +1189,25 @@
 
                                     <div class="poster-pro-right-col">
                                         <div class="input-group">
-                                            <label>5. Tipografi</label>
-                                            <div id="poster-pro-font-style-group" class="button-group" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.5rem; margin-bottom: 0.5rem;">
-                                                <button class="toggle-button" data-value="serif font">Serif</button>
-                                                <button class="toggle-button active" data-value="sans-serif font">Sans-Serif</button>
-                                                <button class="toggle-button" data-value="script font">Script</button>
-                                            </div>
-                                            <div id="poster-pro-font-weight-group" class="button-group" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.5rem;">
-                                                <button class="toggle-button" data-value="light">Ringan</button>
-                                                <button class="toggle-button active" data-value="regular">Reguler</button>
-                                                <button class="toggle-button" data-value="bold">Tebal</button>
-                                            </div>
-                                        </div>
-                                
-                                        <div class="input-group">
-                                            <label>6. Posisi Teks</label>
-                                            <div id="poster-pro-text-position-group" class="button-group" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 0.5rem;">
-                                                <button class="toggle-button" data-value="on the left side">Kiri</button>
-                                                <button class="toggle-button active" data-value="centered">Tengah</button>
-                                                <button class="toggle-button" data-value="on the right side">Kanan</button>
-                                                <button class="toggle-button" data-value="at the bottom">Bawah</button>
-                                            </div>
-                                        </div>
-                                
-                                        <div class="input-group">
-                                            <label for="poster-pro-color-palette-input">7. Palet Warna</label>
-                                            <div style="display: flex; gap: 0.5rem;">
-                                                <input type="text" id="poster-pro-color-palette-input" placeholder="mis. warna bumi yang hangat, neon cerah">
-                                                <button id="poster-pro-extract-color-button" class="secondary-button" style="padding: 0.5rem;" title="Ekstrak warna dari gambar">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 0 24 24" width="20px" fill="currentColor"><g><rect fill="none" height="24" width="24"></g><g><path d="M17.08,3.56C16.69,3.17,16.3,3,15.91,3s-0.78,0.17-1.07,0.46l-2.07,2.07C12.96,5.2,13,4.86,13,4.5C13,3.67,12.33,3,11.5,3 S10,3.67,10,4.5c0,0.36,0.04,0.7,0.11,1.03L5.46,10.18C5.17,10.47,5,10.86,5,11.25c0,0.78,0.62,1.4,1.39,1.4c0.39,0,0.78-0.17,1.07-0.46 l4.65-4.65c0.33,0.07,0.67,0.11,1.03,0.11c0.83,0,1.5-0.67,1.5-1.5c0-0.36-0.04-0.7-0.11-1.03l2.07-2.07 C17.83,4.34,17.83,3.95,17.08,3.56z M7.25,12.04c-0.23,0.23-0.53,0.35-0.85,0.35s-0.62-0.12-0.85-0.35c-0.47-0.47-0.47-1.23,0-1.7 l5.3-5.3c0.09,0.23,0.21,0.44,0.35,0.62l-4.24,4.24C7.54,10.2,7.38,10.6,7.38,11c0,0.4,0.16,0.79,0.44,1.06 C7.54,11.77,7.4,11.9,7.25,12.04z"/><path d="M19.7,13.04c-0.23-0.23-0.53-0.35-0.85-0.35s-0.62,0.12-0.85,0.35l-1.9,1.9c-0.23-0.09-0.44-0.21-0.62-0.35l1.5-1.5 c0.47-0.47,0.47-1.23,0-1.7c-0.47-0.47-1.23-0.47-1.7,0l-1.5,1.5c-0.14-0.18-0.26-0.39-0.35-0.62l1.9-1.9 c0.47-0.47,0.47-1.23,0-1.7c-0.47-0.47-1.23-0.47-1.7,0l-1.9,1.9c-0.09-0.23-0.21-0.44-0.35-0.62l1.5-1.5c0.47-0.47,0.47-1.23,0-1.7 c-0.47-0.47-1.23-0.47-1.7,0l-1.5,1.5c-0.14-0.18-0.26-0.39-0.35-0.62l5.3-5.3c0.09,0.23,0.21,0.44,0.35,0.62l-5.3,5.3 C11.02,12.37,11,12.77,11,13.17c0,1.3,0.81,2.4,1.91,2.83l-1.55,1.55c-0.47,0.47-0.47,1.23,0,1.7c0.23,0.23,0.53,0.35,0.85,0.35 s0.62-0.12,0.85-0.35l1.55-1.55C15.1,19.19,16.2,20,17.5,20c1.38,0,2.5-1.12,2.5-2.5c0-0.4-0.1-0.77-0.27-1.09l1.9-1.9 C22.1,14.05,22.1,13.51,21.63,13.04L19.7,13.04z M17.5,18c-0.83,0-1.5-0.67-1.5-1.5s0.67-1.5,1.5-1.5s1.5,0.67,1.5,1.5 S18.33,18,17.5,18z"/></g></svg>
-                                                </button>
+                                            <label>5. Kategori Template</label>
+                                            <div id="poster-pro-category-group" class="button-group" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 0.5rem;">
+                                                <button class="toggle-button active" data-value="Makanan & Minuman">Makanan & Minuman</button>
+                                                <button class="toggle-button" data-value="Fashion">Fashion</button>
+                                                <button class="toggle-button" data-value="Rental">Rental</button>
+                                                <button class="toggle-button" data-value="Lifestyle">Lifestyle</button>
                                             </div>
                                         </div>
                                         <div class="input-group">
-                                            <label for="poster-pro-category-select">8. Kategori Template</label>
-                                            <select id="poster-pro-category-select">
-                                                <option value="Acara">Acara</option>
-                                                <option value="Bisnis & Keuangan">Bisnis & Keuangan</option>
-                                                <option value="Fashion">Fashion</option>
-                                                <option value="Hewan Peliharaan">Hewan Peliharaan</option>
-                                                <option value="Kecantikan">Kecantikan</option>
-                                                <option value="Kesehatan & Kebugaran">Kesehatan & Kebugaran</option>
-                                                <option value="Lifestyle">Lifestyle</option>
-                                                <option value="Makanan & Minuman">Makanan & Minuman</option>
-                                                <option value="Musik & Hiburan">Musik & Hiburan</option>
-                                                <option value="Olahraga">Olahraga</option>
-                                                <option value="Otomotif">Otomotif</option>
-                                                <option value="Pendidikan">Pendidikan</option>
-                                                <option value="Properti">Properti</option>
-                                                <option value="Seni & Kerajinan">Seni & Kerajinan</option>
-                                                <option value="Teknologi">Teknologi</option>
-                                                <option value="Travel">Travel</option>
-                                            </select>
-                                        </div>
-                                        <div class="input-group">
-                                            <label for="poster-pro-style-select">9. Gaya Visual</label>
+                                            <label for="poster-pro-style-select">6. Gaya Visual</label>
                                             <select id="poster-pro-style-select">
-                                                <option value="Abstract">Abstrak</option>
-                                                <option value="Bohemian">Bohemian</option>
-                                                <option value="Dramatic & Cinematic">Dramatis & Sinematik</option>
-                                                <option value="Elegant & Luxury">Elegan & Mewah</option>
                                                 <option value="Fun & Colorful">Fun & Colorful</option>
-                                                <option value="Futuristic & Neon">Futuristik & Neon</option>
-                                                <option value="Grunge & Urban">Grunge & Urban</option>
-                                                <option value="Minimalist & Clean">Minimalis & Bersih</option>
-                                                <option value="Modern & Geometric">Modern & Geometris</option>
-                                                <option value="Natural & Organic">Natural & Organik</option>
-                                                <option value="Pop Art">Pop Art</option>
-                                                <option value="Retro / Vintage">Retro / Vintage</option>
+                                                <option value="Minimalist">Minimalis</option>
+                                                <option value="Luxury">Luxury</option>
+                                                <option value="Dramatic">Dramatic</option>
                                             </select>
                                         </div>
                                         <div class="input-group">
-                                            <label>10. Rasio Aspek</label>
+                                            <label>7. Rasio Aspek</label>
                                             <div id="poster-pro-aspect-ratio-group" class="button-group" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 0.5rem;">
                                                 <button class="toggle-button active" data-value="9:16">9:16 (Story)</button>
                                                 <button class="toggle-button" data-value="4:5">4:5 (Feed)</button>
@@ -1425,7 +1216,7 @@
                                             </div>
                                         </div>
                                         <div class="input-group">
-                                            <label>11. Elemen Dekoratif (Pilih beberapa)</label>
+                                            <label>8. Elemen Dekoratif (Pilih beberapa)</label>
                                             <div id="poster-pro-elements-group">
                                                 <button class="toggle-button" data-element="water splash">Splash</button>
                                                 <button class="toggle-button" data-element="bubbles">Bubble</button>
@@ -1436,7 +1227,7 @@
                                             </div>
                                         </div>
                                         <div class="input-group">
-                                            <label for="poster-pro-custom-prompt">12. Custom Prompt (Opsional)</label>
+                                            <label for="poster-pro-custom-prompt">9. Custom Prompt (Opsional)</label>
                                             <textarea id="poster-pro-custom-prompt" rows="3" placeholder="contoh: tambahkan logo 'Pobud' di pojok kiri bawah"></textarea>
                                         </div>
                                     </div>
@@ -1505,130 +1296,114 @@
                 </div>
                 <div id="photo-studio-view" class="view">
                     <div class="card-container">
-                        <div class="content-container" id="studio-content-container">
+                        <div class="content-container">
                             <div id="studio-main-content">
-                                <h2>Studio Foto</h2>
-                                <p class="modal-subtitle" style="margin-top: 0.5rem; margin-bottom: 2rem;">Buat sesi foto profesional dengan alur kerja yang terpandu dan kreatif.</p>
-                                
-                                <!-- Wizard Step Indicator -->
-                                <div class="wizard-stepper">
-                                    <div class="wizard-step active" data-step="1"><span>1</span>Subjek</div>
-                                    <div class="wizard-step" data-step="2"><span>2</span>Gaya</div>
-                                    <div class="wizard-step" data-step="3"><span>3</span>Arahan</div>
-                                    <div class="wizard-step" data-step="4"><span>4</span>Buat</div>
-                                </div>
-                    
-                                <!-- Wizard Content -->
                                 <div id="studio-wizard-content">
-                                    <!-- Step 1: Subject -->
-                                    <div id="studio-step-1" class="wizard-step-content">
-                                        <h3>Langkah 1: Subjek Utama</h3>
-                                        <p class="help-text">Unggah satu atau lebih gambar subjek Anda. Anda bisa mendapatkan inspirasi dari AI setelah mengunggah.</p>
+                                    <div class="wizard-header">
+                                        <div>
+                                            <h2 id="studio-wizard-title">Studio Foto: Langkah 1 dari 4</h2>
+                                            <p class="modal-subtitle" id="studio-wizard-subtitle">Unggah satu atau lebih gambar subjek Anda.</p>
+                                        </div>
+                                        <div class="wizard-nav button-group">
+                                            <button id="studio-back-btn" class="secondary-button">Kembali</button>
+                                            <button id="studio-next-btn">Berikutnya</button>
+                                        </div>
+                                    </div>
+                    
+                                    <div id="studio-step-1" class="wizard-step-content active">
                                         <div class="input-group">
-                                            <label for="studio-multi-image-input" class="file-drop-zone multi-upload-zone" role="button" aria-label="Unggah gambar subjek">
+                                            <label for="studio-multi-image-input">Gambar Subjek (hingga 10)</label>
+                                            <label class="file-drop-zone multi-upload-zone" for="studio-multi-image-input" role="button" aria-label="Unggah gambar subjek">
                                                 <div id="studio-multi-image-preview" class="multi-image-preview-container"></div>
-                                                <span>Klik atau seret & jatuhkan gambar subjek (hingga 10)</span>
+                                                <span>Klik atau seret & jatuhkan gambar subjek</span>
                                                 <input id="studio-multi-image-input" type="file" accept="image/*" multiple style="display: none;">
                                             </label>
-                                        </div>
-                                        <div class="button-group" style="justify-content: center;">
-                                            <button id="studio-inspiration-button" class="secondary-button" disabled>
-                                                <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 0 24 24" width="20px" fill="currentColor"><g><rect fill="none" height="24" width="24"></g><g><path d="M19,9l1.25-2.75L23,5l-2.75-1.25L19,1l-1.25,2.75L15,5l2.75,1.25L19,9z M11.5,9.5L9,4L6.5,9.5L1,12l5.5,2.5L9,20l2.5-5.5 L17,12L11.5,9.5z M19,15l-1.25,2.75L15,19l2.75,1.25L19,23l1.25-2.75L23,19l-2.75-1.25L19,15z"/></g></svg>
-                                                <span>Buat Papan Inspirasi</span>
-                                            </button>
+                                            <p class="help-text">Unggah beberapa sudut untuk hasil terbaik. AI akan mencoba menggabungkan konsep jika lebih dari satu gambar diunggah.</p>
                                         </div>
                                     </div>
                     
-                                    <!-- Step 2: Styling -->
-                                    <div id="studio-step-2" class="wizard-step-content" style="display: none;">
-                                        <h3>Langkah 2: Gaya & Properti</h3>
-                                        <p class="help-text">Lengkapi subjek Anda dengan pakaian, referensi gaya, dan properti.</p>
-                                        <div class="studio-controls-grid">
-                                            <div class="input-group">
-                                                <label for="studio-wardrobe-image">Pakaian (Opsional)</label>
-                                                <div class="file-input-wrapper">
-                                                    <label class="file-drop-zone" for="studio-wardrobe-image" role="button" aria-label="Upload wardrobe image">
-                                                        <img id="studio-wardrobe-image-preview" src="#" alt="Pratinjau pakaian" class="image-preview-hidden">
-                                                        <span>Unggah gambar pakaian</span>
-                                                        <input id="studio-wardrobe-image" type="file" accept="image/*" style="display: none;">
-                                                    </label>
-                                                    <button id="studio-clear-wardrobe-image" class="icon-button clear-upload-button" style="display: none;" aria-label="Hapus gambar pakaian">&times;</button>
-                                                </div>
+                                    <div id="studio-step-2" class="wizard-step-content">
+                                        <div class="input-group">
+                                            <label for="studio-wardrobe-image">Pakaian (Opsional)</label>
+                                            <div class="file-input-wrapper">
+                                                <label class="file-drop-zone" for="studio-wardrobe-image" role="button" aria-label="Upload wardrobe image">
+                                                    <span>Klik atau seret & jatuhkan gambar pakaian</span>
+                                                    <img id="studio-wardrobe-image-preview" src="#" alt="Wardrobe preview" class="image-preview-hidden">
+                                                    <input id="studio-wardrobe-image" type="file" accept="image/*">
+                                                </label>
+                                                <button id="studio-clear-wardrobe-image" class="icon-button clear-upload-button" style="display: none;" aria-label="Hapus gambar pakaian"><svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 0 24 24" width="20px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"></path><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"></path></svg></button>
                                             </div>
-                                            <div class="input-group">
-                                                <label for="studio-style-image">Referensi Gaya (Opsional)</label>
-                                                <div class="file-input-wrapper">
-                                                    <label class="file-drop-zone" for="studio-style-image" role="button" aria-label="Upload style reference image">
-                                                        <img id="studio-style-image-preview" src="#" alt="Pratinjau gaya" class="image-preview-hidden">
-                                                        <span>Unggah gambar gaya</span>
-                                                        <input id="studio-style-image" type="file" accept="image/*" style="display: none;">
-                                                    </label>
-                                                    <button id="studio-clear-style-image" class="icon-button clear-upload-button" style="display: none;" aria-label="Hapus gambar referensi gaya">&times;</button>
-                                                </div>
-                                            </div>
+                                            <p class="help-text">Unggah gambar pakaian yang ingin dikenakan oleh subjek.</p>
                                         </div>
                                         <div class="input-group">
-                                            <label for="studio-props-input">Properti (Opsional)</label>
-                                            <input type="text" id="studio-props-input" placeholder="cth: kursi, tas, botol minum, buku">
+                                            <label for="studio-style-image">Referensi Gaya (Opsional)</label>
+                                            <div class="file-input-wrapper">
+                                                <label class="file-drop-zone" for="studio-style-image" role="button" aria-label="Upload style reference image">
+                                                    <span>Klik atau seret & jatuhkan gambar referensi gaya</span>
+                                                    <img id="studio-style-image-preview" src="#" alt="Style preview" class="image-preview-hidden">
+                                                    <input id="studio-style-image" type="file" accept="image/*">
+                                                </label>
+                                                <button id="studio-clear-style-image" class="icon-button clear-upload-button" style="display: none;" aria-label="Hapus gambar gaya"><svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 0 24 24" width="20px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"></path><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"></path></svg></button>
+                                            </div>
+                                            <p class="help-text">Unggah gambar untuk memandu gaya keseluruhan, warna, dan suasana hati.</p>
                                         </div>
                                     </div>
                     
-                                    <!-- Step 3: Direction -->
-                                    <div id="studio-step-3" class="wizard-step-content" style="display: none;">
-                                        <h3>Langkah 3: Arahan Kreatif</h3>
-                                        <p class="help-text">Atur bagaimana pemotretan akan dieksekusi.</p>
+                                    <div id="studio-step-3" class="wizard-step-content">
                                         <div class="input-group">
-                                            <label>Pose (Pilih beberapa)</label>
-                                            <div id="studio-pose-group" class="button-group" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 0.5rem;">
+                                            <label>Pose (Pilih satu atau lebih)</label>
+                                            <div id="studio-pose-group" class="button-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
                                                 <button class="toggle-button active" data-value="berdiri">Berdiri</button>
-                                                <button class="toggle-button" data-value="duduk">Duduk</button>
-                                                <button class="toggle-button" data-value="berjalan">Berjalan</button>
-                                                <button class="toggle-button" data-value="dinamis">Dinamis</button>
+                                                <button class="toggle-button active" data-value="duduk">Duduk</button>
+                                                <button class="toggle-button active" data-value="berjalan">Berjalan</button>
+                                                <button class="toggle-button" data-value="bersandar">Bersandar</button>
                                             </div>
                                         </div>
                                         <div class="input-group">
-                                            <label>Sudut Pengambilan (Pilih beberapa)</label>
-                                            <div id="studio-shot-type-group" class="button-group" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 0.5rem;">
+                                            <label>Sudut Pengambilan Gambar (Pilih satu atau lebih)</label>
+                                            <div id="studio-shot-type-group" class="button-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
                                                 <button class="toggle-button active" data-value="seluruh badan">Seluruh Badan</button>
-                                                <button class="toggle-button active" data-value="setengah badan (potret)">Potret</button>
-                                                <button class="toggle-button" data-value="close-up">Close-up</button>
+                                                <button class="toggle-button active" data-value="setengah badan">Setengah Badan</button>
+                                                <button class="toggle-button active" data-value="close-up">Close-up</button>
+                                                <button class="toggle-button" data-value="potret">Potret</button>
                                             </div>
                                         </div>
-                                         <div class="input-group">
-                                            <label>Ekspresi (Pilih beberapa)</label>
-                                            <div id="studio-expression-group" class="button-group" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 0.5rem;">
-                                                <button class="toggle-button active" data-value="ekspresi netral">Netral</button>
-                                                <button class="toggle-button" data-value="senyum ramah">Senyum</button>
-                                                <button class="toggle-button" data-value="ekspresi percaya diri">Percaya Diri</button>
-                                                <button class="toggle-button" data-value="ekspresi santai">Santai</button>
+                                        <div class="input-group">
+                                            <label>Variasi Ekspresi (Pilih satu atau lebih)</label>
+                                            <div id="studio-expression-group" class="button-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+                                                <button class="toggle-button active" data-value="a neutral expression">Netral</button>
+                                                <button class="toggle-button active" data-value="a gentle, friendly smile">Senyum</button>
+                                                <button class="toggle-button active" data-value="a confident, assertive expression">Percaya Diri</button>
+                                                <button class="toggle-button" data-value="a relaxed, casual expression">Santai</button>
                                             </div>
                                         </div>
+                                    </div>
+                    
+                                    <div id="studio-step-4" class="wizard-step-content">
                                         <div class="input-group">
                                             <label for="studio-lighting-select">Pencahayaan</label>
                                             <select id="studio-lighting-select">
-                                                <option value="pencahayaan studio profesional dengan softbox">Softbox Clean</option>
-                                                <option value="cahaya matahari alami dari jendela">Natural Daylight</option>
-                                                <option value="pencahayaan Rembrandt klasik">Rembrandt</option>
-                                                <option value="pencahayaan terpisah (split lighting)">Split Lighting</option>
-                                                <option value="pencahayaan high-key dengan latar putih">High-Key</option>
-                                                <option value="pencahayaan low-key untuk nuansa sinematik">Low-Key</option>
-                                                <option value="pencahayaan clamshell untuk beauty shot">Clamshell</option>
-                                                <option value="cahaya latar (backlight)">Backlight / Rim Light</option>
-                                                <option value="cahaya keras dari satu sorotan">Hard Light Spotlight</option>
-                                                <option value="pencahayaan gel berwarna kreatif">Colored Gel</option>
+                                                <option value="clean, professional studio lighting with a softbox setup">Softbox Clean</option>
+                                                <option value="soft, natural daylight coming from a window">Natural Daylight</option>
+                                                <option value="classic Rembrandt lighting, creating a small triangle of light on the cheek opposite the light source">Rembrandt</option>
+                                                <option value="split lighting, where one side of the face is lit and the other is in shadow">Split Lighting</option>
+                                                <option value="high-key lighting with a bright, almost shadowless look against a white background">High-Key</option>
+                                                <option value="low-key lighting with dark tones and selective highlights for a cinematic mood">Low-Key</option>
+                                                <option value="clamshell lighting with a main light above and a reflector below, ideal for beauty shots">Clamshell</option>
+                                                <option value="backlight or rim light, where the light source is behind the subject creating a glowing outline">Backlight / Rim Light</option>
+                                                <option value="hard light from a single spotlight, creating defined, dramatic shadows">Hard Light Spotlight</option>
+                                                <option value="creative colored gel lighting, using tones of blue, red, or purple for a modern effect">Colored Gel</option>
                                             </select>
                                         </div>
                                         <div class="input-group">
-                                            <label for="studio-custom-bg-input">Latar Belakang</label>
-                                            <textarea id="studio-custom-bg-input" rows="2" placeholder="Ketik latar belakang kustom Anda di sini... (cth: dinding beton bertekstur, di sebuah kafe modern)"></textarea>
+                                            <label>Latar Belakang</label>
+                                            <textarea id="studio-custom-bg-input" rows="2" placeholder="Ketik latar belakang kustom Anda di sini..."></textarea>
                                         </div>
-                                    </div>
-                    
-                                    <!-- Step 4: Generate -->
-                                    <div id="studio-step-4" class="wizard-step-content" style="display: none;">
-                                        <h3>Langkah 4: Tinjau & Buat</h3>
-                                        <p class="help-text">Periksa pengaturan Anda dan mulai sesi foto AI.</p>
-                                         <div class="studio-controls-grid">
+                                        <div class="studio-controls-grid">
+                                            <div class="input-group">
+                                                <label for="studio-props-input">Properti (Opsional)</label>
+                                                <input type="text" id="studio-props-input" placeholder="cth: kursi, tas, botol minum, buku">
+                                            </div>
                                             <div class="input-group">
                                                 <label>Format Output</label>
                                                 <div class="button-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
@@ -1636,7 +1411,7 @@
                                                     <button id="studio-output-format-png" class="toggle-button" data-value="png">PNG (Transparan)</button>
                                                 </div>
                                             </div>
-                                             <div class="input-group">
+                                            <div class="input-group">
                                                 <div style="display: flex; justify-content: space-between; align-items: center;">
                                                     <label for="studio-consistent-set-toggle">Mode Sesi</label>
                                                     <div class="theme-switcher">
@@ -1644,43 +1419,49 @@
                                                         <label for="studio-consistent-set-toggle" class="slider-label" style="width: 40px; height: 22px;"></label>
                                                     </div>
                                                 </div>
-                                                <p class="help-text">Mengunci wajah, pencahayaan, dan tone untuk konsistensi maksimal.</p>
+                                                <p class="help-text">Mengunci wajah subjek untuk konsistensi.</p>
+                                            </div>
+                                            <div class="input-group">
+                                                <label for="studio-image-count-select">Jumlah Gambar</label>
+                                                <select id="studio-image-count-select">
+                                                    <option value="1">1</option>
+                                                    <option value="2">2</option>
+                                                    <option value="3" selected>3</option>
+                                                    <option value="4">4</option>
+                                                    <option value="5">5</option>
+                                                    <option value="6">6</option>
+                                                </select>
                                             </div>
                                         </div>
-                                        <div class="input-group">
-                                            <label for="studio-image-count-select">Jumlah Gambar</label>
-                                            <select id="studio-image-count-select">
-                                                <option value="1">1</option><option value="2">2</option><option value="3" selected>3</option>
-                                                <option value="4">4</option><option value="5">5</option><option value="6">6</option>
-                                                <option value="7">7</option><option value="8">8</option><option value="9">9</option>
-                                            </select>
+                                        <div class="button-group" style="margin-top: 1rem; flex-wrap: wrap; gap: 0.5rem;">
+                                            <button id="studio-generate-button" disabled>
+                                                <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 0 24 24" width="20px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
+                                                <span>Mulai Sesi Foto</span>
+                                            </button>
+                                            <button id="studio-inspiration-button" class="secondary-button">
+                                                <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 0 24 24" width="20px" fill="currentColor"><g><rect fill="none" height="24" width="24"/></g><g><path d="M19,9l1.25-2.75L23,5l-2.75-1.25L19,1l-1.25,2.75L15,5l2.75,1.25L19,9z M11.5,9.5L9,4L6.5,9.5L1,12l5.5,2.5L9,20l2.5-5.5 L17,12L11.5,9.5z M19,15l-1.25,2.75L15,19l2.75,1.25L19,23l1.25-2.75L23,19l-2.75-1.25L19,15z"/></g></svg>
+                                                <span>Buat Papan Inspirasi</span>
+                                            </button>
                                         </div>
-                                        <button id="studio-generate-button" disabled>
-                                            <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 0 24 24" width="20px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
-                                            <span>Mulai Sesi Foto</span>
-                                        </button>
                                     </div>
                                 </div>
                     
-                                <!-- Wizard Navigation -->
-                                <div class="wizard-navigation">
-                                    <button id="studio-back-btn" class="secondary-button" style="visibility: hidden;">Kembali</button>
-                                    <button id="studio-next-btn">Berikutnya</button>
-                                </div>
-
-                                 <!-- Inspiration Board -->
                                 <div id="studio-inspiration-board-container" style="display: none;">
-                                    <h3 id="studio-inspiration-title">Papan Inspirasi</h3>
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                                        <h2>Papan Inspirasi</h2>
+                                        <button id="studio-close-inspiration-btn" class="icon-button" aria-label="Tutup Papan Inspirasi">
+                                            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
+                                        </button>
+                                    </div>
                                     <div id="studio-inspiration-grid"></div>
-                                    <button id="studio-close-inspiration-btn" class="secondary-button" style="margin-top: 1rem;">Tutup Inspirasi</button>
                                 </div>
                             </div>
-
-                            <!-- Results State -->
+                    
                             <div id="studio-results-state" style="display: none;">
+                                <h2>Hasil Sesi Foto</h2>
                                 <div id="studio-results-grid" class="studio-results-grid"></div>
                                 <div class="button-group" style="margin-top: 1.5rem; justify-content: center;">
-                                    <button id="studio-download-all-button" disabled>
+                                    <button id="studio-download-all-button">
                                         <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 0 24 24" width="20px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-5 5-5-5h3V9h4v4h3z"/></svg>
                                         <span>Unduh Semua</span>
                                     </button>
@@ -1690,9 +1471,8 @@
                                     </button>
                                 </div>
                             </div>
-
-                            <!-- Shared Status -->
-                            <div id="studio-status-container" class="status-container">
+                    
+                            <div id="studio-status-container" class="status-container" style="display:none;">
                                 <div class="status-content">
                                     <p id="studio-status"></p>
                                     <div id="studio-progress-wrapper" class="progress-wrapper" style="display: none;">
@@ -1875,24 +1655,23 @@
         </div>
     </div>
 
-    <!-- Refine Image Modal (for Photo Studio) -->
+    <!-- Photo Studio Refine Modal -->
     <div id="studio-refine-modal" class="modal-overlay" style="display: none;">
         <div class="api-key-modal-content" style="max-width: 600px;">
-            <button id="studio-refine-close-button" class="icon-button modal-close-btn"><svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg></button>
+            <button id="studio-refine-close-button" class="icon-button modal-close-btn" aria-label="Tutup penyempurnaan">
+                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
+            </button>
             <h3>Sempurnakan Gambar</h3>
-            <p class="modal-subtitle">Berikan instruksi sederhana untuk mengubah gambar.</p>
-            <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
-                <div style="flex-shrink: 0;">
-                    <img id="studio-refine-preview-image" src="#" alt="Refine preview" style="width: 200px; height: 200px; object-fit: contain; border-radius: 8px; background: var(--color-background);">
+            <div style="display: flex; gap: 1.5rem; margin-top: 1.5rem; align-items: flex-start;">
+                <div style="flex: 0 0 180px;">
+                    <img id="studio-refine-preview-image" src="#" alt="Pratinjau untuk penyempurnaan" style="width: 100%; border-radius: 8px;">
                 </div>
-                <div style="flex-grow: 1; display: flex; flex-direction: column;">
+                <div style="flex: 1;">
                     <div class="input-group">
                         <label for="studio-refine-prompt">Instruksi Penyempurnaan</label>
-                        <textarea id="studio-refine-prompt" rows="3" placeholder="contoh: ganti warna baju jadi biru, tambahkan senyum, buat latar belakang lebih gelap"></textarea>
+                        <textarea id="studio-refine-prompt" rows="4" placeholder="mis. ganti warna kemeja menjadi biru, buat pencahayaan lebih dramatis..."></textarea>
                     </div>
-                    <div class="button-group" style="margin-top: auto;">
-                        <button id="studio-refine-generate-button">Buat Ulang</button>
-                    </div>
+                    <button id="studio-refine-generate-button">Buat Ulang</button>
                 </div>
             </div>
         </div>

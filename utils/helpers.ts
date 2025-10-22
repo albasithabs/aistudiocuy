@@ -35,22 +35,14 @@ export function parseAndFormatErrorMessage(e: any, context: string): string {
     }
 
     try {
+        // The error from the SDK might have the structured error in e.message
+        // and it's a JSON string.
         const errBody = JSON.parse(e.message);
         const err = errBody.error || {};
         const code = err.code;
         const message = err.message || 'Terjadi kesalahan yang tidak diketahui.';
-        const status = err.status;
 
-        // Specific handling for permanent quota exhaustion
-        if (code === 429 && status === 'RESOURCE_EXHAUSTED') {
-            return `${baseMessage} Kuota API habis. Silakan periksa dasbor Google AI Studio Anda.`;
-        }
-        
-        // General (temporary) rate limiting
-        if (code === 429) {
-            return `${baseMessage} Batas laju tercapai. Silakan coba lagi sebentar lagi.`;
-        }
-
+        if (code === 429) return `${baseMessage} Batas kuota tercapai setelah beberapa kali percobaan.`;
         if (code === 400 || code === 403) return `${baseMessage} Kunci API tidak valid.`;
         if (code === 500) return `${baseMessage} Terjadi kesalahan server. Silakan coba lagi nanti.`;
         
@@ -137,29 +129,27 @@ export async function withRetry<T>(
       return await fn();
     } catch (e: any) {
       lastError = e;
-      let isRetryable = false;
-      // Check if the error is a structured API error
+      let is429 = false;
+      // Check if the error message is a JSON string with a 429 code
       if (typeof e.message === 'string') {
         try {
           const errBody = JSON.parse(e.message);
-          const errorDetails = errBody?.error || {};
-          // Only retry for standard rate limiting (429), not for permanent quota exhaustion.
-          if (errorDetails.code === 429 && errorDetails.status !== 'RESOURCE_EXHAUSTED') {
-            isRetryable = true;
+          if (errBody?.error?.code === 429) {
+            is429 = true;
           }
         } catch (parseErr) {
           // Not a JSON error message, so not a structured API error we can retry.
         }
       }
 
-      if (isRetryable && attempt <= retries) {
+      if (is429 && attempt <= retries) {
         onRetry(attempt, e);
         // Exponential backoff with jitter
         const backoffTime = delayMs * (2 ** (attempt - 1));
         const jitter = Math.random() * 500; // Add up to 0.5s of random delay
         await delay(backoffTime + jitter);
       } else {
-        // Not a retryable error or max retries reached, so re-throw
+        // Not a 429 error or max retries reached, so re-throw
         throw e;
       }
     }

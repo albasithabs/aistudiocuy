@@ -5,11 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-// FIX: Import `GenerateContentResponse` for proper typing.
-import { GenerateContentResponse } from "@google/genai";
-import { blobToDataUrl, downloadFile, parseAndFormatErrorMessage, setupDragAndDrop, withRetry } from "../utils/helpers.ts";
-// FIX: Added missing imports that are now available in gemini.ts.
-import { generateStyledImage, generateTextFromImage } from "../utils/gemini.ts";
+import { blobToDataUrl, downloadFile, parseAndFormatErrorMessage, setupDragAndDrop } from "../utils/helpers.ts";
+import { generateStyledImage } from "../utils/gemini.ts";
 
 type PosterProState = 'idle' | 'processing' | 'results' | 'error';
 type PosterResult = {
@@ -22,40 +19,34 @@ type PosterResult = {
 export const PosterPro = {
     // DOM Elements
     view: document.querySelector('#poster-pro-view') as HTMLDivElement,
-    inputStateEl: null as HTMLDivElement | null, resultsStateEl: null as HTMLDivElement | null,
-    fileInput: null as HTMLInputElement | null, previewImage: null as HTMLImageElement | null,
-    uploadLabel: null as HTMLSpanElement | null, 
-    resultsGrid: null as HTMLDivElement | null, generateButton: null as HTMLButtonElement | null,
-    changePhotoButton: null as HTMLButtonElement | null, startOverButton: null as HTMLButtonElement | null,
+    inputStateEl: null as HTMLDivElement | null,
+    resultsStateEl: null as HTMLDivElement | null,
+    fileInput: null as HTMLInputElement | null,
+    previewImage: null as HTMLImageElement | null,
+    uploadLabel: null as HTMLSpanElement | null,
+    optionsPanel: null as HTMLDivElement | null,
+    resultsGrid: null as HTMLDivElement | null,
+    generateButton: null as HTMLButtonElement | null,
+    changePhotoButton: null as HTMLButtonElement | null,
+    startOverButton: null as HTMLButtonElement | null,
     toastContainer: null as HTMLDivElement | null,
 
     // Inputs
-    headlineInput: null as HTMLInputElement | null, subheadlineInput: null as HTMLTextAreaElement | null,
-    ctaInput: null as HTMLInputElement | null, categorySelect: null as HTMLSelectElement | null,
-    styleSelect: null as HTMLSelectElement | null, aspectRatioGroup: null as HTMLDivElement | null,
-    elementsGroup: null as HTMLDivElement | null, customPromptInput: null as HTMLTextAreaElement | null,
-
-    // New Advanced Controls
-    logoInput: null as HTMLInputElement | null,
-    logoPreviewImage: null as HTMLImageElement | null,
-    logoUploadLabel: null as HTMLSpanElement | null,
-    fontStyleGroup: null as HTMLDivElement | null,
-    fontWeightGroup: null as HTMLDivElement | null,
-    textPositionGroup: null as HTMLDivElement | null,
-    colorPaletteInput: null as HTMLInputElement | null,
-    extractColorButton: null as HTMLButtonElement | null,
-    removeBgContainer: null as HTMLDivElement | null,
-    removeBgToggle: null as HTMLInputElement | null,
+    headlineInput: null as HTMLInputElement | null,
+    subheadlineInput: null as HTMLTextAreaElement | null,
+    ctaInput: null as HTMLInputElement | null,
+    categoryGroup: null as HTMLDivElement | null,
+    styleSelect: null as HTMLSelectElement | null,
+    aspectRatioGroup: null as HTMLDivElement | null,
+    elementsGroup: null as HTMLDivElement | null,
+    customPromptInput: null as HTMLTextAreaElement | null,
 
     // State
     state: 'idle' as PosterProState,
     sourceImage: null as { dataUrl: string; base64: string; } | null,
-    originalSourceImage: null as { dataUrl: string; base64: string; } | null,
-    logoImage: null as { dataUrl: string; base64: string; } | null,
-    results: [] as PosterResult[], aspectRatio: '9:16', errorMessage: '',
-    fontStyle: 'sans-serif font', fontWeight: 'regular', textPosition: 'centered',
-    isBackgroundRemovalActive: false,
-    isRemovingBackground: false,
+    results: [] as PosterResult[],
+    aspectRatio: '9:16',
+    errorMessage: '',
 
     // Dependencies
     getApiKey: (() => '') as () => string,
@@ -68,8 +59,6 @@ export const PosterPro = {
         this.showPreviewModal = dependencies.showPreviewModal;
 
         this.queryDOMElements();
-        if (!this.validateDOMElements()) return;
-
         this.addEventListeners();
         this.render();
     },
@@ -80,88 +69,48 @@ export const PosterPro = {
         this.fileInput = this.view.querySelector('#poster-pro-file-input');
         this.previewImage = this.view.querySelector('#poster-pro-preview-image');
         this.uploadLabel = this.view.querySelector('#poster-pro-upload-label');
+        this.optionsPanel = this.view.querySelector('#poster-pro-options-panel');
         this.resultsGrid = this.view.querySelector('#poster-pro-results-grid');
         this.generateButton = this.view.querySelector('#poster-pro-generate-button');
         this.changePhotoButton = this.view.querySelector('#poster-pro-change-photo-button');
         this.startOverButton = this.view.querySelector('#poster-pro-start-over-button');
         this.toastContainer = document.querySelector('#toast-container');
+        
         this.headlineInput = this.view.querySelector('#poster-pro-headline-input');
         this.subheadlineInput = this.view.querySelector('#poster-pro-subheadline-input');
         this.ctaInput = this.view.querySelector('#poster-pro-cta-input');
-        this.categorySelect = this.view.querySelector('#poster-pro-category-select');
+        this.categoryGroup = this.view.querySelector('#poster-pro-category-group');
         this.styleSelect = this.view.querySelector('#poster-pro-style-select');
         this.aspectRatioGroup = this.view.querySelector('#poster-pro-aspect-ratio-group');
         this.elementsGroup = this.view.querySelector('#poster-pro-elements-group');
         this.customPromptInput = this.view.querySelector('#poster-pro-custom-prompt');
-        // New elements
-        this.logoInput = this.view.querySelector('#poster-pro-logo-input');
-        this.logoPreviewImage = this.view.querySelector('#poster-pro-logo-preview-image');
-        this.logoUploadLabel = this.view.querySelector('#poster-pro-logo-upload-label');
-        this.fontStyleGroup = this.view.querySelector('#poster-pro-font-style-group');
-        this.fontWeightGroup = this.view.querySelector('#poster-pro-font-weight-group');
-        this.textPositionGroup = this.view.querySelector('#poster-pro-text-position-group');
-        this.colorPaletteInput = this.view.querySelector('#poster-pro-color-palette-input');
-        this.extractColorButton = this.view.querySelector('#poster-pro-extract-color-button');
-        this.removeBgContainer = this.view.querySelector('#poster-pro-remove-bg-container');
-        this.removeBgToggle = this.view.querySelector('#poster-pro-remove-bg-toggle');
-    },
-
-    validateDOMElements(): boolean {
-        const requiredElements = [
-            this.inputStateEl, this.resultsStateEl, this.fileInput, this.previewImage,
-            this.uploadLabel, this.resultsGrid, this.generateButton,
-            this.changePhotoButton, this.startOverButton, this.headlineInput, this.subheadlineInput,
-            this.ctaInput, this.categorySelect, this.styleSelect, this.aspectRatioGroup,
-            this.elementsGroup, this.customPromptInput, this.logoInput, this.logoPreviewImage,
-            this.logoUploadLabel, this.fontStyleGroup, this.fontWeightGroup, this.textPositionGroup,
-            this.colorPaletteInput, this.extractColorButton, this.removeBgContainer, this.removeBgToggle,
-        ];
-        if (requiredElements.some(el => !el)) {
-            console.error("Poster Pro initialization failed: One or more required elements are missing from the DOM.");
-            return false;
-        }
-        return true;
     },
 
     addEventListeners() {
-        const dropZone = this.fileInput?.closest('.file-drop-zone');
-        if (dropZone) setupDragAndDrop(dropZone as HTMLElement, this.fileInput!);
+        const dropZone = this.fileInput?.closest('.file-drop-zone') as HTMLElement;
+        if(dropZone) setupDragAndDrop(dropZone, this.fileInput);
         
         this.fileInput?.addEventListener('change', this.handleUpload.bind(this));
         this.generateButton?.addEventListener('click', this.runGeneration.bind(this));
         this.changePhotoButton?.addEventListener('click', () => this.fileInput?.click());
         this.startOverButton?.addEventListener('click', this.handleStartOver.bind(this));
         
-        const logoDropZone = this.logoInput?.closest('.file-drop-zone');
-        if (logoDropZone) setupDragAndDrop(logoDropZone as HTMLElement, this.logoInput!);
-        this.logoInput?.addEventListener('change', this.handleLogoUpload.bind(this));
-
-        this.extractColorButton?.addEventListener('click', this.handleExtractColor.bind(this));
-        // FIX: The `this` context was incorrect for this event listener.
-        // It's now correctly bound to the `PosterPro` object.
-        this.removeBgToggle?.addEventListener('change', this.handleRemoveBgToggle.bind(this));
-
-        this.fontStyleGroup?.addEventListener('click', (e) => this.handleOptionClick(e, 'single', 'fontStyle'));
-        this.fontWeightGroup?.addEventListener('click', (e) => this.handleOptionClick(e, 'single', 'fontWeight'));
-        this.textPositionGroup?.addEventListener('click', (e) => this.handleOptionClick(e, 'single', 'textPosition'));
+        this.categoryGroup?.addEventListener('click', (e) => this.handleOptionClick(e, 'single'));
         this.elementsGroup?.addEventListener('click', (e) => this.handleOptionClick(e, 'multiple'));
-        
         this.aspectRatioGroup?.addEventListener('click', this.handleAspectRatioClick.bind(this));
+
         this.resultsGrid?.addEventListener('click', this.handleGridClick.bind(this));
         this.headlineInput?.addEventListener('input', () => this.render());
     },
     
-    handleOptionClick(e: MouseEvent, type: 'single' | 'multiple', stateKey?: 'fontStyle' | 'fontWeight' | 'textPosition') {
-        const button = (e.target as HTMLElement).closest('.toggle-button');
-        const group = (e.target as HTMLElement).closest('.button-group, #poster-pro-elements-group');
+    handleOptionClick(e: MouseEvent, type: 'single' | 'multiple') {
+        const target = e.target as HTMLElement;
+        const button = target.closest('.toggle-button');
+        const group = target.closest('.button-group, #poster-pro-elements-group');
         if (button && group) {
-            const value = (button as HTMLElement).dataset.value;
             if (type === 'single') {
                 group.querySelectorAll('.toggle-button').forEach(btn => btn.classList.remove('active'));
                 button.classList.add('active');
-                if (stateKey && value) {
-                    (this as any)[stateKey] = value;
-                }
             } else {
                 button.classList.toggle('active');
             }
@@ -169,7 +118,8 @@ export const PosterPro = {
     },
 
     handleAspectRatioClick(e: MouseEvent) {
-        const button = (e.target as HTMLElement).closest('.toggle-button');
+        const target = e.target as HTMLElement;
+        const button = target.closest('.toggle-button');
         if (button && this.aspectRatioGroup) {
             this.aspectRatioGroup.querySelectorAll('.toggle-button').forEach(btn => btn.classList.remove('active'));
             button.classList.add('active');
@@ -183,17 +133,9 @@ export const PosterPro = {
 
         try {
             const dataUrl = await blobToDataUrl(file);
-            const base64 = dataUrl.substring(dataUrl.indexOf(',') + 1);
-            this.sourceImage = { dataUrl, base64 };
-            this.originalSourceImage = { dataUrl, base64 };
+            this.sourceImage = { dataUrl, base64: dataUrl.split(',')[1] };
             this.state = 'idle';
-
-            if (this.isBackgroundRemovalActive) {
-                this.processBackgroundRemoval();
-            } else {
-                this.render();
-            }
-
+            this.render();
         } catch (error: any) {
             this.state = 'error';
             this.errorMessage = `Error processing file: ${error.message}`;
@@ -202,162 +144,150 @@ export const PosterPro = {
         }
     },
 
-    async handleLogoUpload(e: Event) {
-        const file = (e.target as HTMLInputElement).files?.[0];
-        if (!file) return;
+    render() {
+        if (!this.inputStateEl || !this.resultsStateEl || !this.generateButton) return;
 
-        try {
-            const dataUrl = await blobToDataUrl(file);
-            this.logoImage = { dataUrl, base64: dataUrl.substring(dataUrl.indexOf(',') + 1) };
-            this.logoPreviewImage!.src = dataUrl;
-            this.logoPreviewImage!.style.display = 'block';
-            this.logoUploadLabel!.style.display = 'none';
-        } catch (error) {
-            this.showToast('Gagal memproses file logo.', 'error');
-        }
-    },
+        const hasImage = !!this.sourceImage;
+        const hasHeadline = this.headlineInput?.value.trim() !== '';
+        
+        this.inputStateEl.style.display = (this.state === 'idle') ? 'block' : 'none';
+        this.resultsStateEl.style.display = (this.state !== 'idle') ? 'block' : 'none';
 
-    async handleExtractColor() {
-        if (!this.sourceImage) {
-            this.showToast('Unggah gambar utama terlebih dahulu untuk mengekstrak warna.', 'info');
-            return;
+        if(this.optionsPanel) this.optionsPanel.style.display = hasImage ? 'block' : 'none';
+        if(this.previewImage) this.previewImage.style.display = hasImage ? 'block' : 'none';
+        if(this.uploadLabel) this.uploadLabel.style.display = hasImage ? 'none' : 'block';
+        
+        this.generateButton.disabled = !hasImage || !hasHeadline || this.state === 'processing';
+
+        if (hasImage && this.previewImage) {
+            this.previewImage.src = this.sourceImage!.dataUrl;
         }
 
-        this.extractColorButton!.disabled = true;
-        const originalButtonHTML = this.extractColorButton!.innerHTML;
-        this.extractColorButton!.innerHTML = `<div class="loading-clock" style="width: 18px; height: 18px;"></div>`;
+        if (this.state === 'processing' || this.state === 'results') {
+            this.resultsGrid!.innerHTML = '';
+            this.results.forEach((result, index) => {
+                const itemWrapper = document.createElement('div');
+                // Gunakan kelas affiliate-result-item untuk mewarisi gaya overlay
+                itemWrapper.className = 'image-result-item affiliate-result-item';
+                itemWrapper.dataset.index = String(index);
 
-        try {
-            const prompt = "Describe the main color palette of this image in a short, descriptive phrase for a designer (e.g., 'warm earth tones with a pop of orange', 'cool blues and silver', 'vibrant neon pinks and electric blue').";
-            const colorDesc = await generateTextFromImage(prompt, this.sourceImage.base64, this.getApiKey());
-            this.colorPaletteInput!.value = colorDesc;
-        } catch(e) {
-            this.showToast('Gagal mengekstrak warna dari gambar.', 'error');
-            console.error("Color extraction failed:", e);
-        } finally {
-            this.extractColorButton!.disabled = false;
-            this.extractColorButton!.innerHTML = originalButtonHTML;
-        }
-    },
-
-    async handleRemoveBgToggle() {
-        this.isBackgroundRemovalActive = this.removeBgToggle!.checked;
-        if (this.isBackgroundRemovalActive) {
-            if (this.originalSourceImage) {
-                await this.processBackgroundRemoval();
-            }
-        } else {
-            // Revert to original if toggle is turned off
-            this.sourceImage = this.originalSourceImage;
-        }
-        this.render();
-    },
-
-    async processBackgroundRemoval() {
-        if (!this.originalSourceImage) return;
-
-        this.isRemovingBackground = true;
-        this.render();
-        try {
-            const prompt = "Hapus latar belakang gambar ini, sisakan hanya subjek utama. Kembalikan sebagai PNG transparan.";
-            const response: GenerateContentResponse = await generateStyledImage(this.originalSourceImage.base64, null, prompt, this.getApiKey());
-            const imagePart = response.candidates?.[0]?.content?.parts.find(p => p.inlineData);
-            if (imagePart?.inlineData) {
-                const dataUrl = `data:${imagePart.inlineData.mimeType};base64,${imagePart.inlineData.data}`;
-                this.sourceImage = {
-                    dataUrl,
-                    base64: imagePart.inlineData.data
-                };
-            } else {
-                throw new Error("Gagal menghapus latar belakang.");
-            }
-        } catch(e) {
-            this.showToast(parseAndFormatErrorMessage(e, 'Gagal menghapus latar belakang'), 'error');
-            // Revert on failure
-            this.sourceImage = this.originalSourceImage;
-            this.removeBgToggle!.checked = false;
-            this.isBackgroundRemovalActive = false;
-        } finally {
-            this.isRemovingBackground = false;
-            this.render();
+                if (result.status === 'pending') {
+                    itemWrapper.innerHTML = `<div class="loading-clock"></div>`;
+                } else if (result.status === 'error') {
+                    itemWrapper.innerHTML = `<p class="pending-status-text">${result.errorMessage}</p>`;
+                } else if (result.imageUrl) {
+                    const previewSVG = `<svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 0 24 24" width="20px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5C21.27 7.61 17 4.5 12 4.5zm0 10c-2.48 0-4.5-2.02-4.5-4.5S9.52 5.5 12 5.5s4.5 2.02 4.5 4.5-2.02 4.5-4.5 4.5zm0-7C10.62 7.5 9.5 8.62 9.5 10s1.12 2.5 2.5 2.5 2.5-1.12 2.5-2.5S13.38 7.5 12 7.5z"/></svg>`;
+                    const downloadSVG = `<svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 0 24 24" width="20px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>`;
+                    const regenerateSVG = `<svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 0 24 24" width="20px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M12.5 8c-2.65 0-5.05.99-6.9 2.6L2 7v9h9l-3.62-3.62c1.39-1.16 3.16-1.88 5.12-1.88 3.54 0 6.55 2.31 7.6 5.5l2.37-.78C21.08 11.03 17.15 8 12.5 8z"/></svg>`;
+                    
+                    itemWrapper.innerHTML = `
+                        <img src="${result.imageUrl}" alt="Generated Poster ${index + 1}" />
+                        <div class="affiliate-result-item-overlay">
+                            <button class="icon-button poster-pro-preview" title="Pratinjau">${previewSVG}</button>
+                            <button class="icon-button poster-pro-download" title="Unduh Poster">${downloadSVG}</button>
+                            <button class="icon-button poster-pro-regenerate" title="Buat Ulang">${regenerateSVG}</button>
+                        </div>
+                    `;
+                }
+                this.resultsGrid?.appendChild(itemWrapper);
+            });
         }
     },
 
     buildPrompt(): string {
+        const headline = this.headlineInput?.value.trim();
+        const subheadline = this.subheadlineInput?.value.trim();
+        const cta = this.ctaInput?.value.trim();
+        const category = this.categoryGroup?.querySelector('.toggle-button.active')?.dataset.value || 'Lifestyle';
+        const style = this.styleSelect?.value;
+        const customPrompt = this.customPromptInput?.value.trim();
         const selectedElements = Array.from(this.elementsGroup?.querySelectorAll('.toggle-button.active') || [])
             .map(btn => (btn as HTMLElement).dataset.element)
-            .join(', ');
+            .filter(Boolean);
 
-        let prompt = `Buat poster iklan yang profesional dan menarik secara visual untuk kategori "${this.categorySelect?.value}" dengan gaya "${this.styleSelect?.value}".\n\n`;
-
-        // Text Content
-        prompt += `**Konten Teks:**\n`;
-        prompt += `- Headline: "${this.headlineInput?.value || ''}"\n`;
-        prompt += `- Sub-headline: "${this.subheadlineInput?.value || ''}"\n`;
-        prompt += `- Tombol Call-to-Action (CTA): "${this.ctaInput?.value || ''}"\n`;
-
-        // Visual Style
-        prompt += `\n**Gaya Visual:**\n`;
-        prompt += `- Tipografi: Gunakan ${this.fontStyle} dengan ketebalan ${this.fontWeight}.\n`;
-        prompt += `- Posisi Teks: Atur teks ${this.textPosition} pada poster.\n`;
-        if (this.colorPaletteInput?.value) {
-            prompt += `- Palet Warna: ${this.colorPaletteInput.value}.\n`;
-        }
-        if (selectedElements) {
-            prompt += `- Elemen Dekoratif: Sertakan ${selectedElements}.\n`;
-        }
-        if (this.customPromptInput?.value) {
-            prompt += `- Instruksi Kustom: ${this.customPromptInput.value}.\n`;
+        let artDirection = '';
+        switch(category) {
+            case 'Makanan & Minuman':
+                artDirection = "Ciptakan adegan yang dinamis dan menggugah selera. Gunakan pencahayaan yang cerah dan fokus makro untuk menonjolkan tekstur.";
+                break;
+            case 'Fashion':
+                artDirection = "Hasilkan poster gaya editorial mode tinggi. Gunakan pencahayaan dinamis seperti neon lembut atau sorotan dramatis.";
+                break;
+            case 'Rental':
+                artDirection = "Rancang iklan yang bersih dan modern. Latar belakang harus cerah dan aspiratif, menunjukkan manfaat dari penyewaan.";
+                break;
+            case 'Lifestyle':
+                artDirection = "Ciptakan adegan yang hangat dan otentik. Latar belakang harus berupa lingkungan yang nyaman dengan pencahayaan alami dan lembut.";
+                break;
         }
 
-        // Final Instruction
-        prompt += `\n**Instruksi Akhir:**\n`;
-        prompt += `- Gunakan gambar utama yang disediakan sebagai fokus visual utama.\n`;
-        if (this.logoImage) {
-            prompt += `- Integrasikan logo yang disediakan secara halus ke dalam desain, biasanya di salah satu sudut.\n`;
+        let styleInstructions = '';
+        switch(style) {
+            case 'Minimalist':
+                styleInstructions = 'Gaya desain harus sangat minimalis. Gunakan tipografi sans-serif yang bersih dan tipis. Ciptakan tata letak dengan banyak ruang kosong (negative space) untuk menekankan subjek. Batasi palet warna menjadi monokromatik atau hanya dengan satu warna aksen yang halus. Latar belakang harus berupa warna solid yang bersih atau gradien yang sangat lembut.';
+                break;
+            case 'Luxury':
+                styleInstructions = 'Gaya desain harus mewah dan elegan. Gunakan tipografi serif yang canggih, mungkin dengan efek metalik emas atau perak pada teks utama. Palet warna harus terdiri dari warna-warna kaya seperti hitam, biru tua, atau hijau zamrud, yang dipadukan dengan aksen krem atau emas. Latar belakang harus memiliki tekstur halus seperti marmer atau sutra, dengan pencahayaan studio yang lembut.';
+                break;
+            case 'Dramatic':
+                styleInstructions = 'Gaya desain harus dramatis dan sinematik. Gunakan pencahayaan kontras tinggi (chiaroscuro) dengan bayangan yang kuat. Tipografi harus tebal, berani, dan berdampak. Komposisinya harus dinamis, mungkin menggunakan sudut yang tidak biasa. Tambahkan elemen atmosfer seperti asap halus, kabut, atau efek partikel untuk meningkatkan suasana hati.';
+                break;
+            case 'Fun & Colorful':
+            default:
+                styleInstructions = 'Gaya desain harus menyenangkan, bersemangat, dan penuh warna. Gunakan palet warna yang cerah dan jenuh. Tipografi harus ceria dan mudah dibaca, mungkin dengan gaya bulat atau sedikit informal. Komposisinya harus dinamis dan menarik perhatian, cocok untuk media sosial.';
+                break;
         }
-        prompt += `- Hasilnya harus berupa poster yang seimbang dan terlihat profesional dengan hierarki visual yang jelas.`;
+
+
+        return `**TUGAS POSTER PRO:** Buat poster iklan fotorealistis dan sangat dinamis dalam rasio aspek **${this.aspectRatio}**.
         
-        return prompt;
+**Langkah Eksekusi Inti:**
+1.  **Isolasi Subjek:** Isolasi subjek utama (orang/produk) dari gambar yang disediakan dengan sempurna.
+2.  **Pembuatan Adegan Sinematik:** Buat latar belakang baru yang hiper-realistis berdasarkan Arahan Seni di bawah. Latar belakang harus memiliki pencahayaan, perspektif, dan bayangan yang cocok dengan subjek.
+3.  **Pengomposisian & Integrasi:** Tempatkan subjek yang telah diisolasi ke dalam adegan baru, padukan pencahayaan dan warna agar terlihat menyatu.
+4.  **Tipografi Ahli & Integrasi Teks:**
+    *   **Headline Utama:** "${headline}". Render ini dengan tipografi 3D yang tebal dan menarik.
+    *   **Sub-Headline/Promo:** "${subheadline}". Ini harus lebih kecil tetapi jelas.
+    *   **Tombol CTA:** ${cta ? `Buat tombol yang terlihat bisa diklik dengan teks "${cta}".` : 'Tidak ada tombol CTA.'}
+5.  **Arahan Seni:**
+    *   **Kategori:** ${category}
+    *   **Instruksi Gaya Rinci:** ${styleInstructions}
+    *   **Instruksi Umum Kategori:** ${artDirection}
+    *   **Elemen Dekoratif:** ${selectedElements.length > 0 ? `Gabungkan elemen-elemen ini secara kreatif: ${selectedElements.join(', ')}.` : 'Tidak ada elemen dekoratif tambahan.'}
+6.  **Instruksi Tambahan:** ${customPrompt || 'Tidak ada instruksi tambahan.'}
+7.  **Polesan Akhir:** Terapkan gradasi warna profesional di seluruh gambar untuk menyatukan semua elemen. Tingkatkan pencahayaan agar sinematik dan dramatis. Pastikan gambar tajam dan cerah.
+
+**Mandat Output:** Output HARUS berupa satu file gambar poster yang sudah jadi.`;
     },
 
     async runGeneration() {
-        if (!this.sourceImage || !this.headlineInput?.value) return;
+        if (!this.sourceImage || !this.headlineInput?.value.trim()) return;
 
         this.state = 'processing';
-        const basePrompt = this.buildPrompt();
-        this.results = Array(2).fill(0).map(() => ({ prompt: basePrompt, status: 'pending', imageUrl: null }));
+        this.results = Array(3).fill(null).map((_, i) => ({
+            prompt: this.buildPrompt() + `\n**Variasi #${i + 1}:** Berikan komposisi dan tata letak yang berbeda dari versi sebelumnya.`,
+            status: 'pending',
+            imageUrl: null
+        }));
         this.render();
-        
-        const additionalImages = this.logoImage ? [{
-            inlineData: { data: this.logoImage.base64, mimeType: 'image/png' }
-        }] : [];
 
         const generationPromises = this.results.map(async (result, index) => {
             try {
-                // Add a slight variation for each generation
-                const variedPrompt = `${result.prompt} Buat variasi desain unik #${index + 1}.`;
-                // FIX: Type the response to avoid property access errors.
-                const response: GenerateContentResponse = await withRetry(() => 
-                    generateStyledImage(this.sourceImage!.base64, null, variedPrompt, this.getApiKey(), additionalImages), {
-                        retries: 2, delayMs: 1000,
-                        onRetry: (attempt, err) => console.warn(`Poster generation attempt ${attempt} failed. Retrying...`, err)
-                    }
-                );
-
+                const response = await generateStyledImage(this.sourceImage!.base64, null, result.prompt, this.getApiKey);
                 const imagePart = response.candidates?.[0]?.content?.parts.find(p => p.inlineData);
+
                 if (imagePart?.inlineData) {
-                    const imageUrl = `data:${imagePart.inlineData.mimeType};base64,${imagePart.inlineData.data}`;
-                    this.results[index] = { ...result, status: 'done', imageUrl };
+                    this.results[index].imageUrl = `data:${imagePart.inlineData.mimeType};base64,${imagePart.inlineData.data}`;
+                    this.results[index].status = 'done';
                 } else {
-                    // FIX: Correctly access the text part from the response.
                     throw new Error(response.candidates?.[0]?.content?.parts.find(p => p.text)?.text || "Tidak ada data gambar dalam respons.");
                 }
-
             } catch (e: any) {
-                this.results[index] = { ...result, status: 'error', errorMessage: parseAndFormatErrorMessage(e, 'Pembuatan poster') };
+                console.error(`Error generating poster ${index}:`, e);
+                this.results[index].status = 'error';
+                this.results[index].errorMessage = parseAndFormatErrorMessage(e, 'Pembuatan poster');
             } finally {
-                this.render();
+                this.render(); // Re-render the grid after each image is processed
             }
         });
 
@@ -366,132 +296,94 @@ export const PosterPro = {
         this.render();
     },
 
-    handleGridClick(e: MouseEvent) {
-        const target = e.target as HTMLElement;
-        const item = target.closest('.image-result-item');
-        if (!item) return;
-
-        const index = parseInt((item as HTMLElement).dataset.index!, 10);
-        const result = this.results[index];
-        if (!result || !result.imageUrl) return;
-
-        const downloadButton = target.closest('.poster-download-button');
-        const regenButton = target.closest('.poster-regen-button');
-
-        if (downloadButton) {
-            downloadFile(result.imageUrl, `poster-pro-${index + 1}.png`);
-        } else if (regenButton) {
-            this.regenerateSingle(index);
-        } else {
-            this.showPreviewModal([result.imageUrl], 0);
-        }
-    },
-
     async regenerateSingle(index: number) {
-        if (!this.sourceImage) return;
+        if (!this.sourceImage || index < 0 || index >= this.results.length) return;
 
         const resultToRegen = this.results[index];
+        if (!resultToRegen) return;
+
         resultToRegen.status = 'pending';
         resultToRegen.imageUrl = null;
         this.render();
 
         try {
-            const variedPrompt = `${resultToRegen.prompt} Buat variasi desain unik lainnya.`;
-            const additionalImages = this.logoImage ? [{ inlineData: { data: this.logoImage.base64, mimeType: 'image/png' } }] : [];
-            
-            // FIX: Type the response to avoid property access errors.
-            const response: GenerateContentResponse = await withRetry(() => 
-                generateStyledImage(this.sourceImage!.base64, null, variedPrompt, this.getApiKey(), additionalImages), {
-                    retries: 2, delayMs: 1000, onRetry: () => {}
-                }
-            );
-
+            const response = await generateStyledImage(this.sourceImage.base64, null, resultToRegen.prompt, this.getApiKey);
             const imagePart = response.candidates?.[0]?.content?.parts.find(p => p.inlineData);
+
             if (imagePart?.inlineData) {
-                this.results[index] = { ...resultToRegen, status: 'done', imageUrl: `data:${imagePart.inlineData.mimeType};base64,${imagePart.inlineData.data}` };
+                this.results[index].imageUrl = `data:${imagePart.inlineData.mimeType};base64,${imagePart.inlineData.data}`;
+                this.results[index].status = 'done';
             } else {
-                throw new Error("Gagal membuat ulang.");
+                throw new Error(response.candidates?.[0]?.content?.parts.find(p => p.text)?.text || "Tidak ada data gambar dalam respons.");
             }
         } catch (e: any) {
-            this.results[index] = { ...resultToRegen, status: 'error', errorMessage: parseAndFormatErrorMessage(e, 'Pembuatan ulang') };
+            console.error(`Error regenerating poster ${index}:`, e);
+            this.results[index].status = 'error';
+            this.results[index].errorMessage = parseAndFormatErrorMessage(e, 'Pembuatan poster');
         } finally {
             this.render();
         }
     },
-    
+
+    handleGridClick(e: MouseEvent) {
+        const target = e.target as HTMLElement;
+        const item = target.closest('.image-result-item');
+        if (!item) return;
+        
+        const index = parseInt((item as HTMLElement).dataset.index!, 10);
+        const result = this.results[index];
+        if (!result) return;
+
+        // Tindakan tombol spesifik terlebih dahulu
+        if (target.closest('.poster-pro-download')) {
+            if (result.imageUrl) downloadFile(result.imageUrl, `poster_pro_${index + 1}.png`);
+            return;
+        }
+
+        if (target.closest('.poster-pro-regenerate')) {
+            this.regenerateSingle(index);
+            return;
+        }
+
+        // Tindakan default adalah pratinjau
+        if (result.imageUrl) {
+            const urls = this.results
+                .map(r => r.imageUrl)
+                .filter((url): url is string => !!url);
+            const startIndex = urls.indexOf(result.imageUrl);
+            if (startIndex > -1) {
+                this.showPreviewModal(urls, startIndex);
+            }
+        }
+    },
+
     handleStartOver() {
         this.state = 'idle';
         this.sourceImage = null;
-        this.originalSourceImage = null;
-        this.logoImage = null;
         this.results = [];
-        this.fileInput!.value = '';
-        this.logoInput!.value = '';
-        this.headlineInput!.value = '';
-        this.subheadlineInput!.value = '';
-        this.ctaInput!.value = '';
-        this.customPromptInput!.value = '';
-        this.colorPaletteInput!.value = '';
-        this.removeBgToggle!.checked = false;
-        this.isBackgroundRemovalActive = false;
-        this.render();
-    },
+        if (this.fileInput) this.fileInput.value = '';
+        if (this.headlineInput) this.headlineInput.value = '';
+        if (this.subheadlineInput) this.subheadlineInput.value = '';
+        if (this.ctaInput) this.ctaInput.value = '';
+        if (this.customPromptInput) this.customPromptInput.value = '';
 
-    render() {
-        const hasImage = !!this.sourceImage;
-        const hasHeadline = !!this.headlineInput?.value.trim();
-
-        this.inputStateEl!.style.display = this.state === 'idle' ? 'block' : 'none';
-        this.resultsStateEl!.style.display = this.state !== 'idle' ? 'block' : 'none';
-
-        this.previewImage!.style.display = hasImage ? 'block' : 'none';
-        this.uploadLabel!.style.display = hasImage ? 'none' : 'block';
-        this.removeBgContainer!.style.display = hasImage ? 'flex' : 'none';
-
-        if(this.isRemovingBackground) {
-            (this.fileInput!.closest('.file-drop-zone') as HTMLElement).classList.add('processing');
-        } else {
-            (this.fileInput!.closest('.file-drop-zone') as HTMLElement).classList.remove('processing');
-        }
-
-        if (hasImage) {
-            this.previewImage!.src = this.sourceImage!.dataUrl;
-        }
-
-        this.generateButton!.disabled = !hasImage || !hasHeadline || this.state === 'processing';
-
-        if (this.state === 'processing' || this.state === 'results') {
-            this.resultsGrid!.innerHTML = '';
-            this.results.forEach((result, index) => {
-                const item = document.createElement('div');
-                item.className = 'image-result-item';
-                item.dataset.index = String(index);
-
-                let content = '';
-                if (result.status === 'pending') {
-                    content = '<div class="loading-clock"></div>';
-                } else if (result.status === 'error') {
-                    content = `<p class="pending-status-text" title="${result.errorMessage}">Gagal</p>`;
-                } else if (result.imageUrl) {
-                    content = `
-                        <img src="${result.imageUrl}" alt="Generated Poster ${index + 1}">
-                        <div class="affiliate-result-item-overlay poster-pro-result-actions">
-                            <button class="secondary-button poster-download-button">Unduh</button>
-                            <button class="secondary-button poster-regen-button">Buat Ulang</button>
-                        </div>`;
-                }
-                item.innerHTML = content;
-                this.resultsGrid!.appendChild(item);
+        this.aspectRatio = '9:16';
+        if (this.aspectRatioGroup) {
+            this.aspectRatioGroup.querySelectorAll('.toggle-button').forEach(btn => {
+                btn.classList.toggle('active', (btn as HTMLElement).dataset.value === '9:16');
             });
         }
+        
+        this.render();
     },
-
+    
     showToast(message: string, type: 'success' | 'error' | 'info' = 'success') {
-        if (!this.toastContainer) return;
         const toast = document.createElement('div');
         toast.className = `toast-notification ${type}`;
         toast.textContent = message;
-        this.toastContainer.appendChild(toast);
-        setTimeout(() => toast.remove(), 3000);
-    },
+        this.toastContainer?.appendChild(toast);
+        setTimeout(() => {
+            toast.remove();
+        }, 3000);
+    }
 };
