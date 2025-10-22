@@ -8,6 +8,11 @@ import {GenerateContentResponse, GenerateVideosParameters, GoogleGenAI, Modality
 // Pastikan pcmToWavUrl dan blobToDataUrl ada di file helpers.js Anda
 import { delay, pcmToWavUrl } from './helpers.ts';
 
+// Helper to initialize the API
+function getGoogleGenAI(apiKey: string): GoogleGenAI {
+    return new GoogleGenAI({ apiKey });
+}
+
 export async function validateApiKey(apiKey: string): Promise<boolean> {
     if (!apiKey) return false;
     
@@ -35,292 +40,294 @@ export async function validateApiKey(apiKey: string): Promise<boolean> {
     }
 }
 
-// FIX: Added optional aspectRatio parameter to support video generation with specific aspect ratios, resolving the argument mismatch error.
-export async function generateVideoContent(
-    prompt: string,
-    imageBytes: string,
-    model: string,
-    getApiKey: () => string,
-    updateStatus: (message: string, step?: number) => void,
-    aspectRatio?: string
-): Promise<string> {
-  const ai = new GoogleGenAI({apiKey: getApiKey()});
-  const videoGenConfig: any = { numberOfVideos: 1 };
-  if (aspectRatio) {
-    videoGenConfig.aspectRatio = aspectRatio;
-  }
-  const config: GenerateVideosParameters = { model, prompt, config: videoGenConfig };
-  if (imageBytes) { config.image = { imageBytes, mimeType: 'image/png' }; }
-  let operation = await ai.models.generateVideos(config);
-  while (!operation.done) {
-    await delay(2000);
-    operation = await ai.operations.getVideosOperation({operation});
-    const progress = (operation as any).metadata?.progress;
-    if (progress) {
-        const percentage = progress.percentage || 0;
-        const message = progress.statusMessage || `Processing... ${Math.round(percentage)}%`;
-        updateStatus(message, percentage);
-    } else {
-        updateStatus('Checking generation status...');
-    }
-  }
-  const videos = operation.response?.generatedVideos;
-  if (videos === undefined || videos.length === 0) { throw new Error('No videos were generated. The prompt may have been blocked.'); }
-  const videoData = videos[0];
-  const url = decodeURIComponent(videoData.video.uri);
-  const res = await fetch(`${url}&key=${getApiKey()}`);
-  if (!res.ok) { throw new Error(`Failed to fetch video: ${res.status} ${res.statusText}`); }
-  const blob = await res.blob();
-  return URL.createObjectURL(blob);
+export async function generateText(prompt: string, apiKey: string, responseSchema?: any): Promise<string> {
+    const ai = getGoogleGenAI(apiKey);
+    const response = await ai.models.generateContent({
+        model: 'gemini-2.5-flash',
+        contents: prompt,
+        config: {
+            responseMimeType: responseSchema ? "application/json" : undefined,
+            responseSchema: responseSchema,
+        },
+    });
+    return response.text;
 }
 
-export async function generateStyledImage(
-    sourceImageBytes: string,
-    modelImageBytes: string | null,
-    prompt: string,
-    getApiKey: () => string,
-    additionalImages?: { inlineData: { data: string; mimeType: string; } }[]
-): Promise<GenerateContentResponse> {
-    const ai = new GoogleGenAI({ apiKey: getApiKey() });
-    const parts: any[] = [{ inlineData: { data: sourceImageBytes, mimeType: 'image/png' } }];
-
-    if (modelImageBytes) {
-        parts.push({ inlineData: { data: modelImageBytes, mimeType: 'image/png' } });
-    }
-
-    // FIX: This logic was missing. It now correctly adds all additional images to the API request.
-    if (additionalImages && additionalImages.length > 0) {
-        parts.push(...additionalImages);
-    }
-    
-    parts.push({ text: prompt });
-
-    return ai.models.generateContent({
-        model: 'gemini-2.5-flash-image',
-        contents: { parts },
-        config: { responseModalities: [Modality.IMAGE, Modality.TEXT] },
-    });
+export async function generateTextFromImage(prompt: string, imageBase64: string, apiKey: string): Promise<string> {
+    const ai = getGoogleGenAI(apiKey);
+    const response = await ai.models.generateContent({
+        model: 'gemini-2.5-flash',
+        contents: {
+            parts: [
+                { inlineData: { mimeType: 'image/png', data: imageBase64 } },
+                { text: prompt }
+            ]
+        }
+    });
+    return response.text;
 }
 
-export async function generateImage(
-    prompt: string,
-    getApiKey: () => string,
-    aspectRatio?: string
-): Promise<string> {
-    const ai = new GoogleGenAI({ apiKey: getApiKey() });
+export async function generateStructuredTextFromImage(prompt: string, imageBase64: string, apiKey: string, responseSchema: any): Promise<string> {
+    const ai = getGoogleGenAI(apiKey);
+    const response = await ai.models.generateContent({
+        model: 'gemini-2.5-flash',
+        contents: {
+            parts: [
+                { inlineData: { mimeType: 'image/png', data: imageBase64 } },
+                { text: prompt }
+            ]
+        },
+        config: {
+            responseMimeType: 'application/json',
+            responseSchema: responseSchema,
+        },
+    });
+    return response.text;
+}
 
-    // This is a text-to-image task, use Imagen
-    const imageGenConfig: any = {
-        numberOfImages: 1,
-        outputMimeType: 'image/png',
-    };
-    if (aspectRatio) {
-        imageGenConfig.aspectRatio = aspectRatio;
+export async function generateImage(prompt: string, apiKey: string, aspectRatio: string = "1:1"): Promise<string> {
+    const ai = getGoogleGenAI(apiKey);
+    const response = await ai.models.generateImages({
+        model: 'imagen-4.0-generate-001',
+        prompt: prompt,
+        config: {
+            numberOfImages: 1,
+            outputMimeType: 'image/png',
+            aspectRatio: aspectRatio as any,
+        },
+    });
+    const base64ImageBytes = response.generatedImages[0].image.imageBytes;
+    return `data:image/png;base64,${base64ImageBytes}`;
+}
+
+export async function generateStyledImage(mainImageBase64: string, modelImageBase64: string | null, prompt: string, apiKey: string, additionalImages?: any[]): Promise<GenerateContentResponse> {
+    const ai = getGoogleGenAI(apiKey);
+    const parts: any[] = [
+        { inlineData: { mimeType: 'image/png', data: mainImageBase64 } },
+        { text: prompt }
+    ];
+
+    if (modelImageBase64) {
+        parts.unshift({ inlineData: { mimeType: 'image/png', data: modelImageBase64 } });
     }
-    const response = await ai.models.generateImages({
-        model: 'imagen-4.0-generate-001',
-        prompt: prompt,
-        config: imageGenConfig,
-    });
-    // IMPROVEMENT: Added a check to prevent crashing if no images are returned.
-    if (response.generatedImages && response.generatedImages.length > 0) {
-        const base64ImageBytes: string = response.generatedImages[0].image.imageBytes;
-        return `data:image/png;base64,${base64ImageBytes}`;
-    } else {
-        throw new Error("The image generation request was blocked or failed to return an image.");
+    if (additionalImages) {
+        parts.push(...additionalImages);
     }
+    
+    return await ai.models.generateContent({
+        model: 'gemini-2.5-flash-image',
+        contents: { parts },
+        config: {
+            responseModalities: [Modality.IMAGE],
+        },
+    });
 }
 
-export async function generateText(prompt: string, getApiKey: () => string, schema?: any): Promise<string> {
-    const ai = new GoogleGenAI({ apiKey: getApiKey() });
-    const config: any = {};
-    if (schema) {
-        config.responseMimeType = "application/json";
-        config.responseSchema = schema;
-    }
-
-    const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash',
-        contents: prompt,
-        config: Object.keys(config).length > 0 ? config : undefined,
-    });
-    return response.text;
-}
-
-export async function generateTextFromImage(prompt: string, imageBase64: string, getApiKey: () => string): Promise<string> {
-    const ai = new GoogleGenAI({ apiKey: getApiKey() });
-    const parts = [
-        { inlineData: { data: imageBase64, mimeType: 'image/png' } },
-        { text: prompt }
-    ];
-    const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash',
-        contents: { parts },
-    });
-    return response.text;
-}
-
-export async function generateStructuredTextFromImage(prompt: string, imageBase64: string, getApiKey: () => string, schema: any): Promise<string> {
-    const ai = new GoogleGenAI({ apiKey: getApiKey() });
-    const parts = [
-        { inlineData: { data: imageBase64, mimeType: 'image/png' } },
-        { text: prompt }
-    ];
-    const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash',
-        contents: { parts },
-        config: {
-            responseMimeType: "application/json",
-            responseSchema: schema,
-        },
-    });
-    return response.text.trim();
-}
-
-
-export async function generateOutdoorThemesForProduct(productDescription: string, getApiKey: () => string): Promise<string[]> {
-    const ai = new GoogleGenAI({ apiKey: getApiKey() });
-    const prompt = `Berikan 6 tema latar belakang luar ruangan yang sangat berbeda dan kreatif untuk foto produk dari "${productDescription}". Setiap tema harus berupa frasa deskriptif singkat. Contoh: "di atas batu yang tertutup lumut di hutan", "di pantai berpasir dengan ombak yang lembut". Hanya kembalikan daftar tema yang dipisahkan koma, tanpa penomoran atau format tambahan.`;
-    const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash',
-        contents: prompt,
-    });
-    const text = response.text;
-    return text.split(',').map(theme => theme.trim());
-}
-
-export async function generateStoryboard(prompt: string, imageBase64: string | null, getApiKey: () => string): Promise<any> {
-    const ai = new GoogleGenAI({ apiKey: getApiKey() });
-    
-    const sceneSchema = {
-        type: Type.OBJECT,
-        properties: {
-            id: { type: Type.INTEGER },
-            title: { type: Type.STRING },
-            durationSec: { type: Type.INTEGER },
-            shotType: { type: Type.STRING },
-            visualDescription: { type: Type.STRING },
-            voiceOver: { type: Type.STRING },
-            onScreenText: { type: Type.STRING },
-            sfxMusic: { type: Type.STRING },
-            imagePrompt: { type: Type.STRING },
-            safetyNotes: { type: Type.STRING },
-        },
-    };
-
-    const hookSchema = {
-        type: Type.OBJECT,
-        properties: {
-            text: { type: Type.STRING },
-            score: { type: Type.NUMBER },
-            reason: { type: Type.STRING },
-        },
-    };
-
-    const storyboardSchema = {
-        type: Type.OBJECT,
-        properties: {
-            product: {
-                type: Type.OBJECT,
-                properties: {
-                    title: { type: Type.STRING },
-                    summary: { type: Type.STRING },
-                }
-            },
-            style: {
-                type: Type.OBJECT,
-                properties: {
-                    vibe: { type: Type.STRING },
-                    lighting: { type: Type.STRING },
-                    contentType: { type: Type.STRING },
-                    aspectRatio: { type: Type.STRING },
-                }
-            },
-            brandTone: { type: Type.STRING },
-            durationTotalSec: { type: Type.INTEGER },
-            scenes: {
-                type: Type.ARRAY,
-                items: sceneSchema,
-            },
-            callToAction: { type: Type.STRING },
-            suggestedHooks: {
-                type: Type.ARRAY,
-                items: hookSchema,
-            }
-        }
-    };
-
-    const parts: any[] = [{ text: prompt }];
-    if (imageBase64) {
-        parts.unshift({ inlineData: { data: imageBase64, mimeType: 'image/png' } });
-    }
-
-    const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash',
-        contents: { parts },
-        config: {
-            responseMimeType: "application/json",
-            responseSchema: storyboardSchema,
-        }
-    });
-
-    const jsonText = response.text.trim();
-    return JSON.parse(jsonText);
-}
-
-// IMPROVEMENT: Updated the TTS function to match the latest API spec and improve clarity.
-export async function generateTTS(textToSpeak: string, voiceName: string, getApiKey: () => string): Promise<string> {
-    const ai = new GoogleGenAI({ apiKey: getApiKey() });
-
-    // FIX: The 'generationConfig' parameter is deprecated. TTS configurations are now placed directly within the 'config' object.
+// FIX: Removed apiKey from options and use new GoogleGenAI({}) for TTS model.
+export async function generateTTS(options: { text: string, voiceName: string, speakingRate?: number }): Promise<string> {
+    const { text, voiceName, speakingRate } = options;
+    const ai = new GoogleGenAI({});
     const response = await ai.models.generateContent({
         model: 'gemini-2.5-flash-preview-tts',
-        contents: [{ parts: [{ text: textToSpeak }] }],
+        contents: [{ parts: [{ text }] }],
         config: {
-            // FIX: Use Modality enum instead of string literal for responseModalities
             responseModalities: [Modality.AUDIO],
             speechConfig: {
                 voiceConfig: {
-                    prebuiltVoiceConfig: { voiceName: voiceName }
-                }
-            }
+                    prebuiltVoiceConfig: {
+                        voiceName,
+                    },
+                    // FIX: `speakingRate` is not a direct property of `speechConfig`. Moved it inside `voiceConfig`.
+                    speakingRate: speakingRate,
+                },
+            },
         },
     });
-
-    const audioPart = response.candidates?.[0]?.content?.parts.find(p => p.inlineData);
-
-    if (audioPart?.inlineData?.data) {
-        const base64Pcm = audioPart.inlineData.data;
-        const mimeType = audioPart.inlineData.mimeType;
-        
-        if (mimeType.startsWith('audio/')) {
-            // IMPROVEMENT: Dynamically parse sample rate from MIME type for future-proofing.
-            let sampleRate = 24000; // Default sample rate
-            const rateMatch = mimeType.match(/rate=(\d+)/);
-            if (rateMatch && rateMatch[1]) {
-                sampleRate = parseInt(rateMatch[1], 10);
-            }
-            return pcmToWavUrl(base64Pcm, sampleRate);
-        } else {
-             throw new Error(`Unexpected MIME type received for audio: ${mimeType}`);
-        }
-    } else {
-        const textPart = response.candidates?.[0]?.content?.parts.find(p => p.text);
-        throw new Error(textPart?.text || 'Model did not return any audio data.');
+    const base64Audio = response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
+    if (!base64Audio) {
+        throw new Error("No audio data returned from TTS API.");
     }
+    return pcmToWavUrl(base64Audio);
+}
+
+// FIX: Removed apiKey from options and use new GoogleGenAI({}) for TTS model.
+export async function generateMultiSpeakerTTS(options: { text: string, speaker_1_name: string, speaker_1_voice: string, speaker_2_name: string, speaker_2_voice: string }): Promise<string> {
+    const { text, speaker_1_name, speaker_1_voice, speaker_2_name, speaker_2_voice } = options;
+    const ai = new GoogleGenAI({});
+    const response = await ai.models.generateContent({
+      model: "gemini-2.5-flash-preview-tts",
+      contents: [{ parts: [{ text: text }] }],
+      config: {
+        responseModalities: [Modality.AUDIO],
+        speechConfig: {
+            multiSpeakerVoiceConfig: {
+              speakerVoiceConfigs: [
+                    {
+                        speaker: speaker_1_name,
+                        voiceConfig: {
+                          prebuiltVoiceConfig: { voiceName: speaker_1_voice }
+                        }
+                    },
+                    {
+                        speaker: speaker_2_name,
+                        voiceConfig: {
+                          prebuiltVoiceConfig: { voiceName: speaker_2_voice }
+                        }
+                    }
+              ]
+            }
+        }
+      }
+    });
+    const base64Audio = response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
+    if (!base64Audio) {
+        throw new Error("No audio data returned from TTS API.");
+    }
+    return pcmToWavUrl(base64Audio);
 }
 
 
 export const nutritionSchema = {
-    type: Type.OBJECT,
-    properties: {
-        estimasiKalori: { type: Type.STRING },
-        proteinGr: { type: Type.STRING },
-        karbohidratGr: { type: Type.STRING },
-        lemakGr: { type: Type.STRING },
-        potensiAlergen: {
-            type: Type.ARRAY,
-            items: { type: Type.STRING }
-        },
-    }
+    type: Type.OBJECT,
+    properties: {
+        estimasiKalori: { type: Type.NUMBER },
+        proteinGr: { type: Type.NUMBER },
+        karbohidratGr: { type: Type.NUMBER },
+        lemakGr: { type: Type.NUMBER },
+        potensiAlergen: { type: Type.ARRAY, items: { type: Type.STRING } }
+    }
 };
+
+export async function generateStoryboard(prompt: string, imageBase64: string | null, apiKey: string): Promise<any> {
+    const ai = getGoogleGenAI(apiKey);
+    const parts: any[] = [{ text: prompt }];
+    if (imageBase64) {
+        parts.unshift({ inlineData: { mimeType: 'image/png', data: imageBase64 } });
+    }
+    const storyboardSchema = {
+        type: Type.OBJECT,
+        properties: {
+            product: {
+                type: Type.OBJECT,
+                properties: {
+                    title: { type: Type.STRING },
+                    summary: { type: Type.STRING },
+                },
+            },
+            style: {
+                type: Type.OBJECT,
+                properties: {
+                    vibe: { type: Type.STRING },
+                    lighting: { type: Type.STRING },
+                    contentType: { type: Type.STRING },
+                    aspectRatio: { type: Type.STRING },
+                },
+            },
+            brandTone: { type: Type.STRING },
+            durationTotalSec: { type: Type.NUMBER },
+            scenes: {
+                type: Type.ARRAY,
+                items: {
+                    type: Type.OBJECT,
+                    properties: {
+                        id: { type: Type.NUMBER },
+                        title: { type: Type.STRING },
+                        durationSec: { type: Type.NUMBER },
+                        shotType: { type: Type.STRING },
+                        visualDescription: { type: Type.STRING },
+                        voiceOver: { type: Type.STRING },
+                        onScreenText: { type: Type.STRING },
+                        sfxMusic: { type: Type.STRING },
+                        imagePrompt: { type: Type.STRING },
+                        safetyNotes: { type: Type.STRING },
+                    },
+                },
+            },
+            callToAction: { type: Type.STRING },
+            suggestedHooks: {
+                type: Type.ARRAY,
+                items: {
+                    type: Type.OBJECT,
+                    properties: {
+                        text: { type: Type.STRING },
+                        score: { type: Type.NUMBER },
+                        reason: { type: Type.STRING },
+                    },
+                },
+            },
+        },
+    };
+    
+    const response = await ai.models.generateContent({
+        model: 'gemini-2.5-pro', // Complex task, use Pro
+        contents: { parts },
+        config: {
+            responseMimeType: "application/json",
+            responseSchema: storyboardSchema,
+        },
+    });
+    
+    return JSON.parse(response.text);
+}
+
+
+export async function generateVideoContent(
+    prompt: string,
+    imageBytes: string,
+    model: string,
+    apiKey: string,
+    onStatusUpdate: (message: string) => void,
+    aspectRatio: string = '16:9'
+): Promise<string> {
+    const ai = getGoogleGenAI(apiKey);
+    const request: GenerateVideosParameters = {
+        model,
+        prompt,
+        config: {
+            numberOfVideos: 1,
+            resolution: '720p',
+            aspectRatio: aspectRatio as any,
+        },
+    };
+    if (imageBytes) {
+        request.image = {
+            imageBytes,
+            mimeType: 'image/png',
+        };
+    }
+    
+    onStatusUpdate('Mengirim permintaan video...');
+    let operation = await ai.models.generateVideos(request);
+    
+    onStatusUpdate('Video sedang diproses...');
+    while (!operation.done) {
+        await delay(5000); // Poll every 5 seconds
+        try {
+            operation = await ai.operations.getVideosOperation({ operation });
+            const progress = operation.metadata?.progressPercent;
+// FIX: The 'progress' variable is of type 'unknown'. Add a 'typeof' check to ensure it's a number before calling 'toFixed'.
+            if (typeof progress === 'number') {
+                onStatusUpdate(`Memproses... ${progress.toFixed(0)}%`);
+            } else {
+                onStatusUpdate('Memproses...');
+            }
+        } catch(e) {
+            console.error("Error polling video operation:", e);
+            // Don't rethrow, let it try again on the next loop
+        }
+    }
+    
+    onStatusUpdate('Mengambil video...');
+    const downloadLink = operation.response?.generatedVideos?.[0]?.video?.uri;
+    if (!downloadLink) {
+        throw new Error('Video generation finished, but no download link was provided.');
+    }
+
+    const response = await fetch(`${downloadLink}&key=${apiKey}`);
+    if (!response.ok) {
+        throw new Error(`Failed to download video: ${response.statusText}`);
+    }
+    
+    const videoBlob = await response.blob();
+    return URL.createObjectURL(videoBlob);
+}

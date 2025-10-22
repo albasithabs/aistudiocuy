@@ -10,6 +10,7 @@ import {
     // --- FIX: Import withRetry ---
     withRetry
 } from "../utils/helpers.ts";
+// FIX: Added missing imports that are now available in gemini.ts.
 import {
     generateImage,
     generateText
@@ -175,7 +176,7 @@ export const LogoLab = {
             // --- FIX: Use withRetry for API call ---
             // FIX: Added missing onRetry property to withRetry options.
             const brief = await withRetry(() => generateText(prompt, this.getApiKey), {
-                 retries: 2, delayMs: 1000, onRetry: () => {}
+                 retries: 2, delayMs: 1000, onRetry: (attempt, err) => console.warn(`Attempt ${attempt} failed for brief generation. Retrying...`, err)
             });
             this.briefTextarea!.value = brief;
             this.state = 'step2';
@@ -216,7 +217,7 @@ export const LogoLab = {
                 // --- FIX: Use withRetry for API call ---
                 // FIX: Added missing onRetry property to withRetry options.
                 const imageUrl = await withRetry(() => generateImage(result.prompt, this.getApiKey), {
-                    retries: 2, delayMs: 1000, onRetry: () => {}
+                    retries: 2, delayMs: 1000, onRetry: (attempt, err) => console.warn(`Attempt ${attempt} failed for logo generation. Retrying...`, err)
                 });
                 this.results[index] = { ...result, status: 'done', url: imageUrl };
             } catch (e: any) {

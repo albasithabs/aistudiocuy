@@ -5,8 +5,11 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+// FIX: Import `GenerateContentResponse` for proper typing.
+import { GenerateContentResponse } from "@google/genai";
 import { blobToDataUrl, delay, downloadFile, parseAndFormatErrorMessage, setupDragAndDrop, withRetry } from "../utils/helpers.ts";
 // --- FIX: Use a consistent API function and import withRetry ---
+// FIX: Added missing imports that are now available in gemini.ts.
 import { generateStructuredTextFromImage, generateStyledImage } from '../utils/gemini.ts'; // Assuming generateStyledImage can handle this task
 
 const THEME_PACKS = {
@@ -195,9 +198,10 @@ export const Stickerrr = {
                 }
             };
             
+            // FIX: The function now returns a string, so this is safe.
             const jsonResponse = await withRetry(() =>
                 generateStructuredTextFromImage(prompt, this.sourceImage!.base64, this.getApiKey, autofillSchema as any),
-                { retries: 2, delayMs: 1000, onRetry: () => {} }
+                { retries: 2, delayMs: 1000, onRetry: (attempt, err) => console.warn(`Attempt ${attempt} failed for autofill. Retrying...`, err) }
             );
             const data = JSON.parse(jsonResponse);
 
@@ -269,7 +273,8 @@ export const Stickerrr = {
 
         const generationPromises = this.results.map(async (result, index) => {
             try {
-                const response = await withRetry(() => 
+                // FIX: Type the response to avoid property access errors.
+                const response: GenerateContentResponse = await withRetry(() => 
                     generateStyledImage(this.sourceImage!.base64, null, result.prompt, this.getApiKey),
                     {
                         retries: 2,
@@ -283,6 +288,7 @@ export const Stickerrr = {
                     const imageUrl = `data:${imagePart.inlineData.mimeType};base64,${imagePart.inlineData.data}`;
                     this.results[index] = { ...result, status: 'done', imageUrl };
                 } else {
+                    // FIX: Correctly access the text part from the response.
                     const textPart = response.candidates?.[0]?.content?.parts.find(p => p.text);
                     throw new Error(textPart?.text || "No image data in response.");
                 }
@@ -306,9 +312,9 @@ export const Stickerrr = {
         if (!item) return;
         const index = parseInt((item as HTMLElement).dataset.index!, 10);
         const result = this.results[index];
-        if (result?.url) {
+        if (result?.imageUrl) {
             const urls = this.results.map(r => r.imageUrl).filter((url): url is string => !!url);
-            const startIndex = urls.indexOf(result.url);
+            const startIndex = urls.indexOf(result.imageUrl);
             if (startIndex > -1) this.showPreviewModal(urls, startIndex);
         }
     },

@@ -5,8 +5,11 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+// FIX: Import `GenerateContentResponse` for proper typing.
+import { GenerateContentResponse } from "@google/genai";
 // --- FIX: Import withRetry ---
 import { blobToDataUrl, downloadFile, parseAndFormatErrorMessage, setupDragAndDrop, withRetry } from "../utils/helpers.ts";
+// FIX: Added missing import that is now available in gemini.ts.
 import { generateStyledImage } from "../utils/gemini.ts";
 
 type OutfitProState = 'idle' | 'processing' | 'results' | 'error';
@@ -173,9 +176,11 @@ export const OutfitPro = {
             // --- FIX: Wrap API calls in withRetry for resilience ---
             const [flatlayResponse, modelResponse] = await Promise.all([
                 // FIX: Added missing options object to withRetry call.
-                withRetry(() => generateStyledImage(mainImageBase64, null, flatlayPrompt, this.getApiKey, additionalImages), { retries: 2, delayMs: 1000, onRetry: () => {} }),
+                // FIX: Typed the response to avoid property access errors.
+                withRetry(() => generateStyledImage(mainImageBase64, null, flatlayPrompt, this.getApiKey, additionalImages), { retries: 2, delayMs: 1000, onRetry: (attempt, err) => console.warn(`Attempt ${attempt} failed for flatlay. Retrying...`, err) }) as Promise<GenerateContentResponse>,
                 // FIX: Added missing options object to withRetry call.
-                withRetry(() => generateStyledImage(mainImageBase64, null, modelPrompt, this.getApiKey, additionalImages), { retries: 2, delayMs: 1000, onRetry: () => {} })
+                // FIX: Typed the response to avoid property access errors.
+                withRetry(() => generateStyledImage(mainImageBase64, null, modelPrompt, this.getApiKey, additionalImages), { retries: 2, delayMs: 1000, onRetry: (attempt, err) => console.warn(`Attempt ${attempt} failed for model. Retrying...`, err) }) as Promise<GenerateContentResponse>
             ]);
 
             const flatlayPart = flatlayResponse.candidates?.[0]?.content?.parts.find(p => p.inlineData);

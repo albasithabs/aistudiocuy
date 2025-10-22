@@ -7,6 +7,7 @@
 
 // --- FIX: Import withRetry ---
 import { downloadFile, parseAndFormatErrorMessage, withRetry } from "../utils/helpers.ts";
+// FIX: Added missing import that is now available in gemini.ts.
 import { generateImage } from "../utils/gemini.ts";
 
 type ModelCreativeState = 'idle' | 'processing' | 'results' | 'error';

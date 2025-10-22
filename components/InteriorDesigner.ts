@@ -5,8 +5,11 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+// FIX: Import `GenerateContentResponse` for proper typing.
+import { GenerateContentResponse } from "@google/genai";
 // --- FIX: Imported withRetry ---
 import { blobToDataUrl, downloadFile, parseAndFormatErrorMessage, setupDragAndDrop, withRetry } from "../utils/helpers.ts";
+// FIX: Import `generateStyledImage` which is now available.
 import { generateStyledImage } from "../utils/gemini.ts";
 
 type InteriorDesignerState = 'idle' | 'processing' | 'results' | 'error';
@@ -198,7 +201,8 @@ export const InteriorDesigner = {
 
         try {
             // --- FIX: Wrap API call in withRetry for resilience ---
-            const response = await withRetry(() =>
+            // FIX: Type the response to avoid property access errors.
+            const response: GenerateContentResponse = await withRetry(() =>
                 generateStyledImage(this.sourceImage!.base64, null, prompt, this.getApiKey), {
                     retries: 2, delayMs: 1000,
                     onRetry: (attempt, error) => console.warn(`Interior Designer generation attempt ${attempt} failed. Retrying...`, error)
@@ -211,6 +215,7 @@ export const InteriorDesigner = {
                 this.resultImageUrl = `data:${imagePart.inlineData.mimeType};base64,${imagePart.inlineData.data}`;
                 this.state = 'results';
             } else {
+                // FIX: Correctly access the text part from the response.
                 const textPart = response.candidates?.[0]?.content?.parts.find(p => p.text);
                 throw new Error(textPart?.text || "Tidak ada data gambar dalam respons. Gambar mungkin diblokir karena alasan keamanan.");
             }

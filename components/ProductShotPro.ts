@@ -5,7 +5,10 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+// FIX: Import `GenerateContentResponse` to type the API responses correctly.
+import { GenerateContentResponse } from "@google/genai";
 import { blobToDataUrl, delay, downloadFile, parseAndFormatErrorMessage, setupDragAndDrop, withGenericRetry } from "../utils/helpers.ts";
+// FIX: Added missing imports that are now available in gemini.ts.
 import { generateStyledImage, generateTextFromImage, generateVideoContent } from "../utils/gemini.ts";
 
 const productShotLoadingMessages = [
@@ -32,10 +35,61 @@ const LOOKBOOK_POSE_PROMPTS: { [key: string]: string } = {
 };
 
 const CATEGORY_PROMPTS = {
-    skincare: { themes: [/* ... */], angles: [/* ... */] },
-    food: { themes: [/* ... */], angles: [/* ... */] },
-    gadget: { themes: [/* ... */], angles: [/* ... */] },
-    lifestyle: { themes: [/* ... */], angles: [/* ... */] }
+    skincare: { 
+        themes: [
+            "diatur dengan elegan di atas permukaan marmer dengan tetesan air",
+            "bersandar di antara daun-daun tropis yang rimbun dengan cahaya belang-belang",
+            "melayang di udara dengan latar belakang gradien pastel yang lembut",
+            "di rak kamar mandi minimalis di sebelah handuk putih yang digulung",
+            "dipegang oleh tangan dengan manikur sempurna dengan latar belakang buram",
+            "ditempatkan di atas balok es dengan percikan air dingin"
+        ],
+        angles: ["bidikan produk hero dari depan", "bidikan close-up pada tekstur produk", "bidikan flat lay dari atas", "bidikan gaya hidup dengan elemen latar belakang"]
+    },
+    food: { 
+        themes: [
+            "disajikan di atas piring pedesaan di atas meja kayu",
+            "sebagai bagian dari piknik musim panas di atas selimut kotak-kotak",
+            "dengan latar belakang dapur yang ramai dan buram",
+            "diisolasi dengan latar belakang berwarna cerah dan solid untuk tampilan pop",
+            "dipegang oleh tangan, siap untuk dimakan",
+            "dengan uap yang mengepul, menekankan kesegarannya"
+        ],
+        angles: ["bidikan close-up yang menggiurkan", "bidikan dari atas ke bawah (flat lay)", "bidikan sudut 45 derajat klasik", "bidikan aksi (misalnya menuangkan saus)"]
+    },
+    gadget: {
+        themes: [
+            "di atas meja kerja modern yang ramping di sebelah laptop dan secangkir kopi",
+            "dipegang di tangan untuk menunjukkan skala, dengan latar belakang perkotaan",
+            "diisolasi dengan pencahayaan dramatis yang menonjolkan bentuk dan materialnya",
+            "dengan percikan air di sekitarnya untuk menunjukkan ketahanan airnya",
+            "diatur dalam pola geometris dengan aksesori yang serasi",
+            "dengan cahaya neon futuristik dan latar belakang gelap"
+        ],
+        angles: ["bidikan produk tiga perempat", "bidikan close-up pada port atau tombol", "bidikan gaya hidup sedang digunakan", "bidikan produk yang dibongkar (deconstructed)"]
+    },
+     fashion: { // For accessories etc.
+        themes: [
+            "diletakkan dengan rapi di atas kain sutra atau beludru",
+            "dipakai oleh manekin dengan pencahayaan studio",
+            "di dalam tas tangan atau saku yang terbuka",
+            "sebagai bagian dari flat lay pakaian 'outfit of the day'",
+            "di atas tumpukan majalah mode",
+            "terpantul di cermin atau permukaan mengkilap"
+        ],
+        angles: ["bidikan detail close-up", "bidikan produk dalam konteks", "bidikan flat lay", "bidikan kreatif dengan bayangan"]
+    },
+    lifestyle: {
+        themes: [
+            "di atas meja kopi di sebelah buku dan tanaman",
+            "di dalam ransel petualangan di puncak gunung",
+            "di meja samping tempat tidur dengan cahaya pagi yang lembut",
+            "diatur di rak buku yang tertata rapi",
+            "sedang digunakan selama aktivitas rekreasi (misalnya, botol air saat hiking)",
+            "di atas handuk di tepi kolam renang"
+        ],
+        angles: ["bidikan dalam konteks (in-context)", "bidikan produk yang dipegang tangan", "bidikan suasana hati", "bidikan dari atas ke bawah"]
+    }
 };
 
 
@@ -383,19 +437,11 @@ export const CreativeStudio = {
             const dataUrl = await blobToDataUrl(file);
             this.sourceImage = dataUrl.substring(dataUrl.indexOf(',') + 1);
             
-            const img = new Image();
-            img.onload = () => {
-                this.state = 'image-uploaded';
-                this.updateGenerateButton();
-                this.render();
-            };
-            img.onerror = () => {
-                console.error('Error loading image.');
-                this.state = 'image-uploaded';
-                this.updateGenerateButton();
-                this.render();
-            };
-            img.src = dataUrl;
+            // BUG FIX: Directly update state and render after getting dataUrl.
+            // The previous 'new Image()' logic was convoluted and could fail silently.
+            this.state = 'image-uploaded';
+            this.updateGenerateButton();
+            this.render();
         } catch (error) {
             console.error('Error processing product shot image:', error);
             this.showNotification('Gagal memproses file gambar.', 'error');
@@ -444,8 +490,29 @@ export const CreativeStudio = {
     },
 
     buildLookBookPrompt(poseKey: string, sessionID: string | null = null): string {
-        // ... (original prompt logic is excellent)
-        return "...prompt string...";
+        const scenePrompt = LOOKBOOK_SCENE_PROMPTS[this.lookbookScene] || LOOKBOOK_SCENE_PROMPTS['studio'];
+        const posePrompt = LOOKBOOK_POSE_PROMPTS[poseKey] || LOOKBOOK_POSE_PROMPTS['neutral'];
+        
+        let modelDescription = "seorang model fesyen profesional";
+        if (this.modelImage) {
+            modelDescription = "seorang model fesyen profesional yang menyerupai orang di gambar referensi model";
+        } else if (this.isDiversityPackActive) {
+            modelDescription = "seorang model fesyen profesional dengan etnis dan tipe tubuh yang beragam";
+        }
+    
+        let prompt = `Bidikan fesyen seluruh tubuh atau setengah badan yang fotorealistis. ${modelDescription} mengenakan pakaian yang disediakan.`;
+        prompt += ` Model ini ${posePrompt}.`;
+        prompt += ` Pengaturannya adalah ${scenePrompt}.`;
+        prompt += ` Pencahayaannya profesional dan menyanjung. Tangkap detail dan tekstur pakaian.`;
+    
+        if (sessionID) {
+            prompt += ` ID Sesi Konsistensi: ${sessionID}. Pertahankan wajah model, pencahayaan, dan nada yang sama di seluruh sesi ini.`;
+        }
+        
+        // CRITICAL FIX: Add a random element to encourage variation even with the same pose.
+        prompt += ` Variasi foto #${Math.floor(Math.random() * 1000)}.`;
+    
+        return prompt;
     },
     
     async runGeneration(indexToRegen?: number) {
@@ -485,7 +552,11 @@ export const CreativeStudio = {
     
             // Step 2: Build the prompt using the AI-generated description.
             const basePrompt = `Menggunakan gambar produk yang disediakan, buat adegan gaya hidup fotorealistis baru. Seorang model sedang ${this.mixstyleInteraction} produk, yang dideskripsikan sebagai '${productDescription}'. Pengaturannya adalah ${this.mixstyleSetting}.`;
-            const prompts = Array(this.imageCount).fill(basePrompt);
+            
+            // CRITICAL FIX: Add variation to each prompt to avoid identical images.
+            const prompts = Array.from({ length: this.imageCount }, (_, i) => {
+                return `${basePrompt} Cobalah sudut kamera atau komposisi yang sedikit berbeda untuk variasi. Variasi #${i + 1}.`;
+            });
     
             // Step 3: Run the generation with the well-defined prompts.
             await this.runPromptBasedGeneration(prompts);
@@ -498,8 +569,22 @@ export const CreativeStudio = {
     },
 
     async runProductStyleGeneration() {
-        // ... (original logic is great)
-        const prompts = Array(this.imageCount).fill('').map((_, i) => "...");
+        if (!this.sourceImage) return;
+
+        const prompts: string[] = [];
+        const categoryData = CATEGORY_PROMPTS[this.productCategory] || CATEGORY_PROMPTS.lifestyle;
+    
+        for (let i = 0; i < this.imageCount; i++) {
+            // CRITICAL FIX: Generate unique prompts instead of a static string.
+            const theme = categoryData.themes[i % categoryData.themes.length];
+            const angle = categoryData.angles[i % categoryData.angles.length];
+            
+            let prompt = `Foto produk komersial yang fotorealistis dan berkualitas tinggi dari produk yang disediakan.`;
+            prompt += ` Atur produk dalam adegan berikut: ${theme}.`;
+            prompt += ` Ambil bidikan menggunakan ${angle}.`;
+            prompt += ` Pencahayaan harus profesional dan meningkatkan produk. Fokus harus tajam pada produk.`;
+            prompts.push(prompt);
+        }
         await this.runPromptBasedGeneration(prompts);
     },
 
@@ -518,12 +603,14 @@ export const CreativeStudio = {
         const generationPromises = this.imageResults.map(async (result, index) => {
             try {
                 // FIX: Added missing options object to withGenericRetry call.
-                const response = await withGenericRetry(() => generateStyledImage(this.sourceImage!, this.modelImage?.base64 || null, result.prompt, this.getApiKey), { retries: 2, delayMs: 1000, onRetry: () => {} });
+                // FIX: Correctly type the response to avoid property access errors.
+                const response: GenerateContentResponse = await withGenericRetry(() => generateStyledImage(this.sourceImage!, this.modelImage?.base64 || null, result.prompt, this.getApiKey), { retries: 2, delayMs: 1000, onRetry: (attempt, err) => console.warn(`Attempt ${attempt} failed for Creative Studio. Retrying...`, err) });
                 const imagePart = response.candidates?.[0]?.content?.parts.find(p => p.inlineData);
                 if (imagePart?.inlineData) {
                     const imageUrl = `data:${imagePart.inlineData.mimeType};base64,${imagePart.inlineData.data}`;
                     this.imageResults[index] = { ...result, status: 'done', imageUrl };
                 } else {
+                    // FIX: Correctly access text part from the response.
                     throw new Error(response.candidates?.[0]?.content?.parts.find(p => p.text)?.text || "Tidak ada data gambar dalam respons.");
                 }
             } catch (e: any) {
@@ -587,7 +674,8 @@ export const CreativeStudio = {
 
         try {
             // FIX: Added missing options object to withGenericRetry call.
-            const response = await withGenericRetry(() => generateStyledImage(this.sourceImage!, this.modelImage?.base64 || null, resultToRegen.prompt, this.getApiKey), { retries: 2, delayMs: 1000, onRetry: () => {} });
+            // FIX: Correctly type the response to avoid property access errors.
+            const response: GenerateContentResponse = await withGenericRetry(() => generateStyledImage(this.sourceImage!, this.modelImage?.base64 || null, resultToRegen.prompt, this.getApiKey), { retries: 2, delayMs: 1000, onRetry: (attempt, err) => console.warn(`Attempt ${attempt} failed for single regeneration. Retrying...`, err) });
             const imagePart = response.candidates?.[0]?.content?.parts.find(p => p.inlineData);
             if (imagePart?.inlineData) {
                 const imageUrl = `data:${imagePart.inlineData.mimeType};base64,${imagePart.inlineData.data}`;
@@ -611,14 +699,15 @@ export const CreativeStudio = {
         this.render();
 
         const imageBytes = result.imageUrl.substring(result.imageUrl.indexOf(',') + 1);
-        const prompt = "Buat animasi pendek...";
+        const prompt = result.prompt; // FIX: Use the original image prompt for better context
 
         try {
             // FIX: Added missing options object to withGenericRetry call.
+            // FIX: Updated deprecated video model name.
             const videoUrl = await withGenericRetry(() => generateVideoContent(
-                prompt, imageBytes, 'veo-2.0-generate-001', this.getApiKey,
+                prompt, imageBytes, 'veo-3.1-fast-generate-preview', this.getApiKey,
                 (message: string) => { result.videoStatusText = message; this.render(); }, '9:16'
-            ), { retries: 2, delayMs: 1000, onRetry: () => {} });
+            ), { retries: 2, delayMs: 1000, onRetry: (attempt, err) => console.warn(`Attempt ${attempt} failed for video generation. Retrying...`, err) });
             result.status = 'video-done';
             result.videoUrl = videoUrl;
         } catch (e: any) {

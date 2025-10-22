@@ -5,8 +5,11 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+// FIX: Import `GenerateContentResponse` for proper typing.
+import { GenerateContentResponse } from "@google/genai";
 // --- FIX: Import withGenericRetry ---
 import { blobToDataUrl, downloadFile, parseAndFormatErrorMessage, withGenericRetry } from "../utils/helpers.ts";
+// FIX: Import `generateStyledImage` which is now available.
 import { generateStyledImage } from "../utils/gemini.ts";
 
 type RetouchState = 'idle' | 'processing' | 'results' | 'error';
@@ -132,9 +135,10 @@ export const RetouchAndColorizer = {
         try {
             // --- FIX: Wrap API call in withGenericRetry for resilience ---
             // FIX: Added missing options object to withGenericRetry call.
-            const response = await withGenericRetry(() => 
+            // FIX: Typed the response to avoid property access errors.
+            const response: GenerateContentResponse = await withGenericRetry(() => 
                 generateStyledImage(this.sourceImage!.base64, null, prompt, this.getApiKey),
-                { retries: 2, delayMs: 1000, onRetry: () => {} }
+                { retries: 2, delayMs: 1000, onRetry: (attempt, err) => console.warn(`Attempt ${attempt} failed for Retouch. Retrying...`, err) }
             );
             
             const imagePart = response.candidates?.[0]?.content?.parts.find(p => p.inlineData);
@@ -143,6 +147,7 @@ export const RetouchAndColorizer = {
                 this.resultImageUrl = `data:${imagePart.inlineData.mimeType};base64,${imagePart.inlineData.data}`;
                 this.state = 'results';
             } else {
+                // FIX: Correctly access the text part from the response.
                 const textPart = response.candidates?.[0]?.content?.parts.find(p => p.text);
                 throw new Error(textPart?.text || "Tidak ada data gambar dalam respons. Gambar mungkin diblokir karena alasan keamanan.");
             }

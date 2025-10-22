@@ -17,6 +17,7 @@ import { LogoLab } from './components/LogoLab.ts';
 import { ModelCreative } from './components/ModelCreative.ts';
 import { OutfitPro } from './components/OutfitPro.ts';
 import { PosterPro } from './components/PosterX.ts';
+import { CopywriterDesk } from './components/CopywriterDesk.ts';
 
 import { delay, downloadFile, parseAndFormatErrorMessage } from './utils/helpers.ts';
 import { validateApiKey } from './utils/gemini.ts';
@@ -257,7 +258,39 @@ document.addEventListener('DOMContentLoaded', () => {
     modalZoomInButton.addEventListener('click', () => { zoom = Math.min(5, zoom + 0.2); applyZoomAndPan(); });
     modalZoomOutButton.addEventListener('click', () => { zoom = Math.max(0.5, zoom - 0.2); applyZoomAndPan(); });
     modalZoomResetButton.addEventListener('click', resetZoomAndPan);
-    modalDownloadEditedButton.addEventListener('click', () => downloadFile(modalImageElement.src, 'edited_image.png'));
+    
+    // FIX: Implement download with filters
+    const handleDownloadWithFilters = () => {
+        if (!modalImageElement) return;
+
+        // If it's a video, just download the source directly
+        if (modalImageElement instanceof HTMLVideoElement) {
+            downloadFile(modalImageElement.src, 'fluxio_video.mp4');
+            return;
+        }
+
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+            // Fallback to direct download if canvas fails
+            downloadFile(modalImageElement.src, 'fluxio_image.png');
+            return;
+        }
+
+        canvas.width = modalImageElement.naturalWidth;
+        canvas.height = modalImageElement.naturalHeight;
+
+        // Apply the same CSS filter to the canvas context
+        ctx.filter = modalImageElement.style.filter || 'none';
+        
+        // Draw the image onto the canvas
+        ctx.drawImage(modalImageElement, 0, 0);
+
+        // Get data URL from canvas and trigger download
+        const dataUrl = canvas.toDataURL('image/png');
+        downloadFile(dataUrl, 'fluxio_edited_image.png');
+    };
+    modalDownloadEditedButton.addEventListener('click', handleDownloadWithFilters);
     
     // Panning logic for modal image
     modalImageContainer.addEventListener('mousedown', (e) => {
@@ -325,6 +358,7 @@ document.addEventListener('DOMContentLoaded', () => {
     ModelCreative.init(dependencies);
     OutfitPro.init(dependencies);
     PosterPro.init(dependencies);
+    CopywriterDesk.init(dependencies);
 
     // --- Final setup ---
     switchView('ad-studio-view');
