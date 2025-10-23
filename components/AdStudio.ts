@@ -85,7 +85,6 @@ export const AdStudio = {
     narrativeStyleGroup: document.querySelector('#ad-studio-narrative-style-group') as HTMLDivElement,
     voiceStyleGroup: document.querySelector('#ad-studio-voice-style-group') as HTMLDivElement,
     aspectRatioGroup: document.querySelector('#ad-studio-aspect-ratio-group') as HTMLDivElement,
-    videoModelGroup: document.querySelector('#ad-studio-video-model-group') as HTMLDivElement,
 
     // Results Elements
     campaignTabsContainer: document.querySelector('#ad-studio-campaign-tabs') as HTMLDivElement,
@@ -111,7 +110,6 @@ export const AdStudio = {
     narrativeStyle: 'Dramatic',
     voiceStyle: 'natural',
     aspectRatio: '16:9',
-    videoModel: 'veo-2.0-generate-001',
     voiceNameMap: { natural: 'Kore', formal: 'Zephyr', friendly: 'Kore', energetic: 'Puck' } as { [key: string]: string },
 
     // Dependencies
@@ -147,7 +145,7 @@ export const AdStudio = {
         this.startOverButton.addEventListener('click', this.handleStartOver.bind(this));
         
         // Creative option buttons
-        const optionGroups = [this.sceneCountGroup, this.narrativeStyleGroup, this.voiceStyleGroup, this.aspectRatioGroup, this.videoModelGroup];
+        const optionGroups = [this.sceneCountGroup, this.narrativeStyleGroup, this.voiceStyleGroup, this.aspectRatioGroup];
         optionGroups.forEach(group => {
             group.addEventListener('click', (e) => this.handleCreativeOptionClick(e, group.id));
         });
@@ -175,7 +173,6 @@ export const AdStudio = {
         updateGroup(this.narrativeStyleGroup, this.narrativeStyle);
         updateGroup(this.voiceStyleGroup, this.voiceStyle);
         updateGroup(this.aspectRatioGroup, this.aspectRatio);
-        updateGroup(this.videoModelGroup, this.videoModel);
     },
 
     handleCreativeOptionClick(e: MouseEvent, groupId: string) {
@@ -189,7 +186,6 @@ export const AdStudio = {
             case 'ad-studio-narrative-style-group': this.narrativeStyle = value; break;
             case 'ad-studio-voice-style-group': this.voiceStyle = value; break;
             case 'ad-studio-aspect-ratio-group': this.aspectRatio = value; break;
-            case 'ad-studio-video-model-group': this.videoModel = value; break;
         }
         this.updateCreativeOptionsUI();
     },
@@ -291,7 +287,7 @@ export const AdStudio = {
                 const prompt = this.buildAdConceptPrompt(audience);
                 
                 const result = await withRetry(
-                    () => generateStoryboard(prompt, this.productImageBase64, this.getApiKey()),
+                    () => generateStoryboard(prompt, this.productImageBase64, this.getApiKey),
                     {
                         retries: 2,
                         delayMs: 1000,
@@ -584,7 +580,7 @@ export const AdStudio = {
             const consistencyImage = this.isCharacterLocked ? this.productImageBase64 : null;
             
             const imageUrl = await withRetry(
-                () => generateImage(prompt, this.getApiKey(), consistencyImage, this.aspectRatio),
+                () => generateImage(prompt, this.getApiKey, consistencyImage, this.aspectRatio),
                 {
                     retries: 2,
                     delayMs: 1000,
@@ -616,7 +612,7 @@ export const AdStudio = {
             const voiceName = this.voiceNameMap[this.voiceStyle] || 'Kore';
 
             const audioDataUrl = await withRetry(
-                () => generateTTS(scene.voiceOver, voiceName, this.getApiKey()),
+                () => generateTTS(scene.voiceOver, voiceName, this.getApiKey),
                 {
                     retries: 2,
                     delayMs: 1000,
@@ -671,31 +667,21 @@ export const AdStudio = {
             const imageBytes = scene.generatedImageUrl.split(',')[1];
             const prompt = `${scene.imagePrompt}. The final video must have a ${this.aspectRatio} aspect ratio.`;
             
-            const videoUrl = await withRetry(
-                () => generateVideoContent(
-                    prompt, 
-                    imageBytes, 
-                    this.videoModel,
-                    this.getApiKey(), 
-                    (message, step) => {
-                        scene.videoStatusText = message;
-                        this.updateSceneCard(index);
-                    },
-                    this.aspectRatio
-                ),
-                {
-                    retries: 2,
-                    delayMs: 1000,
-                    onRetry: (attempt, err) => {
-                        console.warn(`Attempt ${attempt}: Video generation failed for scene ${index}. Retrying...`, err);
-                        scene.videoStatusText = `Mencoba lagi... (${attempt})`;
-                        this.updateSceneCard(index);
-                    }
-                }
+            const videoUrl = await generateVideoContent(
+                prompt, 
+                imageBytes, 
+                'veo-2.0-generate-001',
+                this.getApiKey, 
+                (message, step) => {
+                    scene.videoStatusText = message;
+                    this.updateSceneCard(index);
+                },
+                this.aspectRatio
             );
             scene.videoUrl = videoUrl;
-        } catch(e) {
+        } catch(e: any) {
             console.error(`Error generating video for scene ${index}:`, e);
+            this.showToast(`Gagal membuat video: ${e.message}`, 'error');
             scene.videoGenerationError = true;
         } finally {
             scene.isVideoGenerating = false;
@@ -813,13 +799,20 @@ export const AdStudio = {
         this.targetAudienceInput.value = '';
         this.ctaInput.value = '';
         this.cta = '';
+        this.aspectRatio = '16:9';
         this.clearProductImage();
+        this.updateCreativeOptionsUI();
         this.render();
     },
 
-    showToast(message: string, type: 'success' | 'error' = 'success') {
+    showToast(message: string, type: 'success' | 'error' | 'info' = 'success') {
         const toast = document.createElement('div');
         toast.className = `toast-notification ${type}`;
+        if(type === 'error') {
+            toast.classList.add('error');
+        } else if (type === 'info') {
+            toast.classList.add('info');
+        }
         toast.textContent = message;
         this.toastContainer.appendChild(toast);
         setTimeout(() => {
